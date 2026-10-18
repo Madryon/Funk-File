@@ -19,14 +19,20 @@ from utils import BASE_DIR, UPLOAD_DIR, OUTPUT_DIR
 app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 app.config["JSON_SORT_KEYS"] = False
-database_url = os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'app.db'}")
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
-elif database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+raw_db_url = os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'app.db'}").strip().strip("'\"")
+if raw_db_url.startswith("DATABASE_URL="):
+    raw_db_url = raw_db_url[len("DATABASE_URL="):].strip().strip("'\"")
+
+if raw_db_url.startswith("postgres://"):
+    database_url = "postgresql+psycopg2://" + raw_db_url[len("postgres://"):]
+elif raw_db_url.startswith("postgresql://") and not raw_db_url.startswith("postgresql+"):
+    database_url = "postgresql+psycopg2://" + raw_db_url[len("postgresql://"):]
+else:
+    database_url = raw_db_url
+
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change-me")
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change-me").strip().strip("'\"")
 
 db.init_app(app)
 login_manager.init_app(app)
@@ -47,7 +53,10 @@ app.register_blueprint(scan_bp)
 
 
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"[Warning] Failed to initialize database tables: {e}", flush=True)
 
 
 
