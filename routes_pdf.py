@@ -258,8 +258,9 @@ def split_route():
         return jsonify({"error": str(e)}), 500
 
 
-# NEW: Video to Images route
+# NEW: Lock/Encrypt PDF
 @pdf_bp.route("/lock", methods=["POST"])
+@pdf_bp.route("/lock-pdf", methods=["POST"])
 def lock_route():
     f = request.files.get("file")
     if not f or not f.filename:
@@ -274,11 +275,17 @@ def lock_route():
         return jsonify({"error": "please provide at least one password"}), 400
 
     try:
-        allow_printing = request.form.get("allow_printing", "true").lower() == "true"
-        allow_copying = request.form.get("allow_copying", "true").lower() == "true"
-        allow_modifying = request.form.get("allow_modifying", "false").lower() == "true"
-        allow_annotating = request.form.get("allow_annotating", "false").lower() == "true"
-        allow_form_filling = request.form.get("allow_form_filling", "false").lower() == "true"
+        def _get_flag(primary, fallback, default):
+            val = request.form.get(primary)
+            if val is None or val == "":
+                val = request.form.get(fallback, default)
+            return str(val).lower() == "true"
+
+        allow_printing = _get_flag("allow_printing", "allow_print", "true")
+        allow_copying = _get_flag("allow_copying", "allow_copy", "true")
+        allow_modifying = _get_flag("allow_modifying", "allow_modify", "false")
+        allow_annotating = _get_flag("allow_annotating", "allow_annotate", "false")
+        allow_form_filling = _get_flag("allow_form_filling", "allow_form", "false")
     except Exception:
         allow_printing = True
         allow_copying = True
@@ -319,6 +326,7 @@ def lock_route():
 
 # NEW: Unlock/Decrypt PDF
 @pdf_bp.route("/unlock", methods=["POST"])
+@pdf_bp.route("/unlock-pdf", methods=["POST"])
 def unlock_route():
     f = request.files.get("file")
     if not f or not f.filename:

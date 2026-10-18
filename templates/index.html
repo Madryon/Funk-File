@@ -602,7 +602,7 @@ const T = [
  { id:'img2pdf', cat:'PDF Tools', tab:'Images', name:'Images to PDF', desc:'Combine several Images into a single PDF, preserving the order you add them.',
    icon:'<rect x="3" y="4" width="13" height="13" rx="2"/><circle cx="7.3" cy="8.3" r="1.2"/><path d="M4 14l3.3-3.3 2.4 2.2 2.8-3.6L16 13M18 9v9a2 2 0 01-2 2H8"/>',
    dz:['Drop Images to combine into one PDF','PNG · JPG · JPEG · WEBP · BMP · TIFF',1,'image/*'], btn:'Create PDF',
-   modes:[{ url:'/Images-to-pdf', out:({ n, sz }) => ['Images.pdf', `${n} Images combined · ${fmt(sz)}`] }] },
+   modes:[{ url:'/images-to-pdf', out:({ n, sz }) => ['Images.pdf', `${n} Images combined · ${fmt(sz)}`] }] },
 
  { id:'watermark', cat:'PDF Tools', tab:'Watermark', name:'Watermark PDF', desc:'Add text or image watermarks to every page of your PDF with custom styling.',
    icon:'<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',

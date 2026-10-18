@@ -9,8 +9,13 @@ image_bp = Blueprint("image", __name__)
 
 
 @image_bp.route("/images-to-pdf", methods=["POST"])
+@image_bp.route("/Images-to-pdf", methods=["POST"])
 def images_to_pdf_route():
-    files = request.files.getlist("files")
+    files = request.files.getlist("files") or request.files.getlist("file")
+    if not files and "file" in request.files:
+        files = [request.files["file"]]
+    if not files and "files" in request.files:
+        files = [request.files["files"]]
     if not files:
         return jsonify({"error": "no files provided"}), 400
     job_id = uuid.uuid4().hex
@@ -18,7 +23,7 @@ def images_to_pdf_route():
     job_dir.mkdir(parents=True, exist_ok=True)
     inputs = []
     for f in files:
-        if not f.filename:
+        if not f or not f.filename:
             continue
         ext = Path(f.filename).suffix.lower()
         if ext not in pdftool.IMAGE_EXTENSIONS:
@@ -41,8 +46,15 @@ def images_to_pdf_route():
     )
 
 
-# NEW: Split PDF route
+@image_bp.route("/watermark", methods=["POST"])
+def watermark_route():
+    mode = (request.form.get("mode") or "").lower()
+    if mode == "image" or "image" in request.files:
+        return watermark_image_route()
+    return watermark_text_route()
 
+
+# NEW: Watermark PDF - Text
 @image_bp.route("/watermark-text", methods=["POST"])
 def watermark_text_route():
     f = request.files.get("file")
