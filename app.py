@@ -1,18 +1,11 @@
 import os
 import time
-import uuid
-from pathlib import Path
-from flask import Flask, request, send_file, render_template, jsonify, g
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from werkzeug.utils import secure_filename
-import pdftool
-import pdftool_scan as scanner
-import pdftool_video as vidtool
+from flask import Flask, render_template, jsonify, g
 from auth import login_manager, auth_bp
 from history import history_bp, create_history_entry
 from models import db
 from scheduler import start_cleanup_scheduler
+from extensions import limiter
 
 from utils import BASE_DIR, UPLOAD_DIR, OUTPUT_DIR
 
@@ -36,7 +29,6 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change-me").strip().str
 
 db.init_app(app)
 login_manager.init_app(app)
-from extensions import limiter
 limiter.init_app(app)
 app.register_blueprint(auth_bp)
 app.register_blueprint(history_bp)

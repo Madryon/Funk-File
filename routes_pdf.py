@@ -1,4 +1,5 @@
 import uuid
+from pathlib import Path
 from flask import Blueprint, request, jsonify, g, send_file
 from utils import UPLOAD_DIR, OUTPUT_DIR, _save_upload
 import pdftool
