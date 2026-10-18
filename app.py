@@ -115,6 +115,17 @@ def health():
     return jsonify({"ok": True, "version": "2.0"})
 
 
+
+@app.errorhandler(413)
+def too_large(_e):
+    return jsonify({"error": "file too large (max 500MB)"}), 413
+
+
+@app.errorhandler(404)
+def not_found(_e):
+    return jsonify({"error": "not found"}), 404
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

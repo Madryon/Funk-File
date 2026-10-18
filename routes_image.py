@@ -203,26 +203,3 @@ def qr_generate_route():
     )
 
 
-@app.errorhandler(413)
-def too_large(_e):
-    return jsonify({"error": "file too large (max 500MB)"}), 413
-
-
-@app.errorhandler(404)
-def not_found(_e):
-    if request.path.startswith("/api/") or request.path in (
-        "/merge", "/compress", "/convert", "/pdf-to-word", "/images-to-pdf",
-        "/split", "/video-to-images", "/video-to-pdf", "/watermark-text", "/watermark-image", "/lock", "/unlock",
-        "/video-to-mp3", "/download", "/qr-generate",
-        "/scan/process", "/scan/build", "/scan/health"
-    ):
-        return jsonify({"error": "not found"}), 404
-    return jsonify({"error": "not found"}), 404
-
-
-# if __name__ == "__main__":
-#     port = int(os.environ.get("PORT", 5000))
-#     app.run(host="0.0.0.0", port=port, debug=False)
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
