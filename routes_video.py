@@ -41,10 +41,14 @@ def video_to_images_route():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     try:
+        # Default to 2 FPS if not specified to prevent extracting thousands
+        # of frames and crashing on memory-limited servers
+        effective_fps = target_fps if target_fps else 2
+        effective_max = max_frames if max_frames else 500
         paths = vidtool.video_to_images(
             str(in_path), str(out_dir),
             fmt=fmt, quality=quality,
-            max_frames=max_frames, fps=target_fps
+            max_frames=effective_max, fps=effective_fps
         )
 
         if not paths:
@@ -97,10 +101,13 @@ def video_to_pdf_route():
     out_path = OUTPUT_DIR / f"{job_id}_{out_name}"
 
     try:
+        # Default to 2 FPS and 300 frames max to prevent server crashes
+        effective_fps = target_fps if target_fps else 2
+        effective_max = max_frames if max_frames else 300
         pdftool.video_to_pdf(
             str(in_path), str(out_path),
-            quality=quality, max_frames=max_frames,
-            fps=target_fps, max_dimension=max_dim
+            quality=quality, max_frames=effective_max,
+            fps=effective_fps, max_dimension=max_dim
         )
         g.tool_name = "video-to-pdf"
         g.output_name = out_name
