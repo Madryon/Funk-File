@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3840 2160" width="3840" height="2160">
+  <defs>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#06070a"/>
+      <stop offset="40%" stop-color="#0b0e14"/>
+      <stop offset="70%" stop-color="#111520"/>
+      <stop offset="100%" stop-color="#161c28"/>
+    </linearGradient>
+    <linearGradient id="beam1" x1="0" y1="1" x2="0.6" y2="0">
+      <stop offset="0%" stop-color="#f5c518" stop-opacity="0.3"/>
+      <stop offset="60%" stop-color="#f5c518" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#f5c518" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beam2" x1="1" y1="1" x2="0.3" y2="0">
+      <stop offset="0%" stop-color="#f5c518" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#f5c518" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#f5c518" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bldgL1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#121319"/>
+      <stop offset="100%" stop-color="#0a0a0d"/>
+    </linearGradient>
+    <linearGradient id="bldgL2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1c24"/>
+      <stop offset="100%" stop-color="#101117"/>
+    </linearGradient>
+    <pattern id="litWindows" width="40" height="60" patternUnits="userSpaceOnUse">
+      <rect x="6" y="8" width="10" height="14" fill="#f5c518" opacity="0.65" />
+      <rect x="22" y="8" width="10" height="14" fill="#f5c518" opacity="0.35" />
+      <rect x="6" y="34" width="10" height="14" fill="#f5c518" opacity="0.2" />
+      <rect x="22" y="34" width="10" height="14" fill="#f5c518" opacity="0.75" />
+    </pattern>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="3840" height="2160" fill="url(#skyGrad)"/>
+
+  <!-- Searchlight Beams across sky -->
+  <polygon points="800,2160 880,2160 1650,0 1200,0" fill="url(#beam1)" />
+  <polygon points="3000,2160 3090,2160 2100,0 1750,0" fill="url(#beam2)" />
+  <polygon points="1900,2160 1960,2160 2300,0 2050,0" fill="url(#beam1)" opacity="0.7" />
+
+  <!-- Moon / Spotlight Circle in the clouds -->
+  <circle cx="2800" cy="550" r="280" fill="#f5c518" opacity="0.08" filter="blur(40px)" />
+
+  <!-- Distant Layer 1 Skyline (Silhouettes with Gothic Spires) -->
+  <path fill="url(#bldgL1)" d="
+    M0,2160 L0,950 L200,950 L200,750 L210,750 L210,650 L215,650 L215,480 L220,650 L225,750 L235,750 L235,950 L420,950
+    L420,1100 L680,1100 L680,820 L780,820 L780,680 L790,680 L790,520 L800,680 L810,820 L920,820 L920,1150
+    L1150,1150 L1150,700 L1300,700 L1300,550 L1310,550 L1315,380 L1320,550 L1330,700 L1480,700 L1480,1050
+    L1750,1050 L1750,880 L1950,880 L1950,600 L1965,420 L1980,600 L2150,880 L2150,1120
+    L2400,1120 L2400,750 L2550,750 L2565,580 L2580,750 L2750,750 L2750,1020
+    L3020,1020 L3020,650 L3180,650 L3195,450 L3210,650 L3350,650 L3350,1100
+    L3600,1100 L3600,850 L3840,850 L3840,2160 Z
+  "/>
+
+  <!-- Midground Layer 2 (Skyscrapers with glowing windows) -->
+  <g fill="url(#bldgL2)">
+    <rect x="80" y="1100" width="300" height="1060"/>
+    <rect x="440" y="1250" width="280" height="910"/>
+    <rect x="760" y="1000" width="380" height="1160"/>
+    <rect x="1200" y="850" width="360" height="1310"/>
+    <rect x="1620" y="1150" width="320" height="1010"/>
+    <rect x="2000" y="980" width="400" height="1180"/>
+    <rect x="2460" y="1180" width="340" height="980"/>
+    <rect x="2860" y="880" width="380" height="1280"/>
+    <rect x="3300" y="1120" width="360" height="1040"/>
+    <rect x="3700" y="1200" width="140" height="960"/>
+  </g>
+
+  <!-- Glowing windows patterns on buildings -->
+  <g fill="url(#litWindows)">
+    <rect x="90" y="1140" width="280" height="900"/>
+    <rect x="780" y="1040" width="340" height="1000"/>
+    <rect x="1220" y="900" width="320" height="1100"/>
+    <rect x="2020" y="1020" width="360" height="1000"/>
+    <rect x="2880" y="920" width="340" height="1100"/>
+    <rect x="3320" y="1160" width="320" height="900"/>
+  </g>
+
+  <!-- Dense Fog Band at Street Level -->
+  <rect x="0" y="1800" width="3840" height="360" fill="url(#skyGrad)" opacity="0.85"/>
+</svg>
