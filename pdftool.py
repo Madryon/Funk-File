@@ -634,12 +634,21 @@ def lock_pdf(input_path, output_path, user_password="", owner_password="",
 
     # Encrypt
     owner = owner_password if owner_password else user_password
-    writer.encrypt(
-        user_password=user_password,
-        owner_password=owner,
-        use_128bit=True,
-        permissions=permissions
-    )
+    try:
+        writer.encrypt(
+            user_password=user_password,
+            owner_password=owner,
+            use_128bit=True,
+            permissions_flag=permissions
+        )
+    except TypeError:
+        # Fallback for older pypdf versions that use 'permissions'
+        writer.encrypt(
+            user_password=user_password,
+            owner_password=owner,
+            use_128bit=True,
+            permissions=permissions
+        )
 
     with open(output_path, "wb") as f:
         writer.write(f)
