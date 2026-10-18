@@ -11,8 +11,12 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 @login_manager.user_loader
 def load_user(user_id):
     try:
-        return User.query.get(int(user_id))
-    except (TypeError, ValueError):
+        return db.session.get(User, int(user_id))
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         return None
 
 

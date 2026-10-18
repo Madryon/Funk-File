@@ -110,6 +110,8 @@ def video_to_pdf_route():
             download_name=out_name,
             mimetype="application/pdf",
         )
+    except vidtool.VideoToolError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

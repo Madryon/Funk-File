@@ -126,6 +126,14 @@ def not_found(_e):
     return jsonify({"error": "not found"}), 404
 
 
+@app.errorhandler(500)
+def server_error(e):
+    import traceback
+    traceback.print_exc()
+    original_err = getattr(e, "original_exception", e)
+    return jsonify({"error": str(original_err) or "Internal server error"}), 500
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

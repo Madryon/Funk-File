@@ -12,14 +12,20 @@ history_bp = Blueprint("history", __name__, url_prefix="/history")
 def create_history_entry(tool_name: str, output_name: str, output_path: str) -> None:
     if not current_user.is_authenticated:
         return
-    item = FileHistory(
-        user_id=current_user.id,
-        tool_name=tool_name,
-        output_name=output_name,
-        output_path=output_path,
-    )
-    db.session.add(item)
-    db.session.commit()
+    try:
+        item = FileHistory(
+            user_id=current_user.id,
+            tool_name=tool_name,
+            output_name=output_name,
+            output_path=output_path,
+        )
+        db.session.add(item)
+        db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
 
 
 @history_bp.get("/")
