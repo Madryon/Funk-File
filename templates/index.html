@@ -569,7 +569,7 @@ const T = [
  { id:'merge', cat:'PDF Tools', tab:'Merge', name:'Merge PDFs and Images', desc:'Combine multiple PDFs and Images into a single document, in the order you add them.',
    icon:'<rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/>',
    dz:['Drop PDFs or Images here, or click to select','PDF · PNG · JPG · WEBP · BMP · TIFF',1], btn:'Merge into PDF',
-   modes:[{ url:'/merge', out:({ n, sz }) => ['merged.pdf', `${n} files combined · ${fmt(sz)}`] }] },
+   modes:[{ url:'/merge', out:({ b, n, sz }) => [`${b}_merged.pdf`, `${n} files combined · ${fmt(sz)}`] }] },
 
  { id:'compress', cat:'PDF Tools', tab:'Compress', name:'Compress PDF, Images and other files', desc:'Shrink PDFs and Images with smart compression. Lower quality = smaller files.',
    icon:'<path d="M12 3v7M9 7l3 3 3-3M12 21v-7M9 17l3-3 3 3"/>',

@@ -23,18 +23,20 @@ def merge_route():
         inputs.append(str(fp))
     if not inputs:
         return jsonify({"error": "no valid files"}), 400
+    first_name = Path(files[0].filename).stem if files[0].filename else "merged"
+    out_name = f"{first_name}_merged.pdf"
     output_path = OUTPUT_DIR / f"merged_{job_id}.pdf"
     try:
         pdftool.merge_pdfs(inputs, str(output_path))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     g.tool_name = "merge"
-    g.output_name = "merged.pdf"
+    g.output_name = out_name
     g.output_path = str(output_path)
     return send_file(
         str(output_path),
         as_attachment=True,
-        download_name="merged.pdf",
+        download_name=out_name,
         mimetype="application/pdf",
     )
 
