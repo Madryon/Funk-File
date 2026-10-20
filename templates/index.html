@@ -83,7 +83,6 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 /* Background 4K Gotham Container */
 .batman-bg-container{position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:0;transition:opacity .8s ease;background:linear-gradient(180deg,#05060a 0%,#0d0e15 45%,#151824 100%)}
 [data-theme=batman] .batman-bg-container{opacity:1}
-.batman-bg-container picture,.batman-bg-container img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
 .gotham-dark-overlay{position:absolute;inset:0;background-color:rgba(0,0,0,.65)}
 .gotham-watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.08;background:url('/static/batman/bat-logo.jpg') no-repeat center/min(70vw,680px)}
 #gotham-canvas{position:absolute;inset:0;width:100%;height:100%}
@@ -349,12 +348,8 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
 </head>
 <body>
 
-<!-- Gotham 4K Artwork & Background Layer -->
+<!-- Gotham Background Layer -->
 <div class="batman-bg-container" id="batmanBg" aria-hidden="true">
-  <picture>
-    <source srcset="/static/batman/bg-gotham-4k.webp" type="image/webp">
-    <img src="/static/batman/bg-gotham-4k.jpg" alt="" onerror="this.src='/static/batman/bg-gotham-4k.svg'">
-  </picture>
   <div class="gotham-dark-overlay"></div>
   <div class="gotham-watermark"></div>
   <canvas id="gotham-canvas"></canvas>
