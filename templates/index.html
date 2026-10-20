@@ -13,7 +13,6 @@
 <style>
 /* ============ THEMES (only colors change between themes) ============ */
 :root{--ink:#fff;--ink-soft:#F8F9FA;--ink-raised:#EEF1F4;--ink-line:#C9CDD3;--paper:#F1F3F5;--paper-dim:#E5E8EC;--stamp:#BD3A2B;--stamp-deep:#8F2A1F;--brass:#C9A227;--brass-soft:#8A7434;--moss:#6E8C5C;--text:#0D1117;--text-muted:#4B5563;--text-faint:#6B7280;--on-paper:#212529;--sw-bg:rgba(255,255,255,.9);--sw-border:#C9CDD3;--sw-shadow:0 6px 20px rgba(0,0,0,.1);--radius:16px;--radius-sm:9px}
-[data-theme=dark]{--ink:#0F1115;--ink-soft:#181B22;--ink-raised:#20242C;--ink-line:#2D323D;--paper:#23272F;--paper-dim:#1A1D24;--stamp:#E25544;--stamp-deep:#B5392A;--brass:#E0B84A;--brass-soft:#9C8138;--moss:#7BAE6B;--text:#F1F3F5;--text-muted:#B0B6BF;--text-faint:#808892;--on-paper:#0F1115;--sw-bg:rgba(24,27,34,.92);--sw-border:#2D323D;--sw-shadow:0 6px 20px rgba(0,0,0,.4)}
 [data-theme=baddie]{--ink:#0A0014;--ink-soft:rgba(30,5,60,.55);--ink-raised:rgba(50,10,90,.65);--ink-line:rgba(255,46,147,.32);--paper:#160029;--paper-dim:#0F001F;--stamp:#FF2E93;--stamp-deep:#B81F69;--brass:#00F0FF;--brass-soft:#FF2E93;--moss:#B026FF;--text:#fff;--text-muted:#E8DFFF;--text-faint:#C0B0E8;--on-paper:#fff;--sw-bg:rgba(20,0,40,.7);--sw-border:rgba(255,46,147,.4);--sw-shadow:0 6px 24px rgba(255,46,147,.35),0 0 0 1px rgba(0,240,255,.15)}
 [data-theme=batman]{--ink:#0a0a0c;--ink-soft:#14151a;--ink-raised:#1a1c22;--ink-line:#2a2d36;--paper:#181920;--paper-dim:#121318;--stamp:#f5c518;--stamp-deep:#b88f0a;--brass:#f5c518;--brass-soft:#d4a810;--moss:#f5c518;--text:#e8e8ea;--text-muted:#8b8f9a;--text-faint:#676b77;--on-paper:#e8e8ea;--sw-bg:rgba(20,21,26,.88);--sw-border:#2a2d36;--sw-shadow:0 6px 22px rgba(0,0,0,.7);--batman-accent:#f5c518;--batman-danger:#c1121f;--radius:0;--radius-sm:0;color-scheme:dark}
 
@@ -89,23 +88,6 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .gotham-watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.08;background:url('/static/batman/bat-logo.jpg') no-repeat center/min(70vw,680px)}
 #gotham-canvas{position:absolute;inset:0;width:100%;height:100%}
 
-/* Batman Dock at Bottom-Right */
-.batman-dock{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:10px}
-.audio-toggle-btn{width:36px;height:36px;border-radius:9999px;background:#14151a;border:1px solid #2a2d36;color:#8b8f9a;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:all .2s}
-.audio-toggle-btn:hover{border-color:#f5c518;color:#f5c518;transform:scale(1.05)}
-.audio-toggle-btn.unmuted{color:#f5c518;border-color:#f5c518;box-shadow:0 0 12px rgba(245,197,24,.4)}
-
-.batman-launcher-btn{width:56px;height:56px;border-radius:9999px;background:radial-gradient(circle at 35% 35%,#2a2d36 0%,#14151a 70%,#0a0a0c 100%);border:2px solid #2a2d36;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.7);transition:all .25s cubic-bezier(.16,1,.3,1);color:#f5c518}
-.batman-launcher-btn:hover{transform:scale(1.1);border-color:#f5c518;box-shadow:0 0 22px rgba(245,197,24,.6)}
-.batman-launcher-btn.active{border-color:#f5c518;box-shadow:0 0 0 3px rgba(245,197,24,.4),0 0 25px rgba(245,197,24,.75);animation:batman-glow-pulse 2.2s infinite ease-in-out}
-.batman-launcher-btn img{width:32px;height:32px;border-radius:50%;filter:drop-shadow(0 0 4px rgba(245,197,24,.6));transition:transform .2s}
-.batman-launcher-btn:hover img{transform:scale(1.12)}
-
-@media(max-width:640px){
-  .batman-dock{bottom:max(14px,env(safe-area-inset-bottom,14px));right:14px}
-  .batman-launcher-btn{width:48px;height:48px}
-  .batman-launcher-btn img{width:26px;height:26px}
-}
 
 @keyframes batman-glow-pulse{0%,100%{box-shadow:0 0 15px rgba(245,197,24,.4),inset 0 0 8px rgba(245,197,24,.2)}50%{box-shadow:0 0 28px rgba(245,197,24,.75),inset 0 0 14px rgba(245,197,24,.4)}}
 @keyframes batman-spin-loader{0%{transform:rotate(0deg) scale(.9);opacity:.7}50%{transform:rotate(180deg) scale(1.15);opacity:1;filter:drop-shadow(0 0 18px #f5c518)}100%{transform:rotate(360deg) scale(.9);opacity:.7}}
@@ -127,7 +109,6 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 @keyframes batman-glitch{0%{transform:translate(0)}25%{transform:translate(-2px,2px)}50%{transform:translate(2px,-2px)}75%{transform:translate(-2px,-1px)}100%{transform:translate(0)}}
 
 @media(prefers-reduced-motion:reduce){
-  .batman-launcher-btn.active{animation:none!important}
   .transition-overlay{display:none!important}
   #gotham-canvas{display:none!important}
 }
@@ -136,7 +117,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .theme-switcher{position:fixed;top:16px;right:16px;z-index:9999;background:var(--sw-bg);border:1px solid var(--sw-border);border-radius:999px;padding:4px;box-shadow:var(--sw-shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .seg{position:relative;display:flex}
 .slider{position:absolute;inset:0 auto 0 0;width:calc(100%/3);background:var(--stamp);border-radius:999px;transition:transform .35s cubic-bezier(.5,.1,.3,1.1),background .3s;box-shadow:0 2px 8px rgba(0,0,0,.18)}
-[data-theme=dark] .slider{background:#2D323D}
+[data-theme=batman] .slider{background:#14151a;border:1px solid #f5c518;box-shadow:0 0 12px rgba(245,197,24,.5)}
 [data-theme=baddie] .slider{background:linear-gradient(135deg,#FF2E93,#B026FF,#00F0FF);box-shadow:0 0 16px rgba(255,46,147,.6)}
 .theme-switcher button{position:relative;z-index:1;border:0;background:none;color:var(--text-muted);font:600 12px inherit;font-family:inherit;padding:8px 13px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:78px;transition:color .25s}
 .theme-switcher button.active{color:#fff}
@@ -242,7 +223,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .ticket-filename{display:block;font-size:15.5px;color:var(--on-paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px}
 .ticket-meta{display:block;font-size:11.5px;color:var(--brass-soft);margin-top:3px}
 .ticket-download{display:inline-flex;align-items:center;gap:7px;background:var(--on-paper);color:#fff;text-decoration:none;padding:10px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap}
-[data-theme=dark] .ticket-download{color:#0F1115;background:#F1F3F5}
+[data-theme=batman] .ticket-download{color:#0F1115;background:#F1F3F5}
 .ticket-download svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ============ DOC SCANNER ============ */
@@ -252,7 +233,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .pg-info{font-size:12px;color:var(--text-muted)}
 .pg-info b{color:var(--text)}
 .stage-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:repeating-conic-gradient(var(--ink-raised) 0 25%,var(--ink-soft) 0 50%) 0 0/22px 22px;min-height:320px;padding:8px;overflow:hidden}
-[data-theme=dark] .stage-wrap,[data-theme=baddie] .stage-wrap{background:repeating-conic-gradient(rgba(255,255,255,.04) 0 25%,transparent 0 50%) 50%/22px 22px,var(--ink)}
+[data-theme=batman] .stage-wrap,[data-theme=baddie] .stage-wrap{background:repeating-conic-gradient(rgba(255,255,255,.04) 0 25%,transparent 0 50%) 50%/22px 22px,var(--ink)}
 .stage-wrap img{max-width:100%;max-height:520px;display:block;border-radius:6px;box-shadow:0 6px 22px rgba(0,0,0,.18)}
 .stage-wrap.empty{color:var(--text-faint);font-size:13.5px;text-align:center;line-height:1.6}
 .empty-title{font:600 22px Fraunces,serif;color:var(--text-muted);margin-bottom:8px}
@@ -386,20 +367,12 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
   <div id="batSwarmLayer"></div>
 </div>
 
-<!-- Floating Batman Launcher Dock (Bottom-Right) -->
-<div class="batman-dock" id="batmanDock">
-  <!-- 56px Round Floating Batman-Logo Button -->
-  <button type="button" class="batman-launcher-btn" id="batmanLaunchBtn" aria-pressed="false" aria-label="Toggle Batman theme" title="Enter Gotham">
-    <img src="/static/batman/bat-logo.jpg" width="32" height="32" alt="Batman" style="border-radius:50%;">
-  </button>
-</div>
-
 <div class="topline"></div>
 <div class="container">
 
 <div class="theme-switcher"><div class="seg"><div class="slider" id="slider"></div>
   <button data-t="light"><span>☀️</span><span class="lbl">Light</span></button>
-  <button data-t="dark"><span>🌙</span><span class="lbl">Dark</span></button>
+  <button data-t="batman"><span>🦇</span><span class="lbl">Batman</span></button>
   <button data-t="baddie"><span>🔥</span><span class="lbl">Baddie</span></button>
 </div></div>
 
@@ -748,19 +721,24 @@ $('back').onclick = () => { Scan.closeCam(); $('toolView').hidden = true; $('hom
 
 /* ================= THEME SWITCHER ================= */
 (() => {
-  const THEMES = ['light', 'dark', 'baddie'], btns = $$('.theme-switcher button');
+  const THEMES = ['light', 'batman', 'baddie'], btns = $$('.theme-switcher button');
   const apply = t => {
     if (!THEMES.includes(t)) t = 'light';
-    if (window.BatmanTheme && window.BatmanTheme.isActive()) {
-      window.BatmanTheme.turnOff(false);
-    }
     document.documentElement.dataset.theme = t;
     try { localStorage.setItem('pdf-toolbox-theme', t); } catch {}
     $('slider').style.transform = `translateX(${THEMES.indexOf(t) * 100}%)`;
     btns.forEach(b => b.classList.toggle('active', b.dataset.t == t));
+    if (t === 'batman') {
+      if (window.BatmanTheme) {
+        window.BatmanTheme.triggerEntrance();
+        window.BatmanTheme.initCanvas();
+      }
+    }
   };
   btns.forEach(b => b.onclick = () => apply(b.dataset.t));
   let saved; try { saved = localStorage.getItem('pdf-toolbox-theme'); } catch {}
+  /* Migrate old batmanMode pref */
+  try { if (localStorage.getItem('batmanMode') === 'true') { saved = 'batman'; localStorage.removeItem('batmanMode'); localStorage.setItem('pdf-toolbox-theme', 'batman'); } } catch {}
   apply(saved || 'light');
 })();
 
@@ -1032,10 +1010,9 @@ const Auth = (() => {
   return { open, close, logout, toggleHistory, refresh, del, clearAll };
 })();
 
-/* ================= BATMAN GOTHAM SYSTEM (VISUAL ONLY) ================= */
+/* ================= BATMAN GOTHAM VISUALS ================= */
 window.BatmanTheme = (() => {
   const root = document.documentElement;
-  const launchBtn = $('batmanLaunchBtn');
   const overlay = $('batmanTransition');
   const swarmLayer = $('batSwarmLayer');
 
@@ -1126,49 +1103,7 @@ window.BatmanTheme = (() => {
     requestAnimationFrame(render);
   }
 
-  function turnOn() {
-    root.dataset.theme = 'batman';
-    if (launchBtn) {
-      launchBtn.classList.add('active');
-      launchBtn.setAttribute('aria-pressed', 'true');
-      launchBtn.title = 'Leave Gotham';
-    }
-    try { localStorage.setItem('batmanMode', 'true'); } catch {}
-    triggerEntrance();
-    initCanvas();
-  }
-
-  function turnOff(restorePrev = true) {
-    if (launchBtn) {
-      launchBtn.classList.remove('active');
-      launchBtn.setAttribute('aria-pressed', 'false');
-      launchBtn.title = 'Enter Gotham';
-    }
-    try { localStorage.setItem('batmanMode', 'false'); } catch {}
-    if (restorePrev) {
-      let saved; try { saved = localStorage.getItem('pdf-toolbox-theme'); } catch {}
-      const prev = saved || 'light';
-      root.dataset.theme = prev;
-      const THEMES = ['light', 'dark', 'baddie'];
-      if ($('slider')) $('slider').style.transform = `translateX(${THEMES.indexOf(prev) * 100}%)`;
-      $$('.theme-switcher button').forEach(b => b.classList.toggle('active', b.dataset.t == prev));
-    }
-  }
-
-  function toggle() {
-    if (root.dataset.theme === 'batman') turnOff(true);
-    else turnOn();
-  }
-
-  if (launchBtn) launchBtn.onclick = toggle;
-
-  try {
-    if (localStorage.getItem('batmanMode') === 'true') {
-      turnOn();
-    }
-  } catch {}
-
-  return { isActive: () => root.dataset.theme === 'batman', turnOn, turnOff, toggle };
+  return { triggerEntrance, initCanvas };
 })();
 </script>
 </body>
