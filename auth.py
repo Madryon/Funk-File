@@ -5,6 +5,11 @@ from models import User, db
 
 
 login_manager = LoginManager()
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return jsonify({"error": "Login required. Please log in to use this feature."}), 401
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 

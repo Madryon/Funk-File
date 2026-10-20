@@ -137,6 +137,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .tool-name{font-weight:600;font-size:14.5px;margin-bottom:3px}
 .tool-desc{font-size:12px;color:var(--text-faint);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tool-badge{position:absolute;top:10px;right:10px;font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:rgba(201,162,39,.12);color:var(--brass-soft);border:1px solid rgba(201,162,39,.2)}
+.tool-badge.auth-badge{top:auto;bottom:10px;right:10px;background:rgba(226,85,68,.1);color:var(--stamp);border-color:rgba(226,85,68,.25);font-size:8px}
 .back-link{display:inline-flex;align-items:center;gap:6px;background:none;border:0;font-size:12px;font-weight:600;color:var(--text-faint);cursor:pointer;margin-bottom:16px}
 .back-link:hover{color:var(--brass)}
 
@@ -581,7 +582,7 @@ const T = [
        f:[['opacity','Opacity','range',30,'min=5 max=100',100],['position','Position','select','center','center:Center|top-left:Top Left|top-right:Top Right|bottom-left:Bottom Left|bottom-right:Bottom Right'],['scale','Scale','range',30,'min=5 max=100',100]] }
    ].map(m => ({ ...m, url:'/watermark', out:out('_watermarked.pdf', 'Watermark applied') })) },
 
- { id:'lock', cat:'Security', tab:'Lock', name:'Lock / Encrypt PDF', desc:'Password-protect your PDF and set permission restrictions like printing and copying.',
+ { id:'lock', cat:'Security', tab:'Lock', name:'Lock / Encrypt PDF', desc:'Password-protect your PDF and set permission restrictions like printing and copying.', auth:true,
    icon:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
    dz:['Drop a PDF to lock','PDF only',0,'.pdf'], btn:'Lock PDF',
    modes:[{ url:'/lock-pdf', out:out('_locked.pdf', 'Encrypted'),
@@ -589,12 +590,12 @@ const T = [
         ...[['allow_print','Allow printing','true'],['allow_copy','Allow copying','true'],['allow_modify','Allow modifying','false'],['allow_annotate','Allow annotating','false'],['allow_form','Allow form filling','false']]
           .map(([n, l, d]) => [n, l, 'select', d, d == 'true' ? 'true:Yes|false:No' : 'false:No|true:Yes'])] }] },
 
- { id:'unlock', cat:'Security', tab:'Unlock', name:'Unlock / Decrypt PDF', desc:'Remove password protection from an encrypted PDF. Auto-decrypt if no password is known.',
+ { id:'unlock', cat:'Security', tab:'Unlock', name:'Unlock / Decrypt PDF', desc:'Remove password protection from an encrypted PDF. Auto-decrypt if no password is known.', auth:true,
    icon:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4M12 16v2"/>',
    dz:['Drop an encrypted PDF to unlock','PDF only · leave password blank if unknown',0,'.pdf'], btn:'Unlock PDF',
    modes:[{ url:'/unlock-pdf', out:out('_unlocked.pdf', 'Decrypted'), f:[['password','Password (if known)','text','','placeholder="Leave blank to try auto-decrypt"']] }] },
 
- { id:'video', cat:'Video Tools', tab:'Video', name:'Video to Images / PDF', desc:'Extract frames from any video as Images or compile them into a single PDF document.',
+ { id:'video', cat:'Video Tools', tab:'Video', name:'Video to Images / PDF', desc:'Extract frames from any video as Images or compile them into a single PDF document.', auth:true,
    icon:'<rect x="2" y="6" width="16" height="12" rx="2"/><path d="M18 9l4 3-4 3V9z"/>',
    dz:['Drop a video file here','MP4 · AVI · MOV · MKV · WMV · WEBM · FLV · MPEG',0,'video/*,.mkv,.m4v,.mpeg,.mpg,.3gp'], btn:'Process Video',
    note:'<div class="hint-text" style="margin-top:8px;color:var(--stamp);font-weight:600">⚠️ Set FPS between 1 to 60 for best results. File Size should be less then 49 MB .</div>',
@@ -605,7 +606,7 @@ const T = [
        f:[['quality','Frame quality','range',75,'min=10 max=100'],['fps','Target FPS','number','','min=1 max=60 placeholder=auto data-opt'],['max_frames','Max frames','number','','min=1 placeholder=all data-opt'],['max_dimension','Max dimension (px)','number','','min=100 max=4000 placeholder=original data-opt']] }
    ] },
 
- { id:'mp3', cat:'Video Tools', tab:'MP3', name:'Video to MP3(audio only)', desc:'Extract audio from any video file and save it as a high-quality MP3.',
+ { id:'mp3', cat:'Video Tools', tab:'MP3', name:'Video to MP3(audio only)', desc:'Extract audio from any video file and save it as a high-quality MP3.', auth:true,
    icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
    dz:['Drop a video to extract audio','MP4 · AVI · MOV · MKV · WMV · WEBM · FLV · MPEG',0,'video/*,.mkv,.m4v,.mpeg,.mpg,.3gp'], btn:'Extract MP3',
    modes:[{ url:'/video-to-mp3', out:out('.mp3', 'Audio extracted'), f:[['bitrate','Bitrate','select','192k','128k:128 kbps (smaller)|192k:192 kbps (balanced)|320k:320 kbps (best quality)']] }] },
@@ -623,7 +624,7 @@ const cats = [...new Set(T.map(t => t.cat))];
 $('home').innerHTML = cats.map(c => {
   const list = T.filter(t => t.cat == c);
   return `<div class="category"><div class="cat-title">${svg(CAT_ICON[c] || list[0].icon, 'cat-icon')}${c}<span class="cat-count">${list.length}</span></div><div class="tool-grid">${
-    list.map(t => `<button class="tool-card" data-tool="${t.id}"><div class="tool-icon">${svg(t.icon)}</div><div class="tool-info"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>${t.badge ? `<span class="tool-badge">${t.badge}</span>` : ''}</button>`).join('')
+    list.map(t => `<button class="tool-card" data-tool="${t.id}"><div class="tool-icon">${svg(t.icon)}</div><div class="tool-info"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>${t.badge ? `<span class="tool-badge">${t.badge}</span>` : ''}${t.auth ? '<span class="tool-badge auth-badge">🔒 Login</span>' : ''}</button>`).join('')
   }</div></div>`;
 }).join('');
 
@@ -679,6 +680,11 @@ T.filter(t => t.modes).forEach(t => {
   });
 
   btn.onclick = async () => {
+    if (t.auth && !user) {
+      say(st, '🔒 Please log in or register to use this feature.', 'error');
+      Auth.open('login');
+      return;
+    }
     const i = boxes.findIndex(o => o.classList.contains('active')), m = t.modes[i], fd = new FormData(), v = {};
     const zones = $$('.dropzone', p).filter(z => !z.closest('.split-option:not(.active)'));
     for (const z of zones) {                                            // validate + attach files

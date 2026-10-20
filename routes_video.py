@@ -2,6 +2,7 @@ import uuid
 from pathlib import Path
 from werkzeug.utils import secure_filename
 from flask import Blueprint, request, jsonify, g, send_file
+from flask_login import login_required
 from utils import UPLOAD_DIR, OUTPUT_DIR, _save_upload
 import pdftool
 import pdftool_video as vidtool
@@ -34,6 +35,7 @@ def _check_video_file(f):
 
 
 @video_bp.route("/video-to-images", methods=["POST"])
+@login_required
 @limiter.limit("5 per minute")
 def video_to_images_route():
     f = request.files.get("file")
@@ -92,6 +94,7 @@ def video_to_images_route():
 
 # NEW: Video to PDF route
 @video_bp.route("/video-to-pdf", methods=["POST"])
+@login_required
 @limiter.limit("5 per minute")
 def video_to_pdf_route():
     f = request.files.get("file")
@@ -146,6 +149,7 @@ def video_to_pdf_route():
 
 # NEW: Video to MP3 (extract audio from an uploaded video file via ffmpeg)
 @video_bp.route("/video-to-mp3", methods=["POST"])
+@login_required
 @limiter.limit("5 per minute")
 def video_to_mp3_route():
     f = request.files.get("file")

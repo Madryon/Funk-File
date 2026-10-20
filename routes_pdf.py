@@ -1,6 +1,7 @@
 import uuid
 from pathlib import Path
 from flask import Blueprint, request, jsonify, g, send_file
+from flask_login import login_required
 from utils import UPLOAD_DIR, OUTPUT_DIR, _save_upload
 import pdftool
 
@@ -263,6 +264,7 @@ def split_route():
 # NEW: Lock/Encrypt PDF
 @pdf_bp.route("/lock", methods=["POST"])
 @pdf_bp.route("/lock-pdf", methods=["POST"])
+@login_required
 def lock_route():
     f = request.files.get("file")
     if not f or not f.filename:
@@ -329,6 +331,7 @@ def lock_route():
 # NEW: Unlock/Decrypt PDF
 @pdf_bp.route("/unlock", methods=["POST"])
 @pdf_bp.route("/unlock-pdf", methods=["POST"])
+@login_required
 def unlock_route():
     f = request.files.get("file")
     if not f or not f.filename:
