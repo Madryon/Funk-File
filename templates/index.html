@@ -12,10 +12,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <style>
 /* ============ THEMES (only colors change between themes) ============ */
-/* Baddie (Light) — pink/violet glassmorphism */
-:root{--ink:#fff;--ink-soft:rgba(255,255,255,.25);--ink-raised:rgba(255,255,255,.35);--ink-line:rgba(255,255,255,.5);--paper:rgba(255,255,255,.22);--paper-dim:rgba(255,255,255,.12);--stamp:#ff4da6;--stamp-deep:#c9357f;--brass:#a855f7;--brass-soft:#9333ea;--moss:#ff4da6;--text:#3b0a2e;--text-muted:#5c1a42;--text-faint:#7a3058;--on-paper:#3b0a2e;--sw-bg:rgba(255,255,255,.45);--sw-border:rgba(255,255,255,.6);--sw-shadow:0 6px 24px rgba(255,105,180,.18);--radius:18px;--radius-sm:12px;--glass-bg:rgba(255,255,255,.25);--glass-border:1px solid rgba(255,255,255,.5);--glass-shadow:0 8px 32px rgba(255,105,180,.18);--glass-blur:blur(16px) saturate(160%)}
-/* Dark — plain solid surfaces, no glass */
-[data-theme=dark]{--ink:#121212;--ink-soft:#1e1e1e;--ink-raised:#252525;--ink-line:#2a2a2a;--paper:#1e1e1e;--paper-dim:#181818;--stamp:#ff4da6;--stamp-deep:#c9357f;--brass:#a855f7;--brass-soft:#9333ea;--moss:#ff4da6;--text:#e4e4e7;--text-muted:#a1a1aa;--text-faint:#71717a;--on-paper:#e4e4e7;--sw-bg:#1e1e1e;--sw-border:#2a2a2a;--sw-shadow:0 6px 20px rgba(0,0,0,.5);--radius:16px;--radius-sm:10px;--glass-bg:#1e1e1e;--glass-border:1px solid #2a2a2a;--glass-shadow:0 4px 12px rgba(0,0,0,.3);--glass-blur:none;color-scheme:dark}
+:root{--ink:#fff;--ink-soft:#F8F9FA;--ink-raised:#EEF1F4;--ink-line:#C9CDD3;--paper:#F1F3F5;--paper-dim:#E5E8EC;--stamp:#BD3A2B;--stamp-deep:#8F2A1F;--brass:#C9A227;--brass-soft:#8A7434;--moss:#6E8C5C;--text:#0D1117;--text-muted:#4B5563;--text-faint:#6B7280;--on-paper:#212529;--sw-bg:rgba(255,255,255,.9);--sw-border:#C9CDD3;--sw-shadow:0 6px 20px rgba(0,0,0,.1);--radius:16px;--radius-sm:9px}
+[data-theme=baddie]{--ink:#0A0014;--ink-soft:rgba(30,5,60,.55);--ink-raised:rgba(50,10,90,.65);--ink-line:rgba(255,46,147,.32);--paper:#160029;--paper-dim:#0F001F;--stamp:#FF2E93;--stamp-deep:#B81F69;--brass:#00F0FF;--brass-soft:#FF2E93;--moss:#B026FF;--text:#fff;--text-muted:#E8DFFF;--text-faint:#C0B0E8;--on-paper:#fff;--sw-bg:rgba(20,0,40,.7);--sw-border:rgba(255,46,147,.4);--sw-shadow:0 6px 24px rgba(255,46,147,.35),0 0 0 1px rgba(0,240,255,.15)}
+[data-theme=batman]{--ink:#0a0a0c;--ink-soft:#14151a;--ink-raised:#1a1c22;--ink-line:#2a2d36;--paper:#181920;--paper-dim:#121318;--stamp:#f5c518;--stamp-deep:#b88f0a;--brass:#f5c518;--brass-soft:#d4a810;--moss:#f5c518;--text:#e8e8ea;--text-muted:#8b8f9a;--text-faint:#676b77;--on-paper:#e8e8ea;--sw-bg:rgba(20,21,26,.88);--sw-border:#2a2d36;--sw-shadow:0 6px 22px rgba(0,0,0,.7);--batman-accent:#f5c518;--batman-danger:#c1121f;--radius:0;--radius-sm:0;color-scheme:dark}
 
 /* ============ BASE ============ */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -37,53 +36,89 @@ header p{font-size:12.5px;color:var(--text-faint);margin-top:5px;letter-spacing:
 .rule{height:1px;background:linear-gradient(90deg,var(--ink-line),transparent 85%);margin-bottom:28px}
 footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);text-align:center;color:var(--text-faint);font-size:11.5px}
 
-/* ============ BADDIE (LIGHT) — GLASSMORPHISM ============ */
-:root:not([data-theme=dark]) body,[data-theme=light] body{background:linear-gradient(135deg,#ffd6e8 0%,#e9d5ff 50%,#ffe4d6 100%);background-attachment:fixed;color:#3b0a2e;min-height:100vh}
-:root:not([data-theme=dark]) :is(.panel,.tool-card,.history-panel,.ticket,.modal-box,.scanner-stage,.scan-controls,.scan-build-row,.options,.dropzone,.theme-switcher),[data-theme=light] :is(.panel,.tool-card,.history-panel,.ticket,.modal-box,.scanner-stage,.scan-controls,.scan-build-row,.options,.dropzone,.theme-switcher){background:rgba(255,255,255,.25);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border:1px solid rgba(255,255,255,.5);box-shadow:0 8px 32px rgba(255,105,180,.18);border-radius:18px}
-/* Fallback for browsers without backdrop-filter support */
-@supports not ((-webkit-backdrop-filter:blur(16px)) or (backdrop-filter:blur(16px))){:root:not([data-theme=dark]) :is(.panel,.tool-card,.history-panel,.ticket,.modal-box,.scanner-stage,.scan-controls,.scan-build-row,.options,.dropzone,.theme-switcher),[data-theme=light] :is(.panel,.tool-card,.history-panel,.ticket,.modal-box,.scanner-stage,.scan-controls,.scan-build-row,.options,.dropzone,.theme-switcher){background:rgba(255,255,255,.88)}}
-:root:not([data-theme=dark]) header h1,[data-theme=light] header h1{background:linear-gradient(90deg,#ff4da6,#a855f7,#ff4da6) 0 0/220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:rainbow 5s linear infinite;filter:drop-shadow(0 2px 10px rgba(255,77,166,.3))}
-:root:not([data-theme=dark]) :is(input[type=number],input[type=text],input[type=password],select,textarea),[data-theme=light] :is(input[type=number],input[type=text],input[type=password],select,textarea){background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.55);color:#3b0a2e;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-:root:not([data-theme=dark]) :is(input,select,textarea):focus,[data-theme=light] :is(input,select,textarea):focus{outline:none;border-color:#ff4da6;box-shadow:0 0 0 3px rgba(255,77,166,.25)}
-:root:not([data-theme=dark]) .submit-btn,[data-theme=light] .submit-btn{background:linear-gradient(135deg,#ff4da6,#a855f7)!important;color:#fff!important;border:1px solid rgba(255,255,255,.4)!important;border-radius:14px!important;box-shadow:0 4px 18px rgba(255,77,166,.35)}
-:root:not([data-theme=dark]) .submit-btn:hover:not(:disabled),[data-theme=light] .submit-btn:hover:not(:disabled){box-shadow:0 8px 28px rgba(255,77,166,.55),0 0 20px rgba(168,85,247,.35);transform:translateY(-2px)}
-:root:not([data-theme=dark]) :is(.ticket-download,.scan-btn.primary),[data-theme=light] :is(.ticket-download,.scan-btn.primary){background:linear-gradient(135deg,#ff4da6,#a855f7);border:0;color:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(255,77,166,.3)}
-:root:not([data-theme=dark]) .tool-card:hover,[data-theme=light] .tool-card:hover{border-color:rgba(255,77,166,.6);box-shadow:0 10px 36px rgba(255,105,180,.25);transform:translateY(-2px)}
-:root:not([data-theme=dark]) .tool-icon svg,[data-theme=light] .tool-icon svg{stroke:#a855f7}
-:root:not([data-theme=dark]) :is(.tab.active,.split-type-btn.active,.filter-chip.active),[data-theme=light] :is(.tab.active,.split-type-btn.active,.filter-chip.active){background:rgba(255,77,166,.18);border-color:rgba(255,77,166,.5);color:#ff4da6;box-shadow:0 0 16px rgba(255,77,166,.2)}
-:root:not([data-theme=dark]) .topline,[data-theme=light] .topline{height:3px;background:linear-gradient(90deg,#ff4da6,#a855f7,#ff4da6)}
-:root:not([data-theme=dark]) .ticket-ready,[data-theme=light] .ticket-ready{color:#ff4da6;border-color:#ff4da6;box-shadow:0 0 10px rgba(255,77,166,.25)}
-
-/* ============ DARK — PLAIN SOLID SURFACES ============ */
-[data-theme=dark] body{background:#121212!important;color:#e4e4e7!important}
-[data-theme=dark] ::selection{background-color:#ff4da6!important;color:#fff!important}
-[data-theme=dark] :is(.panel,.tool-card,.history-panel,.ticket,.modal-box,.scanner-stage,.scan-controls,.scan-build-row,.options,.dropzone){background:#1e1e1e!important;border:1px solid #2a2a2a!important;box-shadow:0 4px 12px rgba(0,0,0,.35)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border-radius:var(--radius)}
-[data-theme=dark] header h1{color:#e4e4e7!important;-webkit-text-fill-color:#e4e4e7!important;background:none!important;filter:none!important}
-[data-theme=dark] .topline{height:2px;background:linear-gradient(90deg,transparent 5%,#ff4da6 50%,transparent 95%)}
-[data-theme=dark] .tool-card:hover{border-color:#a855f7!important;background:#252525!important;box-shadow:0 4px 20px rgba(168,85,247,.2)!important;transform:translateY(-2px)}
-[data-theme=dark] .tool-icon svg{stroke:#a855f7}
-[data-theme=dark] :is(input[type=number],input[type=text],input[type=password],select,textarea){background:#252525!important;border:1px solid #2a2a2a!important;color:#e4e4e7!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-[data-theme=dark] :is(input,select,textarea):focus{outline:none!important;border-color:#a855f7!important;box-shadow:0 0 8px rgba(168,85,247,.35)!important}
-[data-theme=dark] :is(.tab,.split-type-btn,.filter-chip){background:#252525;border:1px solid #2a2a2a;color:#a1a1aa}
-[data-theme=dark] :is(.tab.active,.split-type-btn.active,.filter-chip.active){background:#2a2a2a;border-color:#a855f7;color:#fff;box-shadow:0 0 10px rgba(168,85,247,.25)}
-[data-theme=dark] .submit-btn{background:linear-gradient(135deg,#ff4da6,#a855f7)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(255,77,166,.3)!important}
-[data-theme=dark] .submit-btn:hover:not(:disabled){box-shadow:0 4px 24px rgba(255,77,166,.5)!important}
-[data-theme=dark] :is(.ticket-download,.scan-btn.primary){background:linear-gradient(135deg,#ff4da6,#a855f7);border:0;color:#fff}
-[data-theme=dark] .ticket-ready{color:#ff4da6;border-color:#ff4da6}
-[data-theme=dark] .stage-wrap{background:repeating-conic-gradient(rgba(255,255,255,.04) 0 25%,transparent 0 50%) 50%/22px 22px,#121212!important}
-[data-theme=dark] .ticket::before,[data-theme=dark] .ticket::after{background:#121212!important}
-
+/* Baddie: moving neon background + glass surfaces + gradient accents */
+[data-theme=baddie] body{background:radial-gradient(circle at 18% 12%,rgba(255,46,147,.35),transparent 50%),radial-gradient(circle at 82% 28%,rgba(0,240,255,.28),transparent 55%),radial-gradient(circle at 50% 92%,rgba(176,38,255,.38),transparent 55%),#0A0014;background-attachment:fixed;animation:shift 14s ease-in-out infinite alternate}
 @keyframes shift{to{background-position:8% 5%,-8% -5%,5% -8%,0 0}}
 @keyframes rainbow{to{background-position:220% 50%}}
 @keyframes rise{from{opacity:0;transform:translateY(5px)}}
 @keyframes spin{to{transform:rotate(360deg)}}
+[data-theme=baddie] :is(.panel,.tool-card,.history-panel,.ticket,.modal-box){background:rgba(20,0,40,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,46,147,.28);box-shadow:0 8px 32px rgba(176,38,255,.18)}
+[data-theme=baddie] :is(.dropzone,.options){background:rgba(20,0,40,.4)}
+[data-theme=baddie] .submit-btn{background:linear-gradient(90deg,#FF2E93,#B026FF,#00F0FF,#FF2E93);background-size:220% 100%;animation:rainbow 5s linear infinite}
+[data-theme=baddie] header h1{background:linear-gradient(90deg,#FF2E93,#B026FF,#00F0FF,#FF2E93) 0 0/220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:rainbow 5s linear infinite;filter:drop-shadow(0 0 12px rgba(255,46,147,.45))}
+[data-theme=baddie] .submit-btn{box-shadow:0 3px 0 var(--stamp-deep),0 0 26px rgba(255,46,147,.45);text-shadow:0 0 8px rgba(0,0,0,.4)}
+[data-theme=baddie] :is(.tab.active,.split-type-btn.active,.filter-chip.active){box-shadow:0 0 22px rgba(255,46,147,.55),inset 0 0 0 1px rgba(0,240,255,.4)}
+[data-theme=baddie] :is(.ticket-download,.scan-btn.primary){background:linear-gradient(135deg,#FF2E93,#B026FF);border:0;box-shadow:0 0 16px rgba(255,46,147,.45)}
+[data-theme=baddie] .tool-card:hover{border-color:rgba(0,240,255,.5);box-shadow:0 0 24px rgba(255,46,147,.35)}
+[data-theme=baddie] .tool-icon svg{stroke:var(--brass)}
+[data-theme=baddie] .ticket-ready{box-shadow:0 0 12px rgba(0,240,255,.4)}
+
+/* ============ BATMAN GOTHAM LOOK & ANIMATIONS ============ */
+[data-theme=batman] body{background:#0a0a0c;color:#e8e8ea}
+[data-theme=batman] ::selection{background-color:#f5c518!important;color:#0a0a0c!important}
+[data-theme=batman]::-webkit-scrollbar{width:9px;height:9px;background-color:#0a0a0c}
+[data-theme=batman]::-webkit-scrollbar-track{background:#0d0e12;border-left:1px solid #1a1c22}
+[data-theme=batman]::-webkit-scrollbar-thumb{background:#2a2d36;border:1px solid #f5c518;border-radius:2px}
+[data-theme=batman]::-webkit-scrollbar-thumb:hover{background:#f5c518;box-shadow:0 0 10px #f5c518}
+[data-theme=batman] .topline{height:2px;background:linear-gradient(90deg,transparent 5%,#f5c518 50%,transparent 95%)}
+[data-theme=batman] :is(h1,h2,h3,.cat-title,.ticket-filename,.panel-head h2){font-family:'Bebas Neue','Oswald',sans-serif!important;letter-spacing:.05em;text-transform:uppercase;color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+[data-theme=batman] header h1{color:#fff!important;text-shadow:0 0 16px rgba(245,197,24,.4)}
+[data-theme=batman] :is(.panel,.tool-card,.history-panel,.ticket,.modal-box,.scanner-stage,.scan-controls,.scan-build-row,.options){background:linear-gradient(145deg,#181920 0%,#121318 100%)!important;border:1px solid #2a2d36!important;border-bottom:2px solid #f5c518!important;border-left:2px solid #f5c518!important;clip-path:polygon(0 8px,8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%);position:relative;box-shadow:0 4px 20px rgba(0,0,0,.6)!important}
+[data-theme=batman] :is(.panel,.tool-card,.ticket,.modal-box)::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:42px;height:4px;background:#f5c518;clip-path:polygon(0 0,100% 0,85% 100%,15% 100%);opacity:.9;z-index:2}
+[data-theme=batman] .tool-card:hover{border-color:#f5c518!important;transform:translateY(-2px);box-shadow:0 0 22px rgba(245,197,24,.25),inset 0 0 15px rgba(245,197,24,.03)!important}
+[data-theme=batman] .tool-icon svg{stroke:#f5c518!important;filter:drop-shadow(0 0 3px rgba(245,197,24,.4))}
+[data-theme=batman] :is(input[type=number],input[type=text],input[type=password],select,textarea){background:#14151a!important;border:1px solid #2a2d36!important;border-bottom:2px solid #f5c518!important;border-left:2px solid #f5c518!important;color:#e8e8ea!important;clip-path:polygon(0 4px,4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%)}
+[data-theme=batman] :is(input,select,textarea):focus{outline:none!important;border-color:#f5c518!important;box-shadow:0 0 12px rgba(245,197,24,.4)!important}
+[data-theme=batman] :is(.tab,.split-type-btn,.filter-chip){background:#14151a;border:1px solid #2a2d36;clip-path:polygon(0 4px,4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%)}
+[data-theme=batman] :is(.tab.active,.split-type-btn.active,.filter-chip.active){background:#1a1c22;border-color:#f5c518;color:#f5c518;box-shadow:0 0 14px rgba(245,197,24,.35),inset 0 0 0 1px #f5c518}
+[data-theme=batman] :is(.tab.active svg,.cat-icon){stroke:#f5c518}
+[data-theme=batman] :is(.submit-btn,.scan-btn.primary,.modal-actions .btn-primary){background:#14151a!important;border:1px solid #f5c518!important;color:#f5c518!important;clip-path:polygon(0 6px,6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%)!important;text-transform:uppercase;letter-spacing:.06em;box-shadow:none!important}
+[data-theme=batman] :is(.submit-btn,.scan-btn.primary,.modal-actions .btn-primary):hover:not(:disabled){background:#f5c518!important;color:#0a0a0c!important;box-shadow:0 0 20px rgba(245,197,24,.55)!important}
+[data-theme=batman] .ticket-ready{color:#f5c518!important;border-color:#f5c518!important;box-shadow:0 0 12px rgba(245,197,24,.4)!important;display:inline-flex;align-items:center;gap:4px}
+[data-theme=batman] .ticket-ready::before{content:'';display:inline-block;width:14px;height:14px;background:url('/static/batman/bat-logo.jpg') no-repeat center/contain;filter:drop-shadow(0 0 3px #f5c518);animation:batman-signal-pulse 1.8s infinite ease-in-out}
+[data-theme=batman] .ticket-download{background:#f5c518!important;color:#0a0a0c!important;font-weight:700;clip-path:polygon(0 4px,4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%);box-shadow:0 0 14px rgba(245,197,24,.4)}
+[data-theme=batman] .ticket-download:hover{box-shadow:0 0 20px rgba(245,197,24,.75)}
+[data-theme=batman] .btn-spinner{border:none!important;width:22px!important;height:22px!important;background:url('/static/batman/bat-logo.jpg') no-repeat center/contain;filter:drop-shadow(0 0 8px #f5c518);animation:batman-spin-loader 1.4s ease-in-out infinite!important}
+
+/* Background 4K Gotham Container */
+.batman-bg-container{position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:0;transition:opacity .8s ease;background:linear-gradient(180deg,#05060a 0%,#0d0e15 45%,#151824 100%)}
+[data-theme=batman] .batman-bg-container{opacity:1}
+.gotham-dark-overlay{position:absolute;inset:0;background-color:rgba(0,0,0,.65)}
+.gotham-watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.08;background:url('/static/batman/bat-logo.jpg') no-repeat center/min(70vw,680px)}
+#gotham-canvas{position:absolute;inset:0;width:100%;height:100%}
+
+
+@keyframes batman-glow-pulse{0%,100%{box-shadow:0 0 15px rgba(245,197,24,.4),inset 0 0 8px rgba(245,197,24,.2)}50%{box-shadow:0 0 28px rgba(245,197,24,.75),inset 0 0 14px rgba(245,197,24,.4)}}
+@keyframes batman-spin-loader{0%{transform:rotate(0deg) scale(.9);opacity:.7}50%{transform:rotate(180deg) scale(1.15);opacity:1;filter:drop-shadow(0 0 18px #f5c518)}100%{transform:rotate(360deg) scale(.9);opacity:.7}}
+@keyframes batman-signal-pulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.2);opacity:1;filter:drop-shadow(0 0 6px #f5c518)}}
+@keyframes batman-flash{0%{opacity:0}15%{opacity:.65}30%{opacity:.1}45%{opacity:.8}100%{opacity:0}}
+@keyframes batman-signal-sweep{0%{transform:translate(-120%,80%) scale(.4) rotate(-25deg);opacity:0}30%{opacity:.95}70%{opacity:.95}100%{transform:translate(120%,-60%) scale(1.5) rotate(15deg);opacity:0}}
+@keyframes batman-flight{0%{transform:translate(var(--startX),var(--startY)) scale(var(--scaleStart)) rotate(var(--rotStart));opacity:0}15%{opacity:.95}85%{opacity:.9}100%{transform:translate(var(--endX),var(--endY)) scale(var(--scaleEnd)) rotate(var(--rotEnd));opacity:0}}
+
+.transition-overlay{position:fixed;inset:0;pointer-events:none;z-index:99998;overflow:hidden;display:none}
+.transition-overlay.active{display:block}
+.flash-layer{position:absolute;inset:0;background:#f5c518;animation:batman-flash .45s ease-out forwards}
+.sweep-layer{position:absolute;top:-30vw;left:-30vw;width:160vw;height:160vh;background:url('/static/batman/bat-logo.jpg') no-repeat center/min(85vw,680px);animation:batman-signal-sweep .82s cubic-bezier(.2,.8,.2,1) forwards}
+
+.batman-toast-container{position:fixed;top:86px;right:24px;z-index:99999;pointer-events:none;display:flex;flex-direction:column;gap:10px}
+.batman-toast{padding:12px 20px;border-radius:8px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,.6);transform:translateY(-20px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1)}
+.batman-toast.show{transform:translateY(0);opacity:1}
+.batman-toast.success{background:#14151a;border:2px solid #f5c518;box-shadow:0 0 25px rgba(245,197,24,.4)}
+.batman-toast.error{background:#1c0709;border:2px solid #c1121f;box-shadow:0 0 25px rgba(193,18,31,.5);animation:batman-glitch 0.4s infinite}
+@keyframes batman-glitch{0%{transform:translate(0)}25%{transform:translate(-2px,2px)}50%{transform:translate(2px,-2px)}75%{transform:translate(-2px,-1px)}100%{transform:translate(0)}}
+
+@media(prefers-reduced-motion:reduce){
+  .transition-overlay{display:none!important}
+  #gotham-canvas{display:none!important}
+}
 
 /* ============ THEME SWITCHER ============ */
 .theme-switcher{position:fixed;top:16px;right:16px;z-index:9999;background:var(--sw-bg);border:1px solid var(--sw-border);border-radius:999px;padding:4px;box-shadow:var(--sw-shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .seg{position:relative;display:flex}
-.slider{position:absolute;inset:0 auto 0 0;width:50%;background:linear-gradient(135deg,#ff4da6,#a855f7);border-radius:999px;transition:transform .35s cubic-bezier(.5,.1,.3,1.1),background .3s;box-shadow:0 2px 8px rgba(255,77,166,.3)}
-[data-theme=dark] .slider{background:#2a2a2a;border:1px solid #3f3f46;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-.theme-switcher button{position:relative;z-index:1;border:0;background:none;color:var(--text-muted);font:600 12px inherit;font-family:inherit;padding:8px 14px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:78px;transition:color .25s}
+.slider{position:absolute;inset:0 auto 0 0;width:calc(100%/3);background:var(--stamp);border-radius:999px;transition:transform .35s cubic-bezier(.5,.1,.3,1.1),background .3s;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+[data-theme=batman] .slider{background:#14151a;border:1px solid #f5c518;box-shadow:0 0 12px rgba(245,197,24,.5)}
+[data-theme=baddie] .slider{background:linear-gradient(135deg,#FF2E93,#B026FF,#00F0FF);box-shadow:0 0 16px rgba(255,46,147,.6)}
+.theme-switcher button{position:relative;z-index:1;border:0;background:none;color:var(--text-muted);font:600 12px inherit;font-family:inherit;padding:8px 13px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:78px;transition:color .25s}
 .theme-switcher button.active{color:#fff}
 
 /* ============ HOME CARDS ============ */
@@ -158,6 +193,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 /* submit button + spinner */
 .submit-btn{background:var(--stamp);color:#fff;border:0;padding:15px 24px;border-radius:10px;font:700 14px 'IBM Plex Sans',sans-serif;letter-spacing:.6px;text-transform:uppercase;cursor:pointer;width:100%;margin-top:20px;box-shadow:0 3px 0 var(--stamp-deep);transition:background .15s,transform .08s}
 .submit-btn:hover:not(:disabled){background:#C7432F}
+[data-theme=baddie] .submit-btn:hover:not(:disabled){background:linear-gradient(90deg,#FF2E93,#B026FF,#00F0FF,#FF2E93);background-size:220% 100%}
 .submit-btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 var(--stamp-deep)}
 .submit-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .btn-spinner{display:none;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;margin:0 auto;animation:spin .7s linear infinite}
@@ -171,19 +207,23 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .alert-error{border-left-color:var(--stamp);color:#BD3A2B}
 .ticket{position:relative;background:var(--paper);border-radius:8px;margin:4px 6px;animation:rise .32s ease}
 .ticket::before,.ticket::after{content:'';position:absolute;width:18px;height:18px;background:var(--ink-soft);border-radius:50%;top:58px;transform:translateY(-50%)}
+[data-theme=baddie] .ticket::before,[data-theme=baddie] .ticket::after{background:rgba(20,0,40,.55)}
 .ticket::before{left:-9px}
 .ticket::after{right:-9px}
 .ticket-top,.ticket-bottom{display:flex;align-items:center;gap:14px;padding:14px 18px;flex-wrap:wrap}
 .ticket-bottom{justify-content:space-between}
 .ticket-label{font-size:10.5px;letter-spacing:1px;color:var(--text-faint);background:rgba(33,37,41,.06);padding:3px 7px;border-radius:4px}
+[data-theme=baddie] .ticket-label{background:rgba(255,46,147,.15);color:#FF8FC8}
 .ticket-no{font-size:12.5px;color:var(--on-paper);font-weight:600;flex:1}
 .ticket-ready{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--moss);border:1.5px solid var(--moss);border-radius:5px;padding:2px 8px;transform:rotate(-4deg)}
+[data-theme=baddie] .ticket-ready{color:#00F0FF;border-color:#00F0FF}
 .ticket-perf{border-top:1.5px dashed var(--paper-dim);margin:0 16px}
+[data-theme=baddie] .ticket-perf{border-color:rgba(255,46,147,.35)}
 .ticket-file{min-width:0}
 .ticket-filename{display:block;font-size:15.5px;color:var(--on-paper);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px}
 .ticket-meta{display:block;font-size:11.5px;color:var(--brass-soft);margin-top:3px}
 .ticket-download{display:inline-flex;align-items:center;gap:7px;background:var(--on-paper);color:#fff;text-decoration:none;padding:10px 16px;border-radius:7px;font-size:13px;font-weight:600;white-space:nowrap}
-[data-theme=dark] .ticket-download{color:#121212;background:#e4e4e7}
+[data-theme=batman] .ticket-download{color:#0F1115;background:#F1F3F5}
 .ticket-download svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ============ DOC SCANNER ============ */
@@ -193,7 +233,7 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 .pg-info{font-size:12px;color:var(--text-muted)}
 .pg-info b{color:var(--text)}
 .stage-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:repeating-conic-gradient(var(--ink-raised) 0 25%,var(--ink-soft) 0 50%) 0 0/22px 22px;min-height:320px;padding:8px;overflow:hidden}
-[data-theme=dark] .stage-wrap{background:repeating-conic-gradient(rgba(255,255,255,.04) 0 25%,transparent 0 50%) 50%/22px 22px,#121212}
+[data-theme=batman] .stage-wrap,[data-theme=baddie] .stage-wrap{background:repeating-conic-gradient(rgba(255,255,255,.04) 0 25%,transparent 0 50%) 50%/22px 22px,var(--ink)}
 .stage-wrap img{max-width:100%;max-height:520px;display:block;border-radius:6px;box-shadow:0 6px 22px rgba(0,0,0,.18)}
 .stage-wrap.empty{color:var(--text-faint);font-size:13.5px;text-align:center;line-height:1.6}
 .empty-title{font:600 22px Fraunces,serif;color:var(--text-muted);margin-bottom:8px}
@@ -269,6 +309,7 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
 .modal-overlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex;animation:rise .2s ease}
 .modal-box{background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+[data-theme=baddie] .modal-box{background:rgba(20,0,40,.85)}
 .modal-box h2{font-size:20px;margin-bottom:6px}
 .modal-sub{font-size:13px;color:var(--text-muted);margin-bottom:18px}
 .modal-box label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin:14px 0 5px;text-transform:uppercase;letter-spacing:.3px}
@@ -308,12 +349,27 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
 </head>
 <body>
 
+<!-- Gotham Background Layer -->
+<div class="batman-bg-container" id="batmanBg" aria-hidden="true">
+  <div class="gotham-dark-overlay"></div>
+  <div class="gotham-watermark"></div>
+  <canvas id="gotham-canvas"></canvas>
+</div>
+
+<!-- ~800ms Entrance Swarm Transition Overlay -->
+<div class="transition-overlay" id="batmanTransition" aria-hidden="true">
+  <div class="flash-layer"></div>
+  <div class="sweep-layer"></div>
+  <div id="batSwarmLayer"></div>
+</div>
+
 <div class="topline"></div>
 <div class="container">
 
 <div class="theme-switcher"><div class="seg"><div class="slider" id="slider"></div>
-  <button data-t="light"><span>💖</span><span class="lbl">Baddie</span></button>
-  <button data-t="dark"><span>🌙</span><span class="lbl">Dark</span></button>
+  <button data-t="light"><span>☀️</span><span class="lbl">Light</span></button>
+  <button data-t="batman"><span>🦇</span><span class="lbl">Batman</span></button>
+  <button data-t="baddie"><span>🔥</span><span class="lbl">Baddie</span></button>
 </div></div>
 
 <header>
@@ -666,23 +722,24 @@ $('back').onclick = () => { Scan.closeCam(); $('toolView').hidden = true; $('hom
 
 /* ================= THEME SWITCHER ================= */
 (() => {
-  const THEMES = ['light', 'dark'], btns = $$('.theme-switcher button');
+  const THEMES = ['light', 'batman', 'baddie'], btns = $$('.theme-switcher button');
   const apply = t => {
     if (!THEMES.includes(t)) t = 'light';
     document.documentElement.dataset.theme = t;
     try { localStorage.setItem('pdf-toolbox-theme', t); } catch {}
     $('slider').style.transform = `translateX(${THEMES.indexOf(t) * 100}%)`;
     btns.forEach(b => b.classList.toggle('active', b.dataset.t == t));
+    if (t === 'batman') {
+      if (window.BatmanTheme) {
+        window.BatmanTheme.triggerEntrance();
+        window.BatmanTheme.initCanvas();
+      }
+    }
   };
   btns.forEach(b => b.onclick = () => apply(b.dataset.t));
   let saved; try { saved = localStorage.getItem('pdf-toolbox-theme'); } catch {}
-  /* Migrate old batman/baddie/batmanMode prefs */
-  try {
-    if (localStorage.getItem('batmanMode') === 'true') { saved = 'dark'; localStorage.removeItem('batmanMode'); }
-    if (saved === 'batman') saved = 'dark';
-    if (saved === 'baddie') saved = 'light';
-    if (saved) localStorage.setItem('pdf-toolbox-theme', saved);
-  } catch {}
+  /* Migrate old batmanMode pref */
+  try { if (localStorage.getItem('batmanMode') === 'true') { saved = 'batman'; localStorage.removeItem('batmanMode'); localStorage.setItem('pdf-toolbox-theme', 'batman'); } } catch {}
   apply(saved || 'light');
 })();
 
@@ -954,6 +1011,101 @@ const Auth = (() => {
   return { open, close, logout, toggleHistory, refresh, del, clearAll };
 })();
 
+/* ================= BATMAN GOTHAM VISUALS ================= */
+window.BatmanTheme = (() => {
+  const root = document.documentElement;
+  const overlay = $('batmanTransition');
+  const swarmLayer = $('batSwarmLayer');
+
+  function triggerEntrance() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !swarmLayer || !overlay) return;
+    swarmLayer.innerHTML = '';
+    for (let i = 0; i < 18; i++) {
+      const bat = document.createElement('div');
+      bat.style.position = 'absolute';
+      bat.style.pointerEvents = 'none';
+      bat.style.setProperty('--startX', `${(i % 3) * 35 - 10}vw`);
+      bat.style.setProperty('--startY', `${105 + (i * 4)}vh`);
+      bat.style.setProperty('--endX', `${(i * 14) % 110 - 5}vw`);
+      bat.style.setProperty('--endY', `${-20 - (i * 8)}vh`);
+      bat.style.setProperty('--scaleStart', 0.35 + (i % 4) * 0.15);
+      bat.style.setProperty('--scaleEnd', 1.1 + (i % 3) * 0.3);
+      bat.style.setProperty('--rotStart', `${(i * 37) % 60 - 30}deg`);
+      bat.style.setProperty('--rotEnd', `${(i * 43) % 90 - 45}deg`);
+      bat.style.animation = `batman-flight ${550 + (i * 20)}ms cubic-bezier(0.22, 1, 0.36, 1) ${i * 35}ms forwards`;
+      bat.innerHTML = `<img src="/static/batman/bat-logo.jpg" width="48" height="28" alt="" style="filter:drop-shadow(0 0 8px #f5c518);">`;
+      swarmLayer.appendChild(bat);
+    }
+    overlay.classList.add('active');
+    setTimeout(() => overlay.classList.remove('active'), 820);
+  }
+
+  let canvasInit = false;
+  function initCanvas() {
+    if (canvasInit) return;
+    canvasInit = true;
+    const canvas = $('gotham-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let w = (canvas.width = window.innerWidth), h = (canvas.height = window.innerHeight);
+    window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+
+    const drops = Array.from({ length: 45 }, () => ({
+      x: Math.random() * w, y: Math.random() * h, len: Math.random() * 18 + 12,
+      speed: Math.random() * 8 + 14, opacity: Math.random() * 0.18 + 0.05
+    }));
+    const fogs = Array.from({ length: 6 }, () => ({
+      x: Math.random() * w, y: h - Math.random() * 380, radius: Math.random() * 140 + 100,
+      speed: (Math.random() * 0.4 + 0.1) * (Math.random() > 0.5 ? 1 : -1), opacity: Math.random() * 0.04 + 0.02
+    }));
+
+    let lastTime = performance.now();
+    const interval = 1000 / 30;
+
+    function render(time) {
+      if (document.hidden || root.dataset.theme !== 'batman') {
+        requestAnimationFrame(render);
+        return;
+      }
+      const delta = time - lastTime;
+      if (delta >= interval) {
+        lastTime = time - (delta % interval);
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = '#f5c518';
+        ctx.lineWidth = 1;
+        for (const d of drops) {
+          ctx.globalAlpha = d.opacity;
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(d.x - 2, d.y + d.len);
+          ctx.stroke();
+          d.y += d.speed; d.x -= 1;
+          if (d.y > h) { d.y = -d.len; d.x = Math.random() * w; }
+        }
+        for (const f of fogs) {
+          ctx.globalAlpha = f.opacity;
+          const g = ctx.createRadialGradient(f.x, f.y, 10, f.x, f.y, f.radius);
+          g.addColorStop(0, '#f5c518');
+          g.addColorStop(1, 'transparent');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+          ctx.fill();
+          f.x += f.speed;
+          if (f.x > w + f.radius) f.x = -f.radius;
+          if (f.x < -f.radius) f.x = w + f.radius;
+        }
+        ctx.globalAlpha = 1;
+      }
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+  }
+
+  return { triggerEntrance, initCanvas };
+})();
 </script>
 </body>
 </html>
