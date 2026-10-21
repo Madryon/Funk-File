@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="/static/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <style>
 /* ============ THEMES (only colors change between themes) ============ */
@@ -325,8 +325,298 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
  .ticket-filename{max-width:160px}.ticket-bottom{flex-direction:column;align-items:flex-start}.ticket-download{width:100%;justify-content:center}}
 @media(max-width:520px){.theme-switcher{top:10px;right:10px;padding:3px}.theme-switcher button{padding:7px 9px;font-size:11px;min-width:38px}.lbl{display:none}}
 </style>
+<!-- ============ GLASSMORPHISM - LIGHT MODE ONLY ============
+     Everything inside this block is scoped to html[data-theme="light"].
+     Existing dark and baddie themes are 100% untouched. -->
+<style id="glass-light">
+/* Ambient Blobs (visible in light mode only) */
+.blob {
+  display: none;
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: .55;
+  z-index: 0;
+  pointer-events: none;
+}
+.b1 { width: 420px; height: 420px; background: #8fa4ff; top: -120px; left: -100px; }
+.b2 { width: 380px; height: 380px; background: #f0a6ff; top: 30%; right: -120px; }
+.b3 { width: 360px; height: 360px; background: #ffb3c9; bottom: -120px; left: 25%; }
+
+@keyframes blob-float-1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, 35px) scale(1.08); } }
+@keyframes blob-float-2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-30px, -25px) scale(1.06); } }
+@keyframes blob-float-3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(25px, -20px) scale(1.05); } }
+
+html[data-theme="light"],
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) {
+  --g-bg: rgba(255, 255, 255, .42);
+  --g-bg-strong: rgba(255, 255, 255, .66);
+  --g-border: rgba(255, 255, 255, .75);
+  --g-shadow: 0 8px 32px rgba(80, 90, 160, .16);
+  --g-text: #1c2340;
+  --g-muted: #5c6486;
+  --g-accent: #5b6cff;
+  --g-accent2: #a855f7;
+
+  /* Harmonized palette variables */
+  --ink: transparent;
+  --ink-soft: rgba(255, 255, 255, .42);
+  --ink-raised: rgba(255, 255, 255, .66);
+  --ink-line: rgba(255, 255, 255, .75);
+  --paper: rgba(255, 255, 255, .42);
+  --paper-dim: rgba(255, 255, 255, .3);
+  --text: #1c2340;
+  --text-muted: #5c6486;
+  --text-faint: #6e7699;
+  --on-paper: #1c2340;
+  --brass: #5b6cff;
+  --brass-soft: #4454e6;
+  --stamp: #5b6cff;
+  --stamp-deep: #4351d6;
+  --sw-bg: rgba(255, 255, 255, .55);
+  --sw-border: rgba(255, 255, 255, .8);
+  --sw-shadow: 0 8px 24px rgba(80, 90, 160, .14);
+}
+
+html[data-theme="light"] body,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) body {
+  font-family: Inter, 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--g-text);
+  background: linear-gradient(135deg, #dfe8ff 0%, #f3e6ff 45%, #ffe4ef 100%);
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+html[data-theme="light"] .blob,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .blob {
+  display: block;
+}
+html[data-theme="light"] .b1 { animation: blob-float-1 18s ease-in-out infinite; }
+html[data-theme="light"] .b2 { animation: blob-float-2 22s ease-in-out infinite; }
+html[data-theme="light"] .b3 { animation: blob-float-3 20s ease-in-out infinite; }
+
+/* Glass surfaces */
+html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb) {
+  background: var(--g-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid var(--g-border);
+  box-shadow: var(--g-shadow), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+/* Card hover */
+html[data-theme="light"] :is(.card, .tool-card):hover,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.card, .tool-card):hover {
+  background: var(--g-bg-strong);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(91, 108, 255, .25), inset 0 1px 0 #fff;
+  border-color: var(--g-border);
+}
+
+/* Icons */
+html[data-theme="light"] :is(.ico, .tool-icon),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.ico, .tool-icon) {
+  background: linear-gradient(135deg, var(--g-accent), var(--g-accent2));
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(91, 108, 255, .4);
+  border: 1px solid rgba(255, 255, 255, .6);
+}
+html[data-theme="light"] .tool-icon svg,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .tool-icon svg {
+  stroke: #fff !important;
+}
+html[data-theme="light"] .cat-icon,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .cat-icon {
+  stroke: var(--g-accent) !important;
+}
+
+/* Tabs */
+html[data-theme="light"] :is(.tab, .split-type-btn, .filter-chip),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.tab, .split-type-btn, .filter-chip) {
+  color: var(--g-muted);
+  border: 1px solid rgba(255, 255, 255, .5);
+  background: rgba(255, 255, 255, .2);
+}
+html[data-theme="light"] :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active) {
+  background: var(--g-bg-strong);
+  color: var(--g-accent);
+  box-shadow: 0 2px 10px rgba(91, 108, 255, .18);
+  border-color: var(--g-border);
+}
+html[data-theme="light"] .tab.active svg,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .tab.active svg {
+  stroke: var(--g-accent) !important;
+}
+
+/* Inputs & selects */
+html[data-theme="light"] :is(input, select, textarea),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(input, select, textarea) {
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, .9);
+  color: var(--g-text);
+  box-shadow: inset 0 1px 3px rgba(80, 90, 160, .1);
+}
+html[data-theme="light"] :is(input, select, textarea):focus,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(input, select, textarea):focus {
+  outline: none;
+  border-color: var(--g-accent);
+  box-shadow: 0 0 0 3px rgba(91, 108, 255, .2);
+}
+
+/* Dropzone */
+html[data-theme="light"] :is(.drop, .dropzone),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.drop, .dropzone) {
+  background: rgba(255, 255, 255, .35);
+  border: 2px dashed rgba(91, 108, 255, .4);
+}
+html[data-theme="light"] :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover) {
+  background: rgba(91, 108, 255, .12);
+  border-color: var(--g-accent);
+}
+html[data-theme="light"] .dropzone svg,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .dropzone svg {
+  stroke: var(--g-accent);
+}
+
+/* Buttons */
+html[data-theme="light"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary) {
+  background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(91, 108, 255, .4) !important;
+  border: none !important;
+}
+html[data-theme="light"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary):hover,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(91, 108, 255, .5) !important;
+}
+html[data-theme="light"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn) {
+  background: var(--g-bg-strong);
+  color: var(--g-text);
+  box-shadow: none;
+  border: 1px solid var(--g-border);
+}
+
+/* Status / Alerts */
+html[data-theme="light"] :is(.status.err, .alert-error, .modal-error),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.status.err, .alert-error, .modal-error) {
+  background: rgba(255, 90, 110, .18);
+  color: #b3203a;
+  border: 1px solid rgba(255, 90, 110, .3);
+}
+html[data-theme="light"] :is(.status.ok, .alert-info),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.status.ok, .alert-info) {
+  background: rgba(40, 190, 130, .18);
+  color: #0d7a52;
+  border: 1px solid rgba(40, 190, 130, .3);
+}
+
+/* Overlays */
+html[data-theme="light"] :is(.overlay, .modal-overlay, .scan-modal-backdrop),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.overlay, .modal-overlay, .scan-modal-backdrop) {
+  background: rgba(120, 130, 200, .25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Muted text */
+html[data-theme="light"] :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta) {
+  color: var(--g-muted);
+}
+
+/* Topline & Rule */
+html[data-theme="light"] .topline,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .topline {
+  background: linear-gradient(90deg, var(--g-accent), var(--g-accent2) 50%, var(--g-accent));
+}
+html[data-theme="light"] .rule,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .rule {
+  background: linear-gradient(90deg, rgba(91, 108, 255, .3), transparent 85%);
+}
+
+/* Theme Switcher */
+html[data-theme="light"] .theme-switcher,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .theme-switcher {
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, .8);
+}
+html[data-theme="light"] .slider,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .slider {
+  background: linear-gradient(135deg, var(--g-accent), var(--g-accent2));
+  box-shadow: 0 4px 14px rgba(91, 108, 255, .35);
+}
+html[data-theme="light"] .theme-switcher button,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .theme-switcher button {
+  color: var(--g-muted);
+}
+html[data-theme="light"] .theme-switcher button.active,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .theme-switcher button.active {
+  color: #fff;
+}
+
+/* Badges */
+html[data-theme="light"] .tool-badge,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .tool-badge {
+  background: rgba(91, 108, 255, .12);
+  color: var(--g-accent);
+  border: 1px solid rgba(91, 108, 255, .25);
+}
+html[data-theme="light"] .tool-badge.auth-badge,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .tool-badge.auth-badge {
+  background: rgba(255, 90, 110, .12);
+  color: #b3203a;
+  border-color: rgba(255, 90, 110, .25);
+}
+html[data-theme="light"] .cat-count,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .cat-count {
+  background: rgba(255, 255, 255, .6);
+  color: var(--g-muted);
+  border: 1px solid var(--g-border);
+}
+
+/* Claim Ticket in Light Mode */
+html[data-theme="light"] .ticket-ready,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .ticket-ready {
+  background: rgba(40, 190, 130, .15);
+  color: #0d7a52;
+  border: 1px solid rgba(40, 190, 130, .3);
+}
+html[data-theme="light"] .ticket-top,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .ticket-top {
+  border-bottom: 1px dashed rgba(91, 108, 255, .3);
+}
+html[data-theme="light"] .ticket-perf,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .ticket-perf {
+  border-top: 1px dashed rgba(91, 108, 255, .3);
+}
+
+/* Container relative for blobs */
+.container { position: relative; z-index: 1; }
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(10px)) {
+  html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher),
+  :root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher) {
+    background: rgba(245, 247, 255, 0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="light"] .blob { animation: none !important; }
+}
+</style>
 </head>
 <body>
+<!-- Ambient Light Mode Blobs -->
+<div class="blob b1" aria-hidden="true"></div>
+<div class="blob b2" aria-hidden="true"></div>
+<div class="blob b3" aria-hidden="true"></div>
 
 <!-- Gotham Background Layer -->
 <div class="batman-bg-container" id="batmanBg" aria-hidden="true">
