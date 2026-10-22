@@ -63,14 +63,15 @@ app.register_blueprint(video_bp)
 app.register_blueprint(scan_bp)
 
 
-# Database initialization on startup
+# Database initialization & safe schema migration on startup
 with app.app_context():
     try:
         db.create_all()
-        # Safe migration for existing SQLite databases (adds missing columns if needed)
-        if db.engine.dialect.name == "sqlite":
-            with db.engine.connect() as conn:
-                from sqlalchemy import text
+        # Safe migration for both PostgreSQL and SQLite databases (adds missing columns to existing tables)
+        with db.engine.connect() as conn:
+            from sqlalchemy import text
+            dialect = db.engine.dialect.name
+            if dialect == "sqlite":
                 res = conn.execute(text("PRAGMA table_info(users)"))
                 cols = {row[1] for row in res.fetchall()}
                 if cols and "email" not in cols:
@@ -82,8 +83,18 @@ with app.app_context():
                 if cols and "is_active" not in cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1"))
                 conn.commit()
+            elif dialect == "postgresql":
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER DEFAULT 0"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE"))
+                conn.execute(text("UPDATE users SET email = LOWER(username) || '@pdf-toolbox.local' WHERE email IS NULL OR email = ''"))
+                conn.execute(text("UPDATE users SET is_active = TRUE WHERE is_active IS NULL"))
+                conn.execute(text("UPDATE users SET login_count = 0 WHERE login_count IS NULL"))
+                conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users (email)"))
+                conn.commit()
     except Exception as e:
-        print(f"[Warning] Failed to initialize database tables: {e}", flush=True)
+        print(f"[Warning] Failed to initialize/migrate database tables: {e}", flush=True)
 
 
 def _cleanup_old(max_age_seconds=3600):

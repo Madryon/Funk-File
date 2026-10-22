@@ -182,10 +182,17 @@ def login_view():
         msg = "Username/email and password are required."
         return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="login", error=msg), 400)
 
-    # Allow login with either username or email
-    user = User.query.filter(
-        (User.username == identifier) | (User.email == identifier.lower())
-    ).first()
+    # Allow login with either username or email (with fallback if schema was partially updated)
+    try:
+        user = User.query.filter(
+            (User.username == identifier) | (User.email == identifier.lower())
+        ).first()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        user = User.query.filter_by(username=identifier).first()
 
     if user is None or not user.check_password(password):
         msg = "Invalid username/email or password."
