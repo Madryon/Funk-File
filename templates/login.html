@@ -421,8 +421,9 @@ html[data-theme="light"] .btn-submit,
 <div class="auth-card">
   {% if mode != 'reset' %}
   <div class="auth-tabs">
-    <a href="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" class="auth-tab-btn {% if mode != 'register' %}active{% endif %}">Sign In</a>
+    <a href="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" class="auth-tab-btn {% if mode != 'register' and mode != 'admin' %}active{% endif %}">Sign In</a>
     <a href="/register{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" class="auth-tab-btn {% if mode == 'register' %}active{% endif %}">Create Account</a>
+    <a href="/admin/login" class="auth-tab-btn {% if mode == 'admin' %}active{% endif %}">🛡️ Admin</a>
   </div>
   {% endif %}
 
@@ -500,7 +501,11 @@ html[data-theme="light"] .btn-submit,
   {% endif %}
 </div>
 
-<a href="/" class="foot-link">← Back to Funk Files</a>
+<div style="display:flex;gap:16px;justify-content:center;margin-top:16px;font-size:13px;">
+  <a href="/" class="foot-link">← Back to Funk Files</a>
+  <span style="color:var(--text-faint)">·</span>
+  <a href="/admin/login" class="foot-link" style="color:var(--brass);font-weight:600">🛡️ Admin Login</a>
+</div>
 
 <script>
 // Theme switcher sync with index.html

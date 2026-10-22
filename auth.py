@@ -1,4 +1,6 @@
+import hmac
 import re
+import time
 from datetime import datetime
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask import (
@@ -9,6 +11,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -269,3 +272,20 @@ def reset_password():
         return redirect(url_for("auth.login_view"))
 
     return render_template("login.html", mode="reset", token=token, username=user.username)
+
+
+# ================= ADMIN LOGIN WEB API =================
+
+@auth_bp.route("/auth/admin-login", methods=["POST"])
+@auth_bp.route("/admin-login", methods=["POST"])
+def auth_admin_login():
+    from admin import get_admin_password
+    admin_pass = get_admin_password()
+    payload = request.get_json(silent=True) if request.is_json else request.form
+    password = (payload.get("password") or "").strip()
+    if not password or not hmac.compare_digest(password.encode("utf-8"), admin_pass.encode("utf-8")):
+        return jsonify({"error": "Invalid admin password."}), 401
+    session["admin_authenticated"] = True
+    session["admin_login_time"] = time.time()
+    return jsonify({"ok": True, "redirect": "/admin"})
+

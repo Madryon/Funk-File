@@ -683,20 +683,25 @@ html[data-theme="light"] .ticket-perf,
 </div>
 <div class="rule"></div>
 
-<!-- Login / register modal -->
+<!-- Login / register / admin modal -->
 <div class="modal-overlay" id="authModal"><div class="modal-box">
   <div class="auth-tabs" id="authTabs">
     <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="Auth.setMode('register')">Register</button>
     <button type="button" class="auth-tab-btn" id="authTabLogin" onclick="Auth.setMode('login')">Log In</button>
+    <button type="button" class="auth-tab-btn" id="authTabAdmin" onclick="Auth.setMode('admin')">🛡️ Admin</button>
   </div>
   <h2 id="authTitle"></h2><p class="modal-sub" id="authSub"></p>
   <form id="authForm" autocomplete="off">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label for="authUser">Username</label><input type="text" id="authUser" placeholder="Enter username" required>
+    <div id="authUserGroup">
+      <label for="authUser">Username</label><input type="text" id="authUser" placeholder="Enter username">
+    </div>
     <div id="authEmailGroup" style="display:none">
       <label for="authEmail">Email</label><input type="email" id="authEmail" placeholder="name@example.com">
     </div>
-    <label for="authPass">Password</label><input type="password" id="authPass" placeholder="Enter password" required>
+    <div id="authPassGroup">
+      <label for="authPass" id="authPassLabel">Password</label><input type="password" id="authPass" placeholder="Enter password" required>
+    </div>
     <div class="modal-error" id="authError"></div>
     <div class="modal-actions"><button type="submit" class="btn-primary" id="authSubmit"></button><button type="button" onclick="Auth.close()">Cancel</button></div>
   </form>
@@ -953,8 +958,8 @@ const Auth = (() => {
   function renderBar() {
     $('authNote').hidden = !!currentUser;
     $('authBar').innerHTML = currentUser
-      ? `<span class="auth-user">Welcome, <strong>${esc(currentUser.username)}</strong></span><button onclick="Auth.toggleHistory()">📁 History</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
-      : `<button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button>`;
+      ? `<span class="auth-user">Welcome, <strong>${esc(currentUser.username)}</strong></span><button onclick="Auth.toggleHistory()">📁 History</button><button onclick="Auth.open('admin')" style="background:rgba(91,108,255,.12);border-color:var(--brass);font-weight:600">🛡️ Admin</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
+      : `<button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button><button onclick="Auth.open('admin')" class="auth-btn-admin" style="background:linear-gradient(135deg,rgba(91,108,255,.18),rgba(168,85,247,.18));border:1px solid var(--brass);color:var(--text);font-weight:600">🛡️ Admin Login</button>`;
 
     // Update badges on tool cards
     $$('.tool-badge.auth-badge').forEach(b => {
@@ -970,14 +975,30 @@ const Auth = (() => {
 
   function setMode(m) {
     mode = m;
-    const reg = m === 'register';
     err.textContent = '';
+    const reg = m === 'register';
+    const adm = m === 'admin';
+
     if ($('authEmailGroup')) $('authEmailGroup').style.display = reg ? 'block' : 'none';
-    const tabReg = $('authTabRegister'), tabLog = $('authTabLogin');
-    if (tabReg && tabLog) {
+    if ($('authUserGroup')) $('authUserGroup').style.display = adm ? 'none' : 'block';
+    if ($('authUser')) $('authUser').required = !adm;
+
+    const tabReg = $('authTabRegister'), tabLog = $('authTabLogin'), tabAdm = $('authTabAdmin');
+    if (tabReg && tabLog && tabAdm) {
       tabReg.classList.toggle('active', reg);
-      tabLog.classList.toggle('active', !reg);
+      tabLog.classList.toggle('active', !reg && !adm);
+      tabAdm.classList.toggle('active', adm);
     }
+
+    if (adm) {
+      $('authTitle').textContent = '🛡️ Administrator Access';
+      $('authSub').textContent = 'Enter the master password to access the administration dashboard.';
+      $('authSubmit').textContent = 'Authenticate & Enter';
+      $('authToggle').innerHTML = `Switch to <a onclick="Auth.setMode('login')">Standard Sign In</a>`;
+      setTimeout(() => $('authPass') && $('authPass').focus(), 100);
+      return;
+    }
+
     if (pendingTool) {
       $('authTitle').textContent = reg ? '🔒 Create Account to Unlock' : '🔒 Log In to Unlock';
       $('authSub').innerHTML = reg
@@ -985,15 +1006,15 @@ const Auth = (() => {
         : `Log in to use <strong>${esc(pendingTool.name)}</strong>. You will be taken straight to it!`;
       $('authSubmit').textContent = reg ? `Register & Open ${pendingTool.tab || pendingTool.name}` : `Log In & Open ${pendingTool.tab || pendingTool.name}`;
       $('authToggle').innerHTML = reg
-        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a>`
-        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a>`;
+        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a> | <a onclick="Auth.setMode('admin')">Admin</a>`
+        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a> | <a onclick="Auth.setMode('admin')">Admin</a>`;
     } else {
       $('authTitle').textContent = reg ? 'Create Account' : 'Log In';
       $('authSub').textContent = reg ? 'Sign up to track your processed files' : 'Sign in to track your file history';
       $('authSubmit').textContent = reg ? 'Register' : 'Log In';
       $('authToggle').innerHTML = reg
-        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a>`
-        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a>`;
+        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a> | <a onclick="Auth.setMode('admin')">Admin</a>`
+        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a> | <a onclick="Auth.setMode('admin')">Admin</a>`;
     }
   }
 
@@ -1003,7 +1024,13 @@ const Auth = (() => {
     $('authForm').reset();
     setMode(m || 'login');
     $('authModal').classList.add('open');
-    setTimeout(() => $('authUser').focus(), 100);
+    setTimeout(() => {
+      if (m === 'admin') {
+        $('authPass') && $('authPass').focus();
+      } else {
+        $('authUser') && $('authUser').focus();
+      }
+    }, 100);
   }
 
   function requireAuth(toolId, preferredMode) {
@@ -1025,8 +1052,41 @@ const Auth = (() => {
 
   $('authForm').onsubmit = async e => {
     e.preventDefault();
-    const username = $('authUser').value.trim(), password = $('authPass').value;
-    if (!username || !password) return err.textContent = 'Username and password are required';
+    err.textContent = '';
+    const password = $('authPass').value;
+    if (!password) return err.textContent = 'Password is required';
+
+    if (mode === 'admin') {
+      try {
+        let res = await api('/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        if (res.status === 404 || !res.ok) {
+          const res2 = await api('/auth/admin-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+          });
+          if (res2.ok) {
+            const d2 = await res2.json();
+            window.location.href = d2.redirect || '/admin';
+            return;
+          }
+          const d2 = await res2.json().catch(() => ({}));
+          return err.textContent = d2.error || 'Invalid admin password.';
+        }
+        const d = await res.json();
+        window.location.href = d.redirect || '/admin';
+        return;
+      } catch (ex) {
+        return err.textContent = 'Failed to connect. Please try again.';
+      }
+    }
+
+    const username = $('authUser').value.trim();
+    if (!username) return err.textContent = 'Username is required';
     const email = $('authEmail') ? $('authEmail').value.trim() : '';
     try {
       const body = { username, password };
@@ -1049,7 +1109,7 @@ const Auth = (() => {
         $('sub').textContent = SUB_TOOL;
         scrollTo({ top: 0, behavior: 'smooth' });
         const st = $(target.id + 'Status');
-        if (st) say(st, `? Welcome, ${esc(currentUser.username)}! ${esc(target.name)} is unlocked.`, 'info');
+        if (st) say(st, `✓ Welcome, ${esc(currentUser.username)}! ${esc(target.name)} is unlocked.`, 'info');
       }
     } catch {
       err.textContent = 'Network error. Please try again.';
