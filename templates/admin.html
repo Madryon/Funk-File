@@ -87,6 +87,13 @@ body {
   margin-bottom: 28px;
   flex-wrap: wrap;
   gap: 16px;
+  padding-left: 230px;
+}
+@media (max-width: 768px) {
+  .topbar {
+    padding-left: 0;
+    padding-top: 50px;
+  }
 }
 .brand-title {
   display: flex;
@@ -404,7 +411,7 @@ tr:hover td { background: rgba(0,0,0,.02); }
 .theme-switcher {
   position: fixed;
   top: 16px;
-  right: 16px;
+  left: 16px;
   z-index: 1000;
   background: rgba(255,255,255,.55);
   border: 1px solid rgba(255,255,255,.8);
