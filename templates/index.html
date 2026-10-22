@@ -299,6 +299,26 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
 .modal-error{color:var(--stamp);font-size:12.5px;margin-top:8px;min-height:18px}
 .modal-toggle{text-align:center;margin-top:14px;font-size:13px;color:var(--text-muted)}
 .modal-toggle a{color:var(--brass);cursor:pointer;font-weight:600}
+
+/* Auth tabs in modal */
+.auth-tabs{display:flex;gap:6px;background:var(--ink);border:1px solid var(--ink-line);border-radius:10px;padding:4px;margin-bottom:16px}
+.auth-tab-btn{flex:1;border:0;background:none;color:var(--text-muted);font-weight:600;font-size:13px;padding:8px 12px;border-radius:7px;cursor:pointer;transition:.2s}
+.auth-tab-btn.active{background:var(--ink-raised);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+[data-theme=batman] .auth-tab-btn.active{background:#2a2d36;color:#f5c518;border:1px solid #f5c518}
+[data-theme=baddie] .auth-tab-btn.active{background:rgba(255,46,147,.25);color:#fff;border:1px solid rgba(255,46,147,.4)}
+html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);color:var(--g-accent);box-shadow:0 2px 8px rgba(91,108,255,.2);border:1px solid var(--g-border)}
+
+/* In-tool Auth Gate Banner */
+.auth-gate-banner{display:flex;align-items:center;gap:14px;background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.25);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:18px}
+.auth-gate-icon{font-size:24px;flex-shrink:0}
+.auth-gate-content{flex:1;min-width:0}
+.auth-gate-content strong{display:block;font-size:14px;margin-bottom:3px;color:var(--text)}
+.auth-gate-content p{font-size:12px;color:var(--text-muted);line-height:1.4;margin:0}
+.auth-gate-btn{flex-shrink:0;padding:8px 16px!important;font-size:12.5px!important}
+.tool-badge.auth-badge.unlocked{background:rgba(40,190,130,.15);color:#0d7a52;border-color:rgba(40,190,130,.3)}
+[data-theme=batman] .tool-badge.auth-badge.unlocked{background:rgba(245,197,24,.15);color:#f5c518;border-color:rgba(245,197,24,.3)}
+[data-theme=baddie] .tool-badge.auth-badge.unlocked{background:rgba(0,240,255,.15);color:#00f0ff;border-color:rgba(0,240,255,.3)}
+
 .history-panel{display:none;background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:var(--radius);padding:24px 22px;margin-top:18px}
 .history-panel.open{display:block}
 .history-panel h3{font-size:17px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
@@ -581,6 +601,16 @@ html[data-theme="light"] .cat-count,
   border: 1px solid var(--g-border);
 }
 
+
+html[data-theme="light"] .auth-gate-banner,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .auth-gate-banner {
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid var(--g-border);
+  box-shadow: var(--g-shadow);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
 /* Claim Ticket in Light Mode */
 html[data-theme="light"] .ticket-ready,
 :root:not([data-theme="batman"]):not([data-theme="baddie"]) .ticket-ready {
@@ -654,6 +684,10 @@ html[data-theme="light"] .ticket-perf,
 
 <!-- Login / register modal -->
 <div class="modal-overlay" id="authModal"><div class="modal-box">
+  <div class="auth-tabs" id="authTabs">
+    <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="Auth.setMode('register')">Register</button>
+    <button type="button" class="auth-tab-btn" id="authTabLogin" onclick="Auth.setMode('login')">Log In</button>
+  </div>
   <h2 id="authTitle"></h2><p class="modal-sub" id="authSub"></p>
   <form id="authForm" autocomplete="off">
     <label for="authUser">Username</label><input type="text" id="authUser" placeholder="Enter username" required>
@@ -879,13 +913,196 @@ const TAB_ORDER = 'scanner merge compress convert img2pdf pdf2word split video m
 const CAT_ICON = { Scanner:'<path d="M3 7h4l2-2h6l2 2h4v12H3z"/><circle cx="12" cy="13" r="4"/>', 'PDF Tools':'<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM14 3v5h5"/>' };
 const svg = (p, c = '') => `<svg class="${c}" viewBox="0 0 24 24">${p}</svg>`;
 
+/* ================= LOGIN + FILE HISTORY ================= */
+let currentUser = null, authReady = false, pendingTool = null;
+const Auth = (() => {
+  let mode = 'register', historyOpen = false;
+  const err = $('authError');
+  const api = (url, opt) => fetch(url, opt);
+
+  function isLoggedIn() {
+    return !!currentUser;
+  }
+
+  function getUser() {
+    return currentUser;
+  }
+
+  function renderBar() {
+    $('authNote').hidden = !!currentUser;
+    $('authBar').innerHTML = currentUser
+      ? `<span class="auth-user">Welcome, <strong>${esc(currentUser.username)}</strong></span><button onclick="Auth.toggleHistory()">📁 History</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
+      : `<button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button>`;
+
+    // Update badges on tool cards
+    $$('.tool-badge.auth-badge').forEach(b => {
+      b.textContent = currentUser ? '✓ Unlocked' : '🔒 Register';
+      b.classList.toggle('unlocked', !!currentUser);
+    });
+
+    // Update in-tool gate banners
+    $$('.auth-gate-banner').forEach(g => {
+      g.style.display = currentUser ? 'none' : 'flex';
+    });
+  }
+
+  function setMode(m) {
+    mode = m;
+    const reg = m === 'register';
+    err.textContent = '';
+    const tabReg = $('authTabRegister'), tabLog = $('authTabLogin');
+    if (tabReg && tabLog) {
+      tabReg.classList.toggle('active', reg);
+      tabLog.classList.toggle('active', !reg);
+    }
+    if (pendingTool) {
+      $('authTitle').textContent = reg ? '🔒 Create Account to Unlock' : '🔒 Log In to Unlock';
+      $('authSub').innerHTML = reg
+        ? `Register a free account to use <strong>${esc(pendingTool.name)}</strong>. You will be taken straight to it!`
+        : `Log in to use <strong>${esc(pendingTool.name)}</strong>. You will be taken straight to it!`;
+      $('authSubmit').textContent = reg ? `Register & Open ${pendingTool.tab || pendingTool.name}` : `Log In & Open ${pendingTool.tab || pendingTool.name}`;
+      $('authToggle').innerHTML = reg
+        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a>`
+        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a>`;
+    } else {
+      $('authTitle').textContent = reg ? 'Create Account' : 'Log In';
+      $('authSub').textContent = reg ? 'Sign up to track your processed files' : 'Sign in to track your file history';
+      $('authSubmit').textContent = reg ? 'Register' : 'Log In';
+      $('authToggle').innerHTML = reg
+        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a>`
+        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a>`;
+    }
+  }
+
+  function open(m) {
+    pendingTool = null;
+    err.textContent = '';
+    $('authForm').reset();
+    setMode(m || 'login');
+    $('authModal').classList.add('open');
+    setTimeout(() => $('authUser').focus(), 100);
+  }
+
+  function requireAuth(toolId, preferredMode) {
+    const t = T.find(x => x.id === toolId);
+    if (!t) return;
+    pendingTool = t;
+    err.textContent = '';
+    $('authForm').reset();
+    setMode(preferredMode || 'register');
+    $('authModal').classList.add('open');
+    setTimeout(() => $('authUser').focus(), 100);
+  }
+
+  const close = () => {
+    $('authModal').classList.remove('open');
+    err.textContent = '';
+    pendingTool = null;
+  };
+
+  $('authForm').onsubmit = async e => {
+    e.preventDefault();
+    const username = $('authUser').value.trim(), password = $('authPass').value;
+    if (!username || !password) return err.textContent = 'Username and password are required';
+    try {
+      const res = await api(mode === 'register' ? '/auth/register' : '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const d = await res.json();
+      if (!res.ok) return err.textContent = d.error || 'Something went wrong';
+      currentUser = { id: d.id, username: d.username };
+      const target = pendingTool;
+      close();
+      renderBar();
+      if (target) {
+        show(target.id);
+        $('home').hidden = true;
+        $('toolView').hidden = false;
+        $('sub').textContent = SUB_TOOL;
+        scrollTo({ top: 0, behavior: 'smooth' });
+        const st = $(target.id + 'Status');
+        if (st) say(st, `? Welcome, ${esc(currentUser.username)}! ${esc(target.name)} is unlocked.`, 'info');
+      }
+    } catch {
+      err.textContent = 'Network error. Please try again.';
+    }
+  };
+
+  $('authModal').onclick = e => { if (e.target === $('authModal')) close(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  async function logout() {
+    try { await api('/auth/logout', { method: 'POST' }); } catch {}
+    currentUser = null;
+    historyOpen = false;
+    $('historyPanel').classList.remove('open');
+    renderBar();
+    const activePanel = $('.panel.active');
+    if (activePanel) {
+      const t = T.find(x => x.id === activePanel.id);
+      if (t && t.auth) {
+        $('back').click();
+      }
+    }
+  }
+
+  function toggleHistory() {
+    historyOpen = !historyOpen;
+    $('historyPanel').classList.toggle('open', historyOpen);
+    if (historyOpen) refresh();
+  }
+
+  async function refresh() {
+    if (!currentUser) return;
+    const list = $('historyList'), empty = t => { list.innerHTML = `<li class="history-empty">${t}</li>`; $('historyActions').hidden = true; };
+    empty('Loading?');
+    try {
+      const res = await api('/history/');
+      if (res.status == 401) { $('historyCount').textContent = 0; return empty('Please log in to view history.'); }
+      const data = await res.json();
+      $('historyCount').textContent = data.length;
+      if (!data.length) return empty('No files yet. Use a tool to see your history.');
+      $('historyActions').hidden = false;
+      list.innerHTML = data.map(h => {
+        const d = new Date(h.created_at);
+        return `<li><span class="h-tool">${esc(h.tool_name)}</span><span class="h-name" title="${esc(h.output_name)}">${esc(h.output_name)}</span><span class="h-date">${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span><button class="h-delete" onclick="Auth.del(${h.id})" title="Delete">?</button></li>`;
+      }).join('');
+    } catch { empty('Failed to load history.'); }
+  }
+
+  async function del(id) {
+    try {
+      const res = await api('/history/' + id, { method: 'DELETE' });
+      res.ok ? refresh() : alert((await res.json()).error || 'Failed to delete');
+    } catch { alert('Network error'); }
+  }
+
+  async function clearAll() {
+    if (!confirm('Delete ALL history entries and their files?')) return;
+    try { if ((await api('/history/', { method: 'DELETE' })).ok) refresh(); } catch { alert('Network error'); }
+  }
+
+  const authInitPromise = api('/auth/me')
+    .then(r => r.json())
+    .then(d => { if (d && d.authenticated) currentUser = { id: d.id, username: d.username }; })
+    .catch(() => {})
+    .finally(() => {
+      authReady = true;
+      renderBar();
+    });
+
+  return { open, requireAuth, setMode, close, logout, toggleHistory, refresh, del, clearAll, isLoggedIn, getUser, authInitPromise };
+})();
+
 /* ================= BUILD PAGE FROM T ================= */
 // Home cards, grouped by category
 const cats = [...new Set(T.map(t => t.cat))];
 $('home').innerHTML = cats.map(c => {
   const list = T.filter(t => t.cat == c);
   return `<div class="category"><div class="cat-title">${svg(CAT_ICON[c] || list[0].icon, 'cat-icon')}${c}<span class="cat-count">${list.length}</span></div><div class="tool-grid">${
-    list.map(t => `<button class="tool-card" data-tool="${t.id}"><div class="tool-icon">${svg(t.icon)}</div><div class="tool-info"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>${t.badge ? `<span class="tool-badge">${t.badge}</span>` : ''}${t.auth ? '<span class="tool-badge auth-badge">🔒 Login</span>' : ''}</button>`).join('')
+    list.map(t => `<button class="tool-card" data-tool="${t.id}"><div class="tool-icon">${svg(t.icon)}</div><div class="tool-info"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>${t.badge ? `<span class="tool-badge">${t.badge}</span>` : ''}${t.auth ? `<span class="tool-badge auth-badge" data-auth-tool="${t.id}">🔒 Register</span>` : ''}</button>`).join('')
   }</div></div>`;
 }).join('');
 
@@ -907,6 +1124,7 @@ T.filter(t => t.modes).forEach(t => {
   const M = t.modes;
   $('panels').insertAdjacentHTML('beforeend', `<div class="panel" id="${t.id}">
     <div class="panel-head"><h2>${t.name}</h2><p>${t.desc}</p></div>
+    ${t.auth ? `<div class="auth-gate-banner" id="authGate_${t.id}" style="${Auth.isLoggedIn() ? 'display:none' : 'display:flex'}"><div class="auth-gate-icon">🔒</div><div class="auth-gate-content"><strong>Account Required</strong><p>This feature (<strong>${esc(t.name)}</strong>) is available for registered users only. Please register or log in to use it.</p></div><button type="button" class="btn-primary auth-gate-btn" onclick="Auth.requireAuth('${t.id}', 'register')">Register / Log In</button></div>` : ''}
     ${dzHTML(t.icon, t.dz, t.dz[2] ? 'files' : 'file')}${t.note || ''}
     ${M.length > 1 ? `<div class="split-type-toggle">${M.map((m, i) => `<button class="split-type-btn${i ? '' : ' active'}">${m.l}</button>`).join('')}</div>` : ''}
     ${M.map((m, i) => `<div class="split-option${i ? '' : ' active'}">${m.dz ? dzHTML(t.icon, m.dz, 'image') : ''}${m.f ? `<div class="options">${m.f.map(field).join('')}</div>` : ''}${m.hint ? `<div class="hint-text">${m.hint}</div>` : ''}</div>`).join('')}
@@ -941,9 +1159,9 @@ T.filter(t => t.modes).forEach(t => {
   });
 
   btn.onclick = async () => {
-    if (t.auth && !user) {
-      say(st, '🔒 Please log in or register to use this feature.', 'error');
-      Auth.open('login');
+    if (t.auth && !Auth.isLoggedIn()) {
+      say(st, '🔒 Please register or log in to use this feature.', 'error');
+      Auth.requireAuth(t.id, 'register');
       return;
     }
     const i = boxes.findIndex(o => o.classList.contains('active')), m = t.modes[i], fd = new FormData(), v = {};
@@ -974,11 +1192,44 @@ T.filter(t => t.modes).forEach(t => {
 /* ================= NAVIGATION (home ⇄ tool view) ================= */
 const SUB_HOME = 'ALL YOUR TOOLS IN ONE PLACE · CLICK ANY CARD TO START', SUB_TOOL = 'DROP YOUR FILES · WE PROCESS THEM · YOU CLAIM THE RESULT';
 $('sub').textContent = SUB_HOME;
-const show = id => { $$('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab == id)); $$('.panel').forEach(x => x.classList.toggle('active', x.id == id)); };
-$$('.tool-card').forEach(c => c.onclick = () => {
-  show(c.dataset.tool); $('home').hidden = true; $('toolView').hidden = false; $('sub').textContent = SUB_TOOL; scrollTo({ top: 0, behavior: 'smooth' });
+const show = id => {
+  const tool = T.find(x => x.id === id);
+  if (tool && tool.auth && authReady && !Auth.isLoggedIn()) {
+    Auth.requireAuth(id, 'register');
+    return;
+  }
+  $$('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab == id));
+  $$('.panel').forEach(x => x.classList.toggle('active', x.id == id));
+};
+$$('.tool-card').forEach(c => c.onclick = async () => {
+  const id = c.dataset.tool;
+  const t = T.find(x => x.id === id);
+  if (t && t.auth) {
+    if (!authReady) await Auth.authInitPromise;
+    if (!Auth.isLoggedIn()) {
+      Auth.requireAuth(id, 'register');
+      return;
+    }
+  }
+  show(id);
+  $('home').hidden = true;
+  $('toolView').hidden = false;
+  $('sub').textContent = SUB_TOOL;
+  scrollTo({ top: 0, behavior: 'smooth' });
 });
-$$('.tab').forEach(t => t.onclick = () => { Scan.closeCam(); show(t.dataset.tab); });
+$$('.tab').forEach(t => t.onclick = async () => {
+  const id = t.dataset.tab;
+  const tool = T.find(x => x.id === id);
+  if (tool && tool.auth) {
+    if (!authReady) await Auth.authInitPromise;
+    if (!Auth.isLoggedIn()) {
+      Auth.requireAuth(id, 'register');
+      return;
+    }
+  }
+  Scan.closeCam();
+  show(id);
+});
 $('back').onclick = () => { Scan.closeCam(); $('toolView').hidden = true; $('home').hidden = false; $('sub').textContent = SUB_HOME; scrollTo({ top: 0, behavior: 'smooth' }); };
 
 /* ================= THEME SWITCHER ================= */
@@ -1197,78 +1448,6 @@ const Scan = (() => {
   $('qr').addEventListener('input', render);
   $('qr').addEventListener('change', render);
   render();
-})();
-
-/* ================= LOGIN + FILE HISTORY ================= */
-const Auth = (() => {
-  let user = null, mode = 'login', historyOpen = false;
-  const err = $('authError');
-  const api = (url, opt) => fetch(url, opt);
-
-  function renderBar() {
-    $('authNote').hidden = !!user;
-    $('authBar').innerHTML = user
-      ? `<span class="auth-user">Welcome, <strong>${esc(user.username)}</strong></span><button onclick="Auth.toggleHistory()">📁 History</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
-      : `<button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button>`;
-  }
-  function open(m) {
-    mode = m; const reg = m == 'register';
-    err.textContent = ''; $('authForm').reset();
-    $('authTitle').textContent = reg ? 'Create Account' : 'Log In';
-    $('authSub').textContent = reg ? 'Sign up to track your processed files' : 'Sign in to track your file history';
-    $('authSubmit').textContent = reg ? 'Register' : 'Log In';
-    $('authToggle').innerHTML = reg ? `Already have an account? <a onclick="Auth.open('login')">Log In</a>` : `Don't have an account? <a onclick="Auth.open('register')">Register</a>`;
-    $('authModal').classList.add('open');
-    setTimeout(() => $('authUser').focus(), 100);
-  }
-  const close = () => { $('authModal').classList.remove('open'); err.textContent = ''; };
-
-  $('authForm').onsubmit = async e => {
-    e.preventDefault();
-    const username = $('authUser').value.trim(), password = $('authPass').value;
-    if (!username || !password) return err.textContent = 'Username and password are required';
-    try {
-      const res = await api(mode == 'register' ? '/auth/register' : '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-      const d = await res.json();
-      if (!res.ok) return err.textContent = d.error || 'Something went wrong';
-      user = { id: d.id, username: d.username }; close(); renderBar();
-    } catch { err.textContent = 'Network error. Please try again.'; }
-  };
-  $('authModal').onclick = e => { if (e.target == $('authModal')) close(); };
-  document.addEventListener('keydown', e => { if (e.key == 'Escape') close(); });
-
-  async function logout() {
-    try { await api('/auth/logout', { method: 'POST' }); } catch {}
-    user = null; historyOpen = false; $('historyPanel').classList.remove('open'); renderBar();
-  }
-  function toggleHistory() { historyOpen = !historyOpen; $('historyPanel').classList.toggle('open', historyOpen); if (historyOpen) refresh(); }
-
-  async function refresh() {
-    if (!user) return;
-    const list = $('historyList'), empty = t => { list.innerHTML = `<li class="history-empty">${t}</li>`; $('historyActions').hidden = true; };
-    empty('Loading…');
-    try {
-      const res = await api('/history/');
-      if (res.status == 401) { $('historyCount').textContent = 0; return empty('Please log in to view history.'); }
-      const data = await res.json();
-      $('historyCount').textContent = data.length;
-      if (!data.length) return empty('No files yet. Use a tool to see your history.');
-      $('historyActions').hidden = false;
-      list.innerHTML = data.map(h => { const d = new Date(h.created_at);
-        return `<li><span class="h-tool">${esc(h.tool_name)}</span><span class="h-name" title="${esc(h.output_name)}">${esc(h.output_name)}</span><span class="h-date">${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span><button class="h-delete" onclick="Auth.del(${h.id})" title="Delete">✕</button></li>`; }).join('');
-    } catch { empty('Failed to load history.'); }
-  }
-  async function del(id) {
-    try { const res = await api('/history/' + id, { method: 'DELETE' }); res.ok ? refresh() : alert((await res.json()).error || 'Failed to delete'); }
-    catch { alert('Network error'); }
-  }
-  async function clearAll() {
-    if (!confirm('Delete ALL history entries and their files?')) return;
-    try { if ((await api('/history/', { method: 'DELETE' })).ok) refresh(); } catch { alert('Network error'); }
-  }
-
-  api('/auth/me').then(r => r.json()).then(d => { if (d.authenticated) user = { id: d.id, username: d.username }; }).catch(() => {}).finally(renderBar);
-  return { open, close, logout, toggleHistory, refresh, del, clearAll };
 })();
 
 /* ================= GOTHAM CANVAS ================= */
