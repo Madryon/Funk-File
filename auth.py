@@ -182,7 +182,7 @@ def login_view():
         msg = "Username/email and password are required."
         return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="login", error=msg), 400)
 
-    # Allow login with either username or email (with fallback if schema was partially updated)
+    # Allow login with either username or email (with raw SQL fallback if schema was partially updated)
     try:
         user = User.query.filter(
             (User.username == identifier) | (User.email == identifier.lower())
@@ -192,7 +192,18 @@ def login_view():
             db.session.rollback()
         except Exception:
             pass
-        user = User.query.filter_by(username=identifier).first()
+        try:
+            from sqlalchemy import text
+            row = db.session.execute(text("SELECT id, username, password_hash FROM users WHERE username = :u LIMIT 1"), {"u": identifier}).fetchone()
+            if row:
+                user = User(username=row[1])
+                user.id = row[0]
+                user.password_hash = row[2]
+                user.is_active = True
+            else:
+                user = None
+        except Exception:
+            user = None
 
     if user is None or not user.check_password(password):
         msg = "Invalid username/email or password."

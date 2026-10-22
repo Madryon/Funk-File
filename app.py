@@ -63,38 +63,86 @@ app.register_blueprint(video_bp)
 app.register_blueprint(scan_bp)
 
 
-# Database initialization & safe schema migration on startup
-with app.app_context():
+# ================= DATABASE INITIALIZATION & ROBUST MIGRATION =================
+
+def migrate_database():
     try:
         db.create_all()
-        # Safe migration for both PostgreSQL and SQLite databases (adds missing columns to existing tables)
         with db.engine.connect() as conn:
             from sqlalchemy import text
             dialect = db.engine.dialect.name
-            if dialect == "sqlite":
+            if dialect == "postgresql":
+                statements = [
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER DEFAULT 0",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE",
+                    "UPDATE users SET email = LOWER(username) || '@pdf-toolbox.local' WHERE email IS NULL OR email = ''",
+                    "UPDATE users SET is_active = TRUE WHERE is_active IS NULL",
+                    "UPDATE users SET login_count = 0 WHERE login_count IS NULL",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users (email)",
+                    """CREATE TABLE IF NOT EXISTS login_events (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        ip VARCHAR(64),
+                        user_agent VARCHAR(255),
+                        logged_in_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )""",
+                    "CREATE INDEX IF NOT EXISTS ix_login_events_user_id ON login_events (user_id)",
+                    "CREATE INDEX IF NOT EXISTS ix_login_events_logged_in_at ON login_events (logged_in_at)"
+                ]
+                for stmt in statements:
+                    try:
+                        conn.execute(text(stmt))
+                        conn.commit()
+                    except Exception:
+                        try:
+                            conn.rollback()
+                        except Exception:
+                            pass
+            elif dialect == "sqlite":
                 res = conn.execute(text("PRAGMA table_info(users)"))
                 cols = {row[1] for row in res.fetchall()}
-                if cols and "email" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(120)"))
-                if cols and "last_login" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN last_login DATETIME"))
-                if cols and "login_count" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN login_count INTEGER DEFAULT 0"))
-                if cols and "is_active" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT 1"))
-                conn.commit()
-            elif dialect == "postgresql":
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)"))
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP"))
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER DEFAULT 0"))
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE"))
-                conn.execute(text("UPDATE users SET email = LOWER(username) || '@pdf-toolbox.local' WHERE email IS NULL OR email = ''"))
-                conn.execute(text("UPDATE users SET is_active = TRUE WHERE is_active IS NULL"))
-                conn.execute(text("UPDATE users SET login_count = 0 WHERE login_count IS NULL"))
-                conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users (email)"))
-                conn.commit()
+                for col, typ in [
+                    ("email", "VARCHAR(120)"),
+                    ("last_login", "DATETIME"),
+                    ("login_count", "INTEGER DEFAULT 0"),
+                    ("is_active", "BOOLEAN DEFAULT 1"),
+                ]:
+                    if cols and col not in cols:
+                        try:
+                            conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {typ}"))
+                            conn.commit()
+                        except Exception:
+                            try:
+                                conn.rollback()
+                            except Exception:
+                                pass
     except Exception as e:
         print(f"[Warning] Failed to initialize/migrate database tables: {e}", flush=True)
+
+
+_db_migrated = False
+
+@app.before_request
+def _ensure_migrated():
+    global _db_migrated
+    if not _db_migrated:
+        migrate_database()
+        _db_migrated = True
+
+
+with app.app_context():
+    migrate_database()
+    _db_migrated = True
+
+
+@app.route("/migrate-db")
+@csrf.exempt
+def run_migration_endpoint():
+    migrate_database()
+    return jsonify({"ok": True, "message": "Database migration executed."})
+
 
 
 def _cleanup_old(max_age_seconds=3600):
