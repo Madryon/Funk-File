@@ -9,6 +9,7 @@ pdf_bp = Blueprint("pdf", __name__)
 
 
 @pdf_bp.route("/merge", methods=["POST"])
+@login_required
 def merge_route():
     files = request.files.getlist("files")
     if not files:
@@ -43,6 +44,7 @@ def merge_route():
 
 
 @pdf_bp.route("/compress", methods=["POST"])
+@login_required
 def compress_route():
     f = request.files.get("file")
     if not f or not f.filename:
@@ -87,6 +89,7 @@ def compress_route():
 
 
 @pdf_bp.route("/convert", methods=["POST"])
+@login_required
 def convert_route():
     f = request.files.get("file")
     fmt = (request.form.get("format") or "png").lower()
@@ -151,6 +154,7 @@ def convert_route():
 
 
 @pdf_bp.route("/pdf-to-word", methods=["POST"])
+@login_required
 def pdf_to_word_route():
     f = request.files.get("file")
     if not f or not f.filename:
@@ -179,6 +183,7 @@ def pdf_to_word_route():
 
 
 @pdf_bp.route("/split", methods=["POST"])
+@login_required
 def split_route():
     f = request.files.get("file")
     if not f or not f.filename:

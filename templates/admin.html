@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>{% if mode == 'login' %}Admin Login · Funk Files{% else %}Admin Dashboard · Funk Files{% endif %}</title>
+<link rel="icon" type="image/png" href="/static/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<style>
+/* ============ BASE TOKENS ============ */
+:root {
+  --ink: #fff;
+  --ink-soft: #F8F9FA;
+  --ink-raised: #EEF1F4;
+  --ink-line: #C9CDD3;
+  --stamp: #5b6cff;
+  --brass: #5b6cff;
+  --text: #0D1117;
+  --text-muted: #4B5563;
+  --text-faint: #6B7280;
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+[data-theme="batman"] {
+  --ink: #0a0a0c;
+  --ink-soft: #14151a;
+  --ink-raised: #1a1c22;
+  --ink-line: #2a2d36;
+  --stamp: #f5c518;
+  --brass: #f5c518;
+  --text: #e8e8ea;
+  --text-muted: #8b8f9a;
+  --text-faint: #676b77;
+  color-scheme: dark;
+}
+[data-theme="baddie"] {
+  --ink: #0A0014;
+  --ink-soft: rgba(30,5,60,.55);
+  --ink-raised: rgba(50,10,90,.65);
+  --ink-line: rgba(255,46,147,.32);
+  --stamp: #FF2E93;
+  --brass: #00F0FF;
+  --text: #fff;
+  --text-muted: #E8DFFF;
+  --text-faint: #C0B0E8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans', Inter, system-ui, sans-serif;
+  background: var(--ink);
+  color: var(--text);
+  min-height: 100vh;
+  padding: {% if mode == 'login' %}24px 16px{% else %}20px 24px 60px{% endif %};
+  position: relative;
+  overflow-x: hidden;
+  transition: background .3s, color .3s;
+  {% if mode == 'login' %}
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  {% endif %}
+}
+
+[data-theme="batman"] body {
+  background: linear-gradient(180deg, #05060a 0%, #0d0e15 45%, #151824 100%);
+  background-attachment: fixed;
+}
+[data-theme="baddie"] body {
+  background: radial-gradient(circle at 18% 12%, rgba(255,46,147,.35), transparent 50%),
+              radial-gradient(circle at 82% 28%, rgba(0,240,255,.28), transparent 55%),
+              #0A0014;
+  background-attachment: fixed;
+}
+
+/* Glass & Theme Styling */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: Fraunces, serif;
+  font-size: 24px;
+  font-weight: 700;
+}
+.brand-title .badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(91,108,255,.15);
+  color: var(--stamp);
+  border: 1px solid rgba(91,108,255,.3);
+}
+[data-theme="batman"] .brand-title .badge {
+  background: rgba(245,197,24,.15);
+  color: #f5c518;
+  border-color: rgba(245,197,24,.3);
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.session-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  color: var(--text-muted);
+}
+.btn-nav {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--ink-line);
+  background: var(--ink-soft);
+  color: var(--text);
+  cursor: pointer;
+  transition: .15s;
+}
+.btn-nav:hover {
+  background: var(--ink-raised);
+  border-color: var(--brass);
+}
+
+/* Stat KPI Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+.stat-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.04);
+}
+[data-theme="batman"] .stat-card {
+  background: linear-gradient(145deg, #181920 0%, #121318 100%);
+  border: 1px solid #2a2d36;
+  border-left: 3px solid #f5c518;
+}
+[data-theme="baddie"] .stat-card {
+  background: rgba(20,0,40,.6);
+  border: 1px solid rgba(255,46,147,.3);
+}
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: .5px;
+}
+.stat-val {
+  font-family: Fraunces, serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Section Box */
+.section-box {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.04);
+}
+[data-theme="batman"] .section-box {
+  background: #14151a;
+  border: 1px solid #2a2d36;
+}
+[data-theme="baddie"] .section-box {
+  background: rgba(20,0,40,.6);
+  border: 1px solid rgba(255,46,147,.3);
+}
+.section-box h3 {
+  font-family: Fraunces, serif;
+  font-size: 19px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Tables */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text-muted);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ink-line);
+}
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ink-line);
+  color: var(--text);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(0,0,0,.02); }
+[data-theme="batman"] tr:hover td { background: rgba(255,255,255,.03); }
+
+/* Badges */
+.status-pill {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.status-pill.active {
+  background: rgba(40,190,130,.18);
+  color: #0d7a52;
+  border: 1px solid rgba(40,190,130,.3);
+}
+[data-theme="batman"] .status-pill.active {
+  background: rgba(40,190,130,.2);
+  color: #4cd997;
+}
+.status-pill.disabled {
+  background: rgba(255,90,110,.18);
+  color: #b3203a;
+  border: 1px solid rgba(255,90,110,.3);
+}
+[data-theme="batman"] .status-pill.disabled {
+  background: rgba(193,18,31,.25);
+  color: #ff6b6b;
+}
+
+/* Action Buttons */
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-action {
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--ink-line);
+  background: var(--ink);
+  color: var(--text);
+  transition: .15s;
+}
+.btn-action:hover {
+  background: var(--ink-raised);
+}
+.btn-action.danger:hover {
+  background: rgba(255,90,110,.15);
+  border-color: #b3203a;
+  color: #b3203a;
+}
+.btn-action.toggle:hover {
+  background: rgba(91,108,255,.15);
+  border-color: var(--brass);
+}
+
+/* Alert notifications */
+.alert {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.alert-success {
+  background: rgba(40,190,130,.16);
+  color: #0d7a52;
+  border: 1px solid rgba(40,190,130,.3);
+}
+[data-theme="batman"] .alert-success {
+  background: rgba(40,190,130,.2);
+  color: #4cd997;
+}
+.alert-error {
+  background: rgba(255,90,110,.16);
+  color: #b3203a;
+  border: 1px solid rgba(255,90,110,.3);
+}
+[data-theme="batman"] .alert-error {
+  background: rgba(193,18,31,.25);
+  color: #ff6b6b;
+}
+
+/* Reset Link Box */
+.reset-box {
+  background: rgba(91,108,255,.1);
+  border: 1px solid rgba(91,108,255,.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.reset-box input {
+  flex: 1;
+  min-width: 250px;
+  padding: 8px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  border: 1px solid var(--ink-line);
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--text);
+}
+
+/* Admin Login Card */
+.admin-login-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  padding: 34px 28px;
+  box-shadow: 0 16px 44px rgba(0,0,0,.1);
+}
+[data-theme="batman"] .admin-login-card {
+  background: linear-gradient(145deg, #181920 0%, #121318 100%);
+  border: 1px solid #2a2d36;
+  border-bottom: 2px solid #f5c518;
+}
+.admin-login-card h2 { font-family: Fraunces, serif; font-size: 22px; margin-bottom: 8px; }
+.admin-login-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 22px; }
+.admin-login-card input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--ink-line);
+  border-radius: 9px;
+  background: var(--ink);
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.admin-login-card button {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #5b6cff, #a855f7);
+  color: #fff;
+  font: 600 14px inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(91,108,255,.35);
+}
+[data-theme="batman"] .admin-login-card button {
+  background: #f5c518;
+  color: #0a0a0c;
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(245,197,24,.4);
+}
+
+/* Theme Switcher */
+.theme-switcher {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 999px;
+  padding: 4px;
+  display: flex;
+}
+[data-theme="batman"] .theme-switcher {
+  background: rgba(20,21,26,.88);
+  border: 1px solid #2a2d36;
+}
+.theme-switcher button {
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 600 12px inherit;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.theme-switcher button.active {
+  background: var(--stamp);
+  color: #fff;
+}
+[data-theme="batman"] .theme-switcher button.active {
+  background: #14151a;
+  color: #f5c518;
+  border: 1px solid #f5c518;
+}
+</style>
+
+<!-- ============ GLASSMORPHISM · LIGHT MODE ONLY ============ -->
+<style id="glass-light">
+.blob {
+  display: none;
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: .55;
+  z-index: 0;
+  pointer-events: none;
+}
+.b1 { width: 420px; height: 420px; background: #8fa4ff; top: -120px; left: -100px; }
+.b2 { width: 380px; height: 380px; background: #f0a6ff; top: 30%; right: -120px; }
+.b3 { width: 360px; height: 360px; background: #ffb3c9; bottom: -120px; left: 25%; }
+
+html[data-theme="light"],
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) {
+  --g-bg: rgba(255, 255, 255, .45);
+  --g-border: rgba(255, 255, 255, .75);
+  --g-shadow: 0 8px 32px rgba(80, 90, 160, .16);
+  --g-text: #1c2340;
+  --g-muted: #5c6486;
+  --g-accent: #5b6cff;
+  --g-accent2: #a855f7;
+}
+html[data-theme="light"] body,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) body {
+  font-family: Inter, 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--g-text);
+  background: linear-gradient(135deg, #dfe8ff 0%, #f3e6ff 45%, #ffe4ef 100%);
+  background-attachment: fixed;
+}
+html[data-theme="light"] .blob,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .blob { display: block; }
+html[data-theme="light"] :is(.stat-card, .section-box, .admin-login-card),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.stat-card, .section-box, .admin-login-card) {
+  background: var(--g-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid var(--g-border);
+  box-shadow: var(--g-shadow), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient Blobs -->
+<div class="blob b1" aria-hidden="true"></div>
+<div class="blob b2" aria-hidden="true"></div>
+<div class="blob b3" aria-hidden="true"></div>
+
+<!-- Theme Switcher -->
+<div class="theme-switcher">
+  <button type="button" data-t="light"><span>☀️</span><span>Light</span></button>
+  <button type="button" data-t="batman"><span>🌙</span><span>Dark</span></button>
+  <button type="button" data-t="baddie"><span>🔥</span><span>Baddie</span></button>
+</div>
+
+{% if mode == 'login' %}
+<!-- ================= ADMIN LOGIN VIEW ================= -->
+<div class="admin-login-card">
+  <h2>Admin Access</h2>
+  <p>Please enter the administrative master password to access the control panel.</p>
+
+  {% if error %}
+    <div class="alert alert-error"><span>✕</span><span>{{ error }}</span></div>
+  {% endif %}
+
+  <form method="POST" action="/admin/login">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="password" name="password" placeholder="Master Password" required autofocus autocomplete="current-password">
+    <button type="submit">Authenticate & Enter</button>
+  </form>
+</div>
+
+{% else %}
+<!-- ================= ADMIN DASHBOARD VIEW ================= -->
+<header class="topbar">
+  <div class="brand-title">
+    <span>🛡️ Funk Files Control</span>
+    <span class="badge">Master Admin</span>
+  </div>
+  <div class="top-actions">
+    <span class="session-badge" id="sessionTimer" data-remain="{{ remaining_secs }}">Session: 30:00</span>
+    <a href="/" class="btn-nav" target="_blank">View Site ↗</a>
+    <form method="POST" action="/admin/logout" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-nav">Logout Admin</button>
+    </form>
+  </div>
+</header>
+
+<!-- Flashed Messages -->
+{% for category, msg in get_flashed_messages(with_categories=true) %}
+  {% if category == 'reset_link' %}
+    <div class="reset-box">
+      <strong>🔗 Password Reset Link:</strong>
+      <input type="text" id="resetLinkInput" value="{{ msg.split(':', 1)[1].strip() if ':' in msg else msg }}" readonly>
+      <button type="button" class="btn-action" onclick="navigator.clipboard.writeText(document.getElementById('resetLinkInput').value); this.textContent='Copied!';">Copy Link</button>
+    </div>
+  {% else %}
+    <div class="alert alert-{% if category == 'error' %}error{% else %}success{% endif %}">
+      <span>{% if category == 'error' %}✕{% else %}✓{% endif %}</span>
+      <span>{{ msg }}</span>
+    </div>
+  {% endif %}
+{% endfor %}
+
+<!-- KPI Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Users</span>
+    <span class="stat-val">{{ stats.total_users }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Active (Last 24 Hours)</span>
+    <span class="stat-val">{{ stats.active_24h }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Active (Last 7 Days)</span>
+    <span class="stat-val">{{ stats.active_7d }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total Logins</span>
+    <span class="stat-val">{{ stats.total_logins }}</span>
+  </div>
+</div>
+
+<!-- Users Table -->
+<div class="section-box">
+  <h3>
+    <span>Registered Accounts ({{ users|length }})</span>
+  </h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Signup Date</th>
+          <th>Last Login</th>
+          <th>Logins</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>#{{ u.id }}</td>
+          <td><strong>{{ u.username }}</strong></td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else '—' }}</td>
+          <td>{{ u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else 'Never' }}</td>
+          <td>{{ u.login_count }}</td>
+          <td>
+            <span class="status-pill {% if u.is_active %}active{% else %}disabled{% endif %}">
+              {% if u.is_active %}Active{% else %}Disabled{% endif %}
+            </span>
+          </td>
+          <td>
+            <div class="action-group">
+              <!-- Toggle Active / Disabled -->
+              <form method="POST" action="/admin/users/{{ u.id }}/toggle" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-action toggle" title="Toggle active status">
+                  {% if u.is_active %}Disable{% else %}Enable{% endif %}
+                </button>
+              </form>
+              <!-- Generate Reset Link -->
+              <form method="POST" action="/admin/users/{{ u.id }}/reset-link" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-action" title="Create temporary password reset URL">Reset Link</button>
+              </form>
+              <!-- Delete User -->
+              <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline" onsubmit="return confirm('Permanently delete user {{ u.username }}? This cannot be undone.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-action danger" title="Delete account">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">No registered users yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Recent Login Events Table -->
+<div class="section-box">
+  <h3>
+    <span>Recent Login Events (Last {{ recent_logins|length }})</span>
+  </h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Timestamp (UTC)</th>
+          <th>IP Address</th>
+          <th>User-Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in recent_logins %}
+        <tr>
+          <td><strong>{{ e.user.username if e.user else 'Unknown (ID ' ~ e.user_id ~ ')' }}</strong></td>
+          <td>{{ e.logged_in_at.strftime('%Y-%m-%d %H:%M:%S') if e.logged_in_at else '—' }}</td>
+          <td><code>{{ e.ip or '127.0.0.1' }}</code></td>
+          <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ e.user_agent }}">{{ e.user_agent or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="4" style="text-align:center; padding: 24px; color: var(--text-muted);">No login events recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// 30-min countdown timer
+(() => {
+  const el = document.getElementById('sessionTimer');
+  if (!el) return;
+  let remain = parseInt(el.dataset.remain || '1800', 10);
+  const update = () => {
+    if (remain <= 0) {
+      el.textContent = 'Session: Expired';
+      el.style.color = '#ff6b6b';
+      setTimeout(() => location.reload(), 1500);
+      return;
+    }
+    const m = Math.floor(remain / 60);
+    const s = remain % 60;
+    el.textContent = `Session: ${m}:${String(s).padStart(2, '0')}`;
+    remain--;
+  };
+  update();
+  setInterval(update, 1000);
+})();
+</script>
+{% endif %}
+
+<script>
+// Theme switcher sync with index.html
+(() => {
+  const THEMES = ['light', 'batman', 'baddie'];
+  const btns = document.querySelectorAll('.theme-switcher button');
+  const apply = t => {
+    if (!THEMES.includes(t)) t = 'light';
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('pdf-toolbox-theme', t); } catch {}
+    btns.forEach(b => b.classList.toggle('active', b.dataset.t === t));
+  };
+  btns.forEach(b => b.onclick = () => apply(b.dataset.t));
+  let saved; try { saved = localStorage.getItem('pdf-toolbox-theme'); } catch {}
+  apply(saved || 'light');
+})();
+</script>
+</body>
+</html>

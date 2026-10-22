@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% if mode == 'reset' %}Reset Password · Funk Files{% elif mode == 'register' %}Create Account · Funk Files{% else %}Sign In · Funk Files{% endif %}</title>
+<link rel="icon" type="image/png" href="/static/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<style>
+/* ============ BASE TOKENS ============ */
+:root {
+  --ink: #fff;
+  --ink-soft: #F8F9FA;
+  --ink-raised: #EEF1F4;
+  --ink-line: #C9CDD3;
+  --stamp: #5b6cff;
+  --brass: #5b6cff;
+  --text: #0D1117;
+  --text-muted: #4B5563;
+  --text-faint: #6B7280;
+  --radius: 18px;
+  --radius-sm: 10px;
+}
+[data-theme="batman"] {
+  --ink: #0a0a0c;
+  --ink-soft: #14151a;
+  --ink-raised: #1a1c22;
+  --ink-line: #2a2d36;
+  --stamp: #f5c518;
+  --brass: #f5c518;
+  --text: #e8e8ea;
+  --text-muted: #8b8f9a;
+  --text-faint: #676b77;
+  color-scheme: dark;
+}
+[data-theme="baddie"] {
+  --ink: #0A0014;
+  --ink-soft: rgba(30,5,60,.55);
+  --ink-raised: rgba(50,10,90,.65);
+  --ink-line: rgba(255,46,147,.32);
+  --stamp: #FF2E93;
+  --brass: #00F0FF;
+  --text: #fff;
+  --text-muted: #E8DFFF;
+  --text-faint: #C0B0E8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans', Inter, system-ui, sans-serif;
+  background: var(--ink);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+  overflow-x: hidden;
+  transition: background .3s, color .3s;
+}
+
+/* Backgrounds */
+[data-theme="batman"] body {
+  background: linear-gradient(180deg, #05060a 0%, #0d0e15 50%, #151824 100%);
+  background-attachment: fixed;
+}
+[data-theme="baddie"] body {
+  background: radial-gradient(circle at 20% 15%, rgba(255,46,147,.35), transparent 50%),
+              radial-gradient(circle at 80% 30%, rgba(0,240,255,.28), transparent 55%),
+              #0A0014;
+  background-attachment: fixed;
+}
+
+/* Brand header */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  text-decoration: none;
+  color: inherit;
+}
+.brand img { width: 40px; height: 40px; border-radius: 10px; }
+.brand h1 { font-family: Fraunces, serif; font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+
+/* Auth Container Card */
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  padding: 34px 30px;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+[data-theme="batman"] .auth-card {
+  background: linear-gradient(145deg, #181920 0%, #121318 100%);
+  border: 1px solid #2a2d36;
+  border-bottom: 2px solid #f5c518;
+  border-left: 2px solid #f5c518;
+  box-shadow: 0 14px 44px rgba(0,0,0,.7);
+}
+[data-theme="baddie"] .auth-card {
+  background: rgba(20,0,40,.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,46,147,.35);
+  box-shadow: 0 12px 36px rgba(176,38,255,.25);
+}
+
+/* Auth Tabs */
+.auth-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+.auth-tab-btn {
+  flex: 1;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 600 13.5px 'IBM Plex Sans', sans-serif;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: .2s;
+  text-align: center;
+  text-decoration: none;
+}
+.auth-tab-btn.active {
+  background: var(--ink-raised);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+[data-theme="batman"] .auth-tab-btn.active {
+  background: #2a2d36;
+  color: #f5c518;
+  border: 1px solid #f5c518;
+}
+[data-theme="baddie"] .auth-tab-btn.active {
+  background: rgba(255,46,147,.3);
+  color: #fff;
+  border: 1px solid rgba(255,46,147,.5);
+}
+
+/* Card Header */
+.card-head { margin-bottom: 20px; }
+.card-head h2 { font-family: Fraunces, serif; font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.card-head p { font-size: 13px; color: var(--text-muted); line-height: 1.45; }
+
+/* Form Fields */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="password"] {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--ink-line);
+  border-radius: 9px;
+  background: var(--ink);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color .15s, box-shadow .15s;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--brass);
+  box-shadow: 0 0 0 3px rgba(91,108,255,.2);
+}
+[data-theme="batman"] .field input:focus {
+  border-color: #f5c518;
+  box-shadow: 0 0 0 3px rgba(245,197,24,.2);
+}
+[data-theme="baddie"] .field input:focus {
+  border-color: #ff2e93;
+  box-shadow: 0 0 0 3px rgba(255,46,147,.3);
+}
+
+/* Action Button */
+.btn-submit {
+  width: 100%;
+  padding: 13px 20px;
+  margin-top: 10px;
+  border-radius: 11px;
+  border: none;
+  font: 600 14px 'IBM Plex Sans', Inter, sans-serif;
+  cursor: pointer;
+  background: linear-gradient(135deg, #5b6cff, #a855f7);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(91,108,255,.35);
+  transition: transform .2s, box-shadow .2s;
+}
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(91,108,255,.45);
+}
+[data-theme="batman"] .btn-submit {
+  background: #f5c518;
+  color: #0a0a0c;
+  font-weight: 700;
+  box-shadow: 0 0 16px rgba(245,197,24,.4);
+}
+[data-theme="batman"] .btn-submit:hover {
+  box-shadow: 0 0 24px rgba(245,197,24,.7);
+}
+[data-theme="baddie"] .btn-submit {
+  background: linear-gradient(135deg, #ff2e93, #b026ff, #00f0ff);
+  box-shadow: 0 0 18px rgba(255,46,147,.5);
+}
+
+/* Alerts */
+.alert {
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.alert-error {
+  background: rgba(255,90,110,.16);
+  color: #b3203a;
+  border: 1px solid rgba(255,90,110,.3);
+}
+[data-theme="batman"] .alert-error {
+  background: rgba(193,18,31,.25);
+  color: #ff6b6b;
+  border-color: #c1121f;
+}
+.alert-success {
+  background: rgba(40,190,130,.16);
+  color: #0d7a52;
+  border: 1px solid rgba(40,190,130,.3);
+}
+[data-theme="batman"] .alert-success {
+  background: rgba(40,190,130,.2);
+  color: #4cd997;
+  border-color: rgba(40,190,130,.4);
+}
+
+.foot-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color .15s;
+}
+.foot-link:hover { color: var(--brass); }
+
+/* Theme switcher */
+.theme-switcher {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 1000;
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+}
+[data-theme="batman"] .theme-switcher {
+  background: rgba(20,21,26,.88);
+  border: 1px solid #2a2d36;
+  box-shadow: 0 6px 22px rgba(0,0,0,.7);
+}
+[data-theme="baddie"] .theme-switcher {
+  background: rgba(20,0,40,.7);
+  border: 1px solid rgba(255,46,147,.4);
+  box-shadow: 0 6px 24px rgba(255,46,147,.35);
+}
+.theme-switcher button {
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 600 12px inherit;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: .2s;
+}
+.theme-switcher button.active {
+  background: var(--stamp);
+  color: #fff;
+}
+[data-theme="batman"] .theme-switcher button.active {
+  background: #14151a;
+  color: #f5c518;
+  border: 1px solid #f5c518;
+}
+[data-theme="baddie"] .theme-switcher button.active {
+  background: linear-gradient(135deg, #FF2E93, #B026FF);
+  color: #fff;
+}
+</style>
+
+<!-- ============ GLASSMORPHISM · LIGHT MODE ONLY ============ -->
+<style id="glass-light">
+.blob {
+  display: none;
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: .55;
+  z-index: 0;
+  pointer-events: none;
+}
+.b1 { width: 420px; height: 420px; background: #8fa4ff; top: -120px; left: -100px; }
+.b2 { width: 380px; height: 380px; background: #f0a6ff; top: 30%; right: -120px; }
+.b3 { width: 360px; height: 360px; background: #ffb3c9; bottom: -120px; left: 25%; }
+
+html[data-theme="light"],
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) {
+  --g-bg: rgba(255, 255, 255, .42);
+  --g-bg-strong: rgba(255, 255, 255, .66);
+  --g-border: rgba(255, 255, 255, .75);
+  --g-shadow: 0 8px 32px rgba(80, 90, 160, .16);
+  --g-text: #1c2340;
+  --g-muted: #5c6486;
+  --g-accent: #5b6cff;
+  --g-accent2: #a855f7;
+}
+html[data-theme="light"] body,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) body {
+  font-family: Inter, 'IBM Plex Sans', system-ui, sans-serif;
+  color: var(--g-text);
+  background: linear-gradient(135deg, #dfe8ff 0%, #f3e6ff 45%, #ffe4ef 100%);
+  background-attachment: fixed;
+}
+html[data-theme="light"] .blob,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .blob { display: block; }
+html[data-theme="light"] .auth-card,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .auth-card {
+  background: var(--g-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid var(--g-border);
+  box-shadow: var(--g-shadow), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+html[data-theme="light"] .auth-tab-btn.active,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .auth-tab-btn.active {
+  background: var(--g-bg-strong);
+  color: var(--g-accent);
+  box-shadow: 0 2px 10px rgba(91, 108, 255, .18);
+  border: 1px solid var(--g-border);
+}
+html[data-theme="light"] .field input,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .field input {
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid rgba(255, 255, 255, .9);
+  color: var(--g-text);
+  box-shadow: inset 0 1px 3px rgba(80, 90, 160, .1);
+}
+html[data-theme="light"] .field input:focus,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .field input:focus {
+  border-color: var(--g-accent);
+  box-shadow: 0 0 0 3px rgba(91, 108, 255, .2);
+}
+html[data-theme="light"] .btn-submit,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .btn-submit {
+  background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
+  box-shadow: 0 8px 20px rgba(91, 108, 255, .4) !important;
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient Light Mode Blobs -->
+<div class="blob b1" aria-hidden="true"></div>
+<div class="blob b2" aria-hidden="true"></div>
+<div class="blob b3" aria-hidden="true"></div>
+
+<!-- Theme Switcher -->
+<div class="theme-switcher">
+  <button type="button" data-t="light"><span>☀️</span><span class="lbl">Light</span></button>
+  <button type="button" data-t="batman"><span>🌙</span><span class="lbl">Dark</span></button>
+  <button type="button" data-t="baddie"><span>🔥</span><span class="lbl">Baddie</span></button>
+</div>
+
+<!-- Logo Brand -->
+<a href="/" class="brand">
+  <img src="/static/logo.png" alt="Funk Files Logo">
+  <h1>Funk Files</h1>
+</a>
+
+<!-- Main Auth Card -->
+<div class="auth-card">
+  {% if mode != 'reset' %}
+  <div class="auth-tabs">
+    <a href="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" class="auth-tab-btn {% if mode != 'register' %}active{% endif %}">Sign In</a>
+    <a href="/register{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" class="auth-tab-btn {% if mode == 'register' %}active{% endif %}">Create Account</a>
+  </div>
+  {% endif %}
+
+  <!-- Flash and Error Messages -->
+  {% for category, msg in get_flashed_messages(with_categories=true) %}
+    <div class="alert alert-{% if category == 'error' %}error{% else %}success{% endif %}">
+      <span>{% if category == 'error' %}✕{% else %}✓{% endif %}</span>
+      <span>{{ msg }}</span>
+    </div>
+  {% endfor %}
+  {% if error %}
+    <div class="alert alert-error">
+      <span>✕</span>
+      <span>{{ error }}</span>
+    </div>
+  {% endif %}
+
+  {% if mode == 'reset' %}
+  <!-- Password Reset Form -->
+  <div class="card-head">
+    <h2>Set New Password</h2>
+    <p>Enter a new password for account <strong>{{ username }}</strong>.</p>
+  </div>
+  <form method="POST" action="/reset-password">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <div class="field">
+      <label for="password">New Password</label>
+      <input type="password" id="password" name="password" minlength="6" placeholder="At least 6 characters" required autofocus>
+    </div>
+    <button type="submit" class="btn-submit">Update Password & Sign In</button>
+  </form>
+
+  {% elif mode == 'register' %}
+  <!-- Register Form -->
+  <div class="card-head">
+    <h2>Create an Account</h2>
+    <p>Sign up to unlock all PDF, image, and video tools with full processing history.</p>
+  </div>
+  <form method="POST" action="/register{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" placeholder="Choose a unique username" minlength="3" maxlength="80" required autofocus>
+    </div>
+    <div class="field">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="name@example.com" required>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" minlength="6" placeholder="At least 6 characters" required>
+    </div>
+    <button type="submit" class="btn-submit">Create Account</button>
+  </form>
+
+  {% else %}
+  <!-- Login Form -->
+  <div class="card-head">
+    <h2>Welcome Back</h2>
+    <p>Enter your username or email to access your tools and file history.</p>
+  </div>
+  <form method="POST" action="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="username">Username or Email</label>
+      <input type="text" id="username" name="username" placeholder="Enter username or email" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" required>
+    </div>
+    <button type="submit" class="btn-submit">Sign In</button>
+  </form>
+  {% endif %}
+</div>
+
+<a href="/" class="foot-link">← Back to Funk Files</a>
+
+<script>
+// Theme switcher sync with index.html
+(() => {
+  const THEMES = ['light', 'batman', 'baddie'];
+  const btns = document.querySelectorAll('.theme-switcher button');
+  const apply = t => {
+    if (!THEMES.includes(t)) t = 'light';
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('pdf-toolbox-theme', t); } catch {}
+    btns.forEach(b => b.classList.toggle('active', b.dataset.t === t));
+  };
+  btns.forEach(b => b.onclick = () => apply(b.dataset.t));
+  let saved; try { saved = localStorage.getItem('pdf-toolbox-theme'); } catch {}
+  apply(saved || 'light');
+})();
+</script>
+</body>
+</html>

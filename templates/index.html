@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Funk Files</title>
 <link rel="icon" type="image/png" href="/static/logo.png">
 <link rel="apple-touch-icon" href="/static/logo.png">
@@ -690,7 +691,11 @@ html[data-theme="light"] .ticket-perf,
   </div>
   <h2 id="authTitle"></h2><p class="modal-sub" id="authSub"></p>
   <form id="authForm" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="authUser">Username</label><input type="text" id="authUser" placeholder="Enter username" required>
+    <div id="authEmailGroup" style="display:none">
+      <label for="authEmail">Email</label><input type="email" id="authEmail" placeholder="name@example.com">
+    </div>
     <label for="authPass">Password</label><input type="password" id="authPass" placeholder="Enter password" required>
     <div class="modal-error" id="authError"></div>
     <div class="modal-actions"><button type="submit" class="btn-primary" id="authSubmit"></button><button type="button" onclick="Auth.close()">Cancel</button></div>
@@ -804,9 +809,21 @@ const ticket = (el, name, sub, url) => el.innerHTML = `
     </div>
   </div>`;
 
+const getCsrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
 async function post(url, fd) {                         // POST form → blob (throws server error message)
-  const r = await fetch(url, { method: 'POST', body: fd });
-  if (!r.ok) { let m = `request failed (${r.status})`; try { m = (await r.json()).error || m } catch {} throw new Error(m) }
+  const headers = {};
+  const csrf = getCsrf();
+  if (csrf) headers['X-CSRFToken'] = csrf;
+  const r = await fetch(url, { method: 'POST', body: fd, headers });
+  if (!r.ok) {
+    let m = `request failed (${r.status})`;
+    try { m = (await r.json()).error || m; } catch {}
+    if (r.status === 401 && window.Auth) {
+      Auth.open('login');
+    }
+    throw new Error(m);
+  }
   return r.blob();
 }
 function save(blob, name) {                            // auto-download + return url for the ticket link
@@ -918,7 +935,12 @@ let currentUser = null, authReady = false, pendingTool = null;
 const Auth = (() => {
   let mode = 'register', historyOpen = false;
   const err = $('authError');
-  const api = (url, opt) => fetch(url, opt);
+  const api = (url, opt = {}) => {
+    const csrf = getCsrf();
+    opt.headers = { ...(opt.headers || {}) };
+    if (csrf) opt.headers['X-CSRFToken'] = csrf;
+    return fetch(url, opt);
+  };
 
   function isLoggedIn() {
     return !!currentUser;
@@ -950,6 +972,7 @@ const Auth = (() => {
     mode = m;
     const reg = m === 'register';
     err.textContent = '';
+    if ($('authEmailGroup')) $('authEmailGroup').style.display = reg ? 'block' : 'none';
     const tabReg = $('authTabRegister'), tabLog = $('authTabLogin');
     if (tabReg && tabLog) {
       tabReg.classList.toggle('active', reg);
@@ -1004,11 +1027,14 @@ const Auth = (() => {
     e.preventDefault();
     const username = $('authUser').value.trim(), password = $('authPass').value;
     if (!username || !password) return err.textContent = 'Username and password are required';
+    const email = $('authEmail') ? $('authEmail').value.trim() : '';
     try {
-      const res = await api(mode === 'register' ? '/auth/register' : '/auth/login', {
+      const body = { username, password };
+      if (mode === 'register' && email) body.email = email;
+      const res = await api(mode === 'register' ? '/register' : '/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify(body)
       });
       const d = await res.json();
       if (!res.ok) return err.textContent = d.error || 'Something went wrong';
@@ -1034,7 +1060,7 @@ const Auth = (() => {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 
   async function logout() {
-    try { await api('/auth/logout', { method: 'POST' }); } catch {}
+    try { await api('/logout', { method: 'POST' }); } catch {}
     currentUser = null;
     historyOpen = false;
     $('historyPanel').classList.remove('open');

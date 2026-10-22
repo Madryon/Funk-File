@@ -4,3 +4,5 @@ uploads/
 outputs/
 app.db
 .env
+.env.*
+*.env

@@ -1,6 +1,7 @@
 import uuid
 from pathlib import Path
 from flask import Blueprint, request, jsonify, g, send_file
+from flask_login import login_required
 from utils import UPLOAD_DIR, OUTPUT_DIR, _save_upload
 import pdftool
 from extensions import limiter
@@ -10,6 +11,7 @@ image_bp = Blueprint("image", __name__)
 
 @image_bp.route("/images-to-pdf", methods=["POST"])
 @image_bp.route("/Images-to-pdf", methods=["POST"])
+@login_required
 def images_to_pdf_route():
     files = request.files.getlist("files") or request.files.getlist("file")
     if not files and "file" in request.files:
@@ -47,6 +49,7 @@ def images_to_pdf_route():
 
 
 @image_bp.route("/watermark", methods=["POST"])
+@login_required
 def watermark_route():
     mode = (request.form.get("mode") or "").lower()
     if mode == "image" or "image" in request.files:
@@ -56,6 +59,7 @@ def watermark_route():
 
 # NEW: Watermark PDF - Text
 @image_bp.route("/watermark-text", methods=["POST"])
+@login_required
 def watermark_text_route():
     f = request.files.get("file")
     if not f or not f.filename:
@@ -106,6 +110,7 @@ def watermark_text_route():
 
 # NEW: Watermark PDF - Image
 @image_bp.route("/watermark-image", methods=["POST"])
+@login_required
 def watermark_image_route():
     f = request.files.get("file")
     img = request.files.get("image")
@@ -155,6 +160,7 @@ def watermark_image_route():
 
 
 @image_bp.route("/qr-generate", methods=["POST"])
+@login_required
 def qr_generate_route():
     """
     Generate a QR code PNG from any text/URL -- works for a plain

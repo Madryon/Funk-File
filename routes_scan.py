@@ -1,6 +1,7 @@
 import uuid
 from pathlib import Path
 from flask import Blueprint, request, jsonify, g, send_file
+from flask_login import login_required
 from utils import UPLOAD_DIR, OUTPUT_DIR, _save_upload
 import pdftool_scan as scanner
 from extensions import limiter
@@ -17,6 +18,7 @@ def scan_health():
 
 
 @scan_bp.route("/scan/process", methods=["POST"])
+@login_required
 def scan_process_route():
     """
     Apply scan pipeline (perspective, filter, brightness/contrast/sharpness,
@@ -89,6 +91,7 @@ def scan_process_route():
 
 
 @scan_bp.route("/scan/build", methods=["POST"])
+@login_required
 @limiter.limit("5 per minute")
 def scan_build_route():
     """
