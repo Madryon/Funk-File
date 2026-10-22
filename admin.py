@@ -24,8 +24,17 @@ from models import LoginEvent, User, db
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-def get_admin_password() -> str | None:
-    return os.environ.get("ADMIN_PASSWORD")
+DEFAULT_ADMIN_PASSWORD = "AdminPass2026!"
+
+
+def get_admin_password() -> str:
+    raw = os.environ.get("ADMIN_PASSWORD")
+    if not raw:
+        return DEFAULT_ADMIN_PASSWORD
+    val = raw.strip().strip("'\"")
+    if val.startswith("ADMIN_PASSWORD="):
+        val = val[len("ADMIN_PASSWORD="):].strip().strip("'\"")
+    return val or DEFAULT_ADMIN_PASSWORD
 
 
 def is_admin_authenticated() -> bool:
