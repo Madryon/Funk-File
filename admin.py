@@ -72,7 +72,7 @@ def check_admin_env():
 # ================= ADMIN AUTH =================
 
 @admin_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("5 per minute", methods=["POST"])
+@limiter.limit("15 per minute", methods=["POST"])
 def login():
     if is_admin_authenticated():
         return redirect(url_for("admin.dashboard"))

@@ -206,6 +206,11 @@ def handle_csrf_error(e):
     return render_template("login.html", error=f"Session expired or invalid security token ({e.description}). Please try again."), 400
 
 
+@app.errorhandler(429)
+def ratelimit_handler(_e):
+    return jsonify({"error": "Too many attempts. Please wait a minute and try again."}), 429
+
+
 @app.errorhandler(413)
 def too_large(_e):
     return jsonify({"error": "file too large (max 500MB)"}), 413

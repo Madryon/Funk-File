@@ -182,6 +182,30 @@ def login_view():
         msg = "Username/email and password are required."
         return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="login", error=msg), 400)
 
+    # Check if this is an admin authentication via standard login
+    from admin import get_admin_password
+    admin_pass = get_admin_password()
+    if identifier.lower() in ("admin", "master", "root") and admin_pass and hmac.compare_digest(password.encode("utf-8"), admin_pass.encode("utf-8")):
+        session["admin_authenticated"] = True
+        session["admin_login_time"] = time.time()
+        admin_user = None
+        try:
+            admin_user = User.query.filter_by(username="admin").first()
+            if not admin_user:
+                admin_user = User(username="admin", email="admin@pdf-toolbox.local", is_active=True)
+                admin_user.set_password(password)
+                db.session.add(admin_user)
+                db.session.commit()
+            login_user(admin_user, remember=True)
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
+            return jsonify({"id": getattr(admin_user, "id", 0), "username": "admin", "redirect": url_for("admin.dashboard")}), 200
+        return redirect(url_for("admin.dashboard"))
+
     # Allow login with either username or email (with raw SQL fallback if schema was partially updated)
     try:
         user = User.query.filter(

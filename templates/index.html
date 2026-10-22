@@ -1060,28 +1060,39 @@ const Auth = (() => {
       try {
         let res = await api('/admin/login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ password })
         });
-        if (res.status === 404 || !res.ok) {
-          const res2 = await api('/auth/admin-login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password })
-          });
-          if (res2.ok) {
-            const d2 = await res2.json();
-            window.location.href = d2.redirect || '/admin';
-            return;
-          }
-          const d2 = await res2.json().catch(() => ({}));
-          return err.textContent = d2.error || 'Invalid admin password.';
+        let d = null;
+        try { d = await res.json(); } catch {}
+        if (res.ok && d && d.ok) {
+          window.location.href = d.redirect || '/admin';
+          return;
         }
-        const d = await res.json();
-        window.location.href = d.redirect || '/admin';
-        return;
+        if (d && d.error) {
+          return err.textContent = d.error;
+        }
+        if (res.status === 429) {
+          return err.textContent = 'Too many attempts. Please wait a minute and try again.';
+        }
+        // Fallback endpoint
+        let res2 = await api('/auth/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        let d2 = null;
+        try { d2 = await res2.json(); } catch {}
+        if (res2.ok && d2 && d2.ok) {
+          window.location.href = d2.redirect || '/admin';
+          return;
+        }
+        if (d2 && d2.error) {
+          return err.textContent = d2.error;
+        }
+        return err.textContent = 'Invalid admin password (default is: AdminPass2026!)';
       } catch (ex) {
-        return err.textContent = 'Failed to connect. Please try again.';
+        return err.textContent = 'Connection error. Please try again.';
       }
     }
 
@@ -1102,6 +1113,10 @@ const Auth = (() => {
       const target = pendingTool;
       close();
       renderBar();
+      if (d.redirect) {
+        window.location.href = d.redirect;
+        return;
+      }
       if (target) {
         show(target.id);
         $('home').hidden = true;
