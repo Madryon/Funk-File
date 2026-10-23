@@ -362,6 +362,272 @@ tr:hover td { background: rgba(0,0,0,.02); }
   color: var(--text);
 }
 
+/* ============ ADMIN TABS & TICKETS ============ */
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--ink-line);
+  padding-bottom: 14px;
+  flex-wrap: wrap;
+}
+.admin-tab-btn {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  color: var(--text-muted);
+  font: 600 13px 'IBM Plex Sans', sans-serif;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .2s;
+}
+.admin-tab-btn:hover {
+  color: var(--text);
+  border-color: var(--brass);
+}
+.admin-tab-btn.active {
+  background: var(--stamp);
+  color: #fff;
+  border-color: var(--stamp);
+  box-shadow: 0 4px 14px rgba(91,108,255,.3);
+}
+[data-theme="batman"] .admin-tab-btn.active {
+  background: #14151a;
+  color: #f5c518;
+  border: 1px solid #f5c518;
+  box-shadow: 0 0 14px rgba(245,197,24,.3);
+}
+.tab-badge {
+  background: rgba(255,255,255,.28);
+  color: inherit;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+[data-theme="batman"] .tab-badge {
+  background: rgba(245,197,24,.2);
+  color: #f5c518;
+}
+
+/* Ticket Filters */
+.filter-bar {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.filter-item label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.filter-item select, .filter-item input {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ink-line);
+  background: var(--ink);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.filter-item.search {
+  flex: 1;
+  min-width: 240px;
+}
+
+/* Ticket Status & Type Pills */
+.status-pill.status-open { background: rgba(234, 179, 8, .18); color: #854d0e; border: 1px solid rgba(234, 179, 8, .3); }
+.status-pill.status-in_progress { background: rgba(59, 130, 246, .18); color: #1e40af; border: 1px solid rgba(59, 130, 246, .3); }
+.status-pill.status-resolved { background: rgba(16, 185, 129, .18); color: #065f46; border: 1px solid rgba(16, 185, 129, .3); }
+.status-pill.status-closed { background: rgba(107, 114, 128, .18); color: #374151; border: 1px solid rgba(107, 114, 128, .3); }
+
+[data-theme="batman"] .status-pill.status-open { background: rgba(245, 197, 24, .2); color: #f5c518; border: 1px solid #f5c518; }
+[data-theme="batman"] .status-pill.status-in_progress { background: rgba(59, 130, 246, .25); color: #93c5fd; border: 1px solid #3b82f6; }
+[data-theme="batman"] .status-pill.status-resolved { background: rgba(16, 185, 129, .25); color: #34d399; border: 1px solid #10b981; }
+[data-theme="batman"] .status-pill.status-closed { background: rgba(107, 114, 128, .25); color: #9ca3af; border: 1px solid #6b7280; }
+
+.type-pill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--ink-raised);
+  color: var(--text-muted);
+  border: 1px solid var(--ink-line);
+  white-space: nowrap;
+}
+.ticket-row { cursor: pointer; transition: background .15s; }
+.text-sub { font-size: 11.5px; color: var(--text-muted); font-weight: normal; margin-top: 2px; }
+
+/* Ticket Detail Modal */
+.ticket-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.68);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ticket-modal-overlay[hidden] { display: none !important; }
+.ticket-modal-box {
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 44px rgba(0,0,0,.25);
+  padding: 26px;
+}
+[data-theme="batman"] .ticket-modal-box {
+  background: linear-gradient(145deg, #181920 0%, #121318 100%);
+  border: 1px solid #2a2d36;
+}
+.ticket-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink-line);
+}
+.ticket-modal-head .head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ticket-modal-head h3 {
+  font-family: Fraunces, serif;
+  font-size: 20px;
+}
+.ticket-modal-close {
+  background: none;
+  border: 0;
+  font-size: 26px;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.ticket-modal-close:hover { color: var(--text); }
+.ticket-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 18px;
+  background: var(--ink-soft);
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--ink-line);
+  font-size: 13px;
+}
+.meta-item { display: flex; flex-direction: column; gap: 2px; }
+.meta-item.full { grid-column: span 2; }
+.meta-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+.meta-val { word-break: break-all; color: var(--text); }
+.meta-val a { color: var(--stamp); text-decoration: underline; }
+.ticket-subject-block, .ticket-msg-block, .ticket-screenshot-block {
+  margin-bottom: 16px;
+}
+.ticket-subject-block label, .ticket-msg-block label, .ticket-screenshot-block label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 6px;
+}
+.subject-val {
+  font-size: 15px;
+  font-weight: 600;
+}
+.msg-box {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.screenshot-wrap img {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: 8px;
+  border: 1px solid var(--ink-line);
+  cursor: pointer;
+  transition: transform .2s;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+.screenshot-wrap img:hover { transform: scale(1.02); }
+.modal-divider {
+  border: 0;
+  border-top: 1px solid var(--ink-line);
+  margin: 20px 0;
+}
+.admin-input-group {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-input-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.admin-input-group select, .admin-input-group textarea {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ink-line);
+  background: var(--ink);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13.5px;
+}
+.modal-foot-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  gap: 12px;
+}
+.btn-primary {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 0;
+  background: linear-gradient(135deg, #5b6cff, #a855f7);
+  color: #fff;
+  font: 600 13.5px inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(91,108,255,.3);
+}
+[data-theme="batman"] .btn-primary {
+  background: #f5c518;
+  color: #0a0a0c;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(245,197,24,.4);
+}
+
 /* Admin Login Card */
 .admin-login-card {
   width: 100%;
@@ -444,6 +710,167 @@ tr:hover td { background: rgba(0,0,0,.02); }
   color: #f5c518;
   border: 1px solid #f5c518;
 }
+
+/* Floating Help & Bug Button */
+.help-fab-wrapper {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+.help-fab-pill {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #5b6cff;
+  color: #3b4cca;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(91, 108, 255, 0.28);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  letter-spacing: 0.2px;
+}
+.help-fab-pill:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  border-color: #3b4cca;
+  box-shadow: 0 10px 26px rgba(91, 108, 255, 0.4);
+}
+.help-fab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: help-dot-pulse 2s infinite ease-in-out;
+}
+@keyframes help-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.help-float-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #5b6cff;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+  color: #5b6cff;
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(91, 108, 255, 0.35), 0 0 0 3px rgba(91, 108, 255, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+.help-float-btn:hover {
+  transform: translateY(-2px) scale(1.06);
+  background: #5b6cff;
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(91, 108, 255, 0.5);
+}
+.help-float-btn:active {
+  transform: scale(0.95);
+}
+
+.help-float-btn::before {
+  content: "Support Tickets";
+  position: absolute;
+  right: 62px;
+  white-space: nowrap;
+  background: rgba(13, 17, 23, 0.92);
+  color: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 7px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.help-float-btn:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+[data-theme="batman"] .help-fab-pill {
+  background: #14151a;
+  border: 1.5px solid #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 16px rgba(245, 197, 24, 0.35);
+}
+[data-theme="batman"] .help-fab-dot {
+  background: #f5c518;
+  box-shadow: 0 0 8px #f5c518;
+}
+[data-theme="batman"] .help-float-btn {
+  background: #14151a;
+  border: 2px solid #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 18px rgba(245, 197, 24, 0.4);
+}
+[data-theme="batman"] .help-float-btn:hover {
+  background: #f5c518;
+  color: #0a0a0c;
+  box-shadow: 0 0 26px rgba(245, 197, 24, 0.7);
+}
+[data-theme="batman"] .help-float-btn::before {
+  background: #14151a;
+  border: 1px solid #2a2d36;
+  color: #f5c518;
+}
+
+[data-theme="baddie"] .help-fab-pill {
+  background: rgba(20, 0, 40, 0.9);
+  border: 1.5px solid #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 18px rgba(255, 46, 147, 0.4);
+}
+[data-theme="baddie"] .help-fab-dot {
+  background: #00F0FF;
+  box-shadow: 0 0 8px #00F0FF;
+}
+[data-theme="baddie"] .help-float-btn {
+  background: rgba(30, 5, 60, 0.9);
+  border: 2px solid #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 20px rgba(255, 46, 147, 0.5);
+}
+[data-theme="baddie"] .help-float-btn:hover {
+  background: #FF2E93;
+  color: #ffffff;
+  box-shadow: 0 0 28px rgba(255, 46, 147, 0.8);
+}
+
+@media (max-width: 600px) {
+  .help-fab-wrapper {
+    bottom: 16px;
+    right: 16px;
+  }
+  .help-fab-pill {
+    display: none;
+  }
+}
 </style>
 
 <!-- ============ GLASSMORPHISM · LIGHT MODE ONLY ============ -->
@@ -480,8 +907,8 @@ html[data-theme="light"] body,
 }
 html[data-theme="light"] .blob,
 :root:not([data-theme="batman"]):not([data-theme="baddie"]) .blob { display: block; }
-html[data-theme="light"] :is(.stat-card, .section-box, .admin-login-card),
-:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.stat-card, .section-box, .admin-login-card) {
+html[data-theme="light"] :is(.stat-card, .section-box, .admin-login-card, .ticket-modal-box),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.stat-card, .section-box, .admin-login-card, .ticket-modal-box) {
   background: var(--g-bg);
   -webkit-backdrop-filter: blur(20px) saturate(170%);
   backdrop-filter: blur(20px) saturate(170%);
@@ -530,6 +957,9 @@ html[data-theme="light"] :is(.stat-card, .section-box, .admin-login-card),
   </div>
   <div class="top-actions">
     <span class="session-badge" id="sessionTimer" data-remain="{{ remaining_secs }}">Session: 30:00</span>
+    <button type="button" class="btn-nav" onclick="switchAdminTab('tickets')" style="font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+      <span style="color:#5b6cff;">🎫</span> Support Tickets ({{ stats.open_tickets or 0 }})
+    </button>
     <a href="/" class="btn-nav" target="_blank">View Site ↗</a>
     <form method="POST" action="/admin/logout" style="display:inline">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -561,116 +991,476 @@ html[data-theme="light"] :is(.stat-card, .section-box, .admin-login-card),
     <span class="stat-val">{{ stats.total_users }}</span>
   </div>
   <div class="stat-card">
-    <span class="stat-label">Active (Last 24 Hours)</span>
+    <span class="stat-label">Active (24h)</span>
     <span class="stat-val">{{ stats.active_24h }}</span>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Active (Last 7 Days)</span>
-    <span class="stat-val">{{ stats.active_7d }}</span>
   </div>
   <div class="stat-card">
     <span class="stat-label">Total Logins</span>
     <span class="stat-val">{{ stats.total_logins }}</span>
   </div>
-</div>
-
-<!-- Users Table -->
-<div class="section-box">
-  <h3>
-    <span>Registered Accounts ({{ users|length }})</span>
-  </h3>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th>Signup Date</th>
-          <th>Last Login</th>
-          <th>Logins</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for u in users %}
-        <tr>
-          <td>#{{ u.id }}</td>
-          <td><strong>{{ u.username }}</strong></td>
-          <td>{{ u.email }}</td>
-          <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else '—' }}</td>
-          <td>{{ u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else 'Never' }}</td>
-          <td>{{ u.login_count }}</td>
-          <td>
-            <span class="status-pill {% if u.is_active %}active{% else %}disabled{% endif %}">
-              {% if u.is_active %}Active{% else %}Disabled{% endif %}
-            </span>
-          </td>
-          <td>
-            <div class="action-group">
-              <!-- Toggle Active / Disabled -->
-              <form method="POST" action="/admin/users/{{ u.id }}/toggle" style="display:inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-action toggle" title="Toggle active status">
-                  {% if u.is_active %}Disable{% else %}Enable{% endif %}
-                </button>
-              </form>
-              <!-- Generate Reset Link -->
-              <form method="POST" action="/admin/users/{{ u.id }}/reset-link" style="display:inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-action" title="Create temporary password reset URL">Reset Link</button>
-              </form>
-              <!-- Delete User -->
-              <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline" onsubmit="return confirm('Permanently delete user {{ u.username }}? This cannot be undone.');">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn-action danger" title="Delete account">Delete</button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">No registered users yet.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="stat-card">
+    <span class="stat-label">Open Tickets</span>
+    <span class="stat-val" style="color: #eab308;">{{ stats.open_tickets or 0 }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Tickets Today</span>
+    <span class="stat-val">{{ stats.tickets_today or 0 }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Resolved This Week</span>
+    <span class="stat-val" style="color: #10b981;">{{ stats.resolved_this_week or 0 }}</span>
   </div>
 </div>
 
-<!-- Recent Login Events Table -->
-<div class="section-box">
-  <h3>
-    <span>Recent Login Events (Last {{ recent_logins|length }})</span>
-  </h3>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Timestamp (UTC)</th>
-          <th>IP Address</th>
-          <th>User-Agent</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for e in recent_logins %}
-        <tr>
-          <td><strong>{{ e.user.username if e.user else 'Unknown (ID ' ~ e.user_id ~ ')' }}</strong></td>
-          <td>{{ e.logged_in_at.strftime('%Y-%m-%d %H:%M:%S') if e.logged_in_at else '—' }}</td>
-          <td><code>{{ e.ip or '127.0.0.1' }}</code></td>
-          <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ e.user_agent }}">{{ e.user_agent or '—' }}</td>
-        </tr>
-        {% else %}
-        <tr>
-          <td colspan="4" style="text-align:center; padding: 24px; color: var(--text-muted);">No login events recorded yet.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<!-- Navigation Tabs -->
+<div class="admin-tabs">
+  <button type="button" class="admin-tab-btn active" id="tabBtnUsers" onclick="switchAdminTab('users')">
+    👥 Accounts &amp; Logins
+  </button>
+  <button type="button" class="admin-tab-btn" id="tabBtnTickets" onclick="switchAdminTab('tickets')">
+    🎫 Support Tickets <span class="tab-badge" id="openTicketsBadge">{{ stats.open_tickets or 0 }}</span>
+  </button>
+</div>
+
+<!-- ============ TAB 1: USERS & LOGINS ============ -->
+<div id="tabContentUsers">
+  <!-- Users Table -->
+  <div class="section-box">
+    <h3>
+      <span>Registered Accounts ({{ users|length }})</span>
+    </h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Signup Date</th>
+            <th>Last Login</th>
+            <th>Logins</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>#{{ u.id }}</td>
+            <td><strong>{{ u.username }}</strong></td>
+            <td>{{ u.email or '—' }}</td>
+            <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else '—' }}</td>
+            <td>{{ u.last_login.strftime('%Y-%m-%d %H:%M') if u.last_login else 'Never' }}</td>
+            <td>{{ u.login_count }}</td>
+            <td>
+              <span class="status-pill {% if u.is_active %}active{% else %}disabled{% endif %}">
+                {% if u.is_active %}Active{% else %}Disabled{% endif %}
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <!-- Toggle Active / Disabled -->
+                <form method="POST" action="/admin/users/{{ u.id }}/toggle" style="display:inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-action toggle" title="Toggle active status">
+                    {% if u.is_active %}Disable{% else %}Enable{% endif %}
+                  </button>
+                </form>
+                <!-- Generate Reset Link -->
+                <form method="POST" action="/admin/users/{{ u.id }}/reset-link" style="display:inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-action" title="Create temporary password reset URL">Reset Link</button>
+                </form>
+                <!-- Delete User -->
+                <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline" onsubmit="return confirm('Permanently delete user {{ u.username }}? This cannot be undone.');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-action danger" title="Delete account">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" style="text-align:center; padding: 24px; color: var(--text-muted);">No registered users yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Login Events Table -->
+  <div class="section-box">
+    <h3>
+      <span>Recent Login Events (Last {{ recent_logins|length }})</span>
+    </h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Timestamp (UTC)</th>
+            <th>IP Address</th>
+            <th>User-Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in recent_logins %}
+          <tr>
+            <td><strong>{{ e.user.username if e.user else 'Unknown (ID ' ~ e.user_id ~ ')' }}</strong></td>
+            <td>{{ e.logged_in_at.strftime('%Y-%m-%d %H:%M:%S') if e.logged_in_at else '—' }}</td>
+            <td><code>{{ e.ip or '127.0.0.1' }}</code></td>
+            <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ e.user_agent }}">{{ e.user_agent or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" style="text-align:center; padding: 24px; color: var(--text-muted);">No login events recorded yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
+
+<!-- ============ TAB 2: SUPPORT TICKETS ============ -->
+<div id="tabContentTickets" style="display:none">
+  <div class="section-box">
+    <h3>
+      <span>User Support &amp; Bug Tickets ({{ tickets|length if tickets else 0 }})</span>
+    </h3>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="filter-item">
+        <label for="filterTicketStatus">Status</label>
+        <select id="filterTicketStatus" onchange="filterTickets()">
+          <option value="">All Statuses</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="filterTicketType">Type</label>
+        <select id="filterTicketType" onchange="filterTickets()">
+          <option value="">All Types</option>
+          <option value="Bug">Bug</option>
+          <option value="Problem">Problem</option>
+          <option value="Feature request">Feature request</option>
+          <option value="Help / Question">Help / Question</option>
+        </select>
+      </div>
+      <div class="filter-item search">
+        <label for="filterTicketSearch">Search</label>
+        <input type="text" id="filterTicketSearch" placeholder="Search by username, email, subject, or #ID..." oninput="filterTickets()">
+      </div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div class="table-wrap">
+      <table id="ticketsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Subject</th>
+            <th>User</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tickets %}
+          <tr class="ticket-row" data-id="{{ t.id }}" data-status="{{ t.status }}" data-type="{{ t.type }}" data-search="{{ (t.user.username if t.user else '') ~ ' ' ~ (t.user.email if t.user and t.user.email else '') ~ ' ' ~ t.subject ~ ' #' ~ t.id }}" onclick="openTicketModal({{ t.id }})">
+            <td>#{{ t.id }}</td>
+            <td><span class="type-pill">{{ t.type }}</span></td>
+            <td>
+              <strong>{{ t.subject }}</strong>
+              {% if t.screenshot_path %}<span title="Has screenshot attachment" style="margin-left: 4px;">📎</span>{% endif %}
+            </td>
+            <td>
+              <strong>{{ t.user.username if t.user else 'User #' ~ t.user_id }}</strong>
+              {% if t.user and t.user.email %}<div class="text-sub">{{ t.user.email }}</div>{% endif %}
+            </td>
+            <td>
+              <span class="status-pill status-{{ t.status }}">{{ t.status|replace('_', ' ')|capitalize }}</span>
+            </td>
+            <td>{{ t.created_at.strftime('%Y-%m-%d %H:%M') if t.created_at else '—' }}</td>
+            <td>
+              <button type="button" class="btn-action" onclick="event.stopPropagation(); openTicketModal({{ t.id }});">View / Manage</button>
+            </td>
+          </tr>
+          {% else %}
+          <tr id="noTicketsRow">
+            <td colspan="7" style="text-align:center; padding: 24px; color: var(--text-muted);">No support tickets submitted yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Ticket Detail Modal -->
+<div class="ticket-modal-overlay" id="ticketModal" hidden aria-hidden="true">
+  <div class="ticket-modal-box">
+    <div class="ticket-modal-head">
+      <div class="head-left">
+        <h3 id="tmHeading">Ticket Detail</h3>
+        <span class="status-pill" id="tmStatusBadge">Open</span>
+      </div>
+      <button type="button" class="ticket-modal-close" onclick="closeTicketModal()" aria-label="Close">×</button>
+    </div>
+    <div class="ticket-modal-body">
+      <div class="ticket-meta-grid">
+        <div class="meta-item">
+          <span class="meta-lbl">Submitted By</span>
+          <span class="meta-val" id="tmUser">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Email</span>
+          <span class="meta-val" id="tmEmail">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Date Submitted</span>
+          <span class="meta-val" id="tmCreated">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-lbl">Page / Tool</span>
+          <span class="meta-val" id="tmPageUrl">—</span>
+        </div>
+        <div class="meta-item full">
+          <span class="meta-lbl">User Agent</span>
+          <span class="meta-val" id="tmUserAgent">—</span>
+        </div>
+      </div>
+
+      <div class="ticket-subject-block">
+        <label>Subject</label>
+        <div class="subject-val" id="tmSubject"></div>
+      </div>
+
+      <div class="ticket-msg-block">
+        <label>User Message</label>
+        <div class="msg-box" id="tmMessage"></div>
+      </div>
+
+      <div class="ticket-screenshot-block" id="tmScreenshotContainer" style="display:none">
+        <label>Screenshot Attachment <span style="font-size:11px; text-transform:none; color:var(--text-muted);">(click image to open full resolution)</span></label>
+        <div class="screenshot-wrap">
+          <a id="tmScreenshotLink" href="" target="_blank" rel="noopener noreferrer">
+            <img id="tmScreenshotImg" src="" alt="Screenshot attachment">
+          </a>
+        </div>
+      </div>
+
+      <hr class="modal-divider">
+
+      <!-- Admin Actions Form -->
+      <form id="tmForm" method="POST" action="">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="admin-input-group">
+          <label for="tmStatusSelect">Change Status</label>
+          <select name="status" id="tmStatusSelect">
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="admin-input-group">
+          <label for="tmAdminNote">Admin Note / Response <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(Visible to user in their "My Tickets" list)</span></label>
+          <textarea name="admin_note" id="tmAdminNote" rows="3" placeholder="Write response or resolution note for the user..."></textarea>
+        </div>
+        <div class="modal-foot-actions">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" class="btn-action danger" id="tmDeleteBtn" onclick="deleteCurrentTicket()">Delete Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script id="ticketsJsonData" type="application/json">
+[
+  {% for t in tickets %}
+  {
+    "id": {{ t.id }},
+    "type": {{ t.type|tojson }},
+    "subject": {{ t.subject|tojson }},
+    "message": {{ t.message|tojson }},
+    "page_url": {{ (t.page_url or '')|tojson }},
+    "user_agent": {{ (t.user_agent or '')|tojson }},
+    "screenshot_path": {{ (t.screenshot_path or '')|tojson }},
+    "status": {{ t.status|tojson }},
+    "admin_note": {{ (t.admin_note or '')|tojson }},
+    "created_at": {{ (t.created_at.strftime('%Y-%m-%d %H:%M') if t.created_at else '')|tojson }},
+    "updated_at": {{ (t.updated_at.strftime('%Y-%m-%d %H:%M') if t.updated_at else '')|tojson }},
+    "username": {{ (t.user.username if t.user else ('User #' ~ t.user_id))|tojson }},
+    "email": {{ (t.user.email if t.user and t.user.email else '')|tojson }}
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+]
+</script>
+
+<script>
+// Tickets Data Map & Interactivity
+let ticketsMap = {};
+try {
+  const raw = document.getElementById('ticketsJsonData')?.textContent;
+  if (raw) {
+    const list = JSON.parse(raw);
+    list.forEach(t => ticketsMap[t.id] = t);
+  }
+} catch (e) {
+  console.error("Failed to parse tickets json", e);
+}
+
+function switchAdminTab(tab) {
+  const usersTab = document.getElementById('tabContentUsers');
+  const ticketsTab = document.getElementById('tabContentTickets');
+  const btnUsers = document.getElementById('tabBtnUsers');
+  const btnTickets = document.getElementById('tabBtnTickets');
+
+  if (tab === 'tickets') {
+    if (usersTab) usersTab.style.display = 'none';
+    if (ticketsTab) ticketsTab.style.display = 'block';
+    if (btnUsers) btnUsers.classList.remove('active');
+    if (btnTickets) btnTickets.classList.add('active');
+    try { history.replaceState(null, null, '#tickets'); } catch {}
+  } else {
+    if (usersTab) usersTab.style.display = 'block';
+    if (ticketsTab) ticketsTab.style.display = 'none';
+    if (btnUsers) btnUsers.classList.add('active');
+    if (btnTickets) btnTickets.classList.remove('active');
+    try { history.replaceState(null, null, '#users'); } catch {}
+  }
+}
+
+if (location.hash === '#tickets') {
+  switchAdminTab('tickets');
+}
+
+function filterTickets() {
+  const statusFilter = document.getElementById('filterTicketStatus')?.value.toLowerCase() || '';
+  const typeFilter = document.getElementById('filterTicketType')?.value.toLowerCase() || '';
+  const searchFilter = document.getElementById('filterTicketSearch')?.value.toLowerCase().trim() || '';
+
+  const rows = document.querySelectorAll('.ticket-row');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const rStatus = (row.dataset.status || '').toLowerCase();
+    const rType = (row.dataset.type || '').toLowerCase();
+    const rSearch = (row.dataset.search || '').toLowerCase();
+
+    const matchStatus = !statusFilter || rStatus === statusFilter;
+    const matchType = !typeFilter || rType === typeFilter;
+    const matchSearch = !searchFilter || rSearch.includes(searchFilter);
+
+    if (matchStatus && matchType && matchSearch) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  const noRow = document.getElementById('noTicketsRow');
+  if (noRow) {
+    noRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : (rows.length === 0 ? '' : 'none');
+  }
+}
+
+let activeTicketId = null;
+
+function openTicketModal(id) {
+  const t = ticketsMap[id];
+  if (!t) return;
+  activeTicketId = id;
+
+  document.getElementById('tmHeading').textContent = `Ticket #${t.id} · ${t.type}`;
+  const badge = document.getElementById('tmStatusBadge');
+  badge.textContent = t.status.replace('_', ' ').toUpperCase();
+  badge.className = `status-pill status-${t.status}`;
+
+  document.getElementById('tmUser').textContent = t.username || '—';
+  document.getElementById('tmEmail').textContent = t.email || '—';
+  document.getElementById('tmCreated').textContent = t.created_at || '—';
+
+  const pageUrlEl = document.getElementById('tmPageUrl');
+  if (t.page_url) {
+    pageUrlEl.innerHTML = `<a href="${t.page_url}" target="_blank" rel="noopener noreferrer">${t.page_url}</a>`;
+  } else {
+    pageUrlEl.textContent = '—';
+  }
+
+  document.getElementById('tmUserAgent').textContent = t.user_agent || '—';
+  document.getElementById('tmSubject').textContent = t.subject;
+  document.getElementById('tmMessage').textContent = t.message;
+
+  const scContainer = document.getElementById('tmScreenshotContainer');
+  const scImg = document.getElementById('tmScreenshotImg');
+  const scLink = document.getElementById('tmScreenshotLink');
+  if (t.screenshot_path) {
+    const scUrl = `/admin/tickets/${t.id}/screenshot`;
+    scImg.src = scUrl;
+    scLink.href = scUrl;
+    scContainer.style.display = 'block';
+  } else {
+    scContainer.style.display = 'none';
+    scImg.src = '';
+    scLink.href = '';
+  }
+
+  document.getElementById('tmForm').action = `/admin/tickets/${t.id}/update`;
+  document.getElementById('tmStatusSelect').value = t.status;
+  document.getElementById('tmAdminNote').value = t.admin_note || '';
+
+  const modal = document.getElementById('ticketModal');
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeTicketModal() {
+  const modal = document.getElementById('ticketModal');
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  activeTicketId = null;
+}
+
+function deleteCurrentTicket() {
+  if (!activeTicketId) return;
+  if (!confirm(`Are you sure you want to permanently delete Ticket #${activeTicketId}? This cannot be undone.`)) return;
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = `/admin/tickets/${activeTicketId}/delete`;
+
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  if (csrfMeta) {
+    const inp = document.createElement('input');
+    inp.type = 'hidden';
+    inp.name = 'csrf_token';
+    inp.value = csrfMeta.content;
+    form.appendChild(inp);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeTicketModal();
+});
+document.getElementById('ticketModal')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('ticketModal')) closeTicketModal();
+});
+</script>
 
 <script>
 // 30-min countdown timer
@@ -712,5 +1502,16 @@ html[data-theme="light"] :is(.stat-card, .section-box, .admin-login-card),
   apply(saved || 'light');
 })();
 </script>
+{% if mode != 'login' %}
+<!-- Floating Support Tickets Shortcut -->
+<div class="help-fab-wrapper" id="helpFabWrapper">
+  <div class="help-fab-pill" onclick="switchAdminTab('tickets')" title="View Support Tickets">
+    <span class="help-fab-dot"></span> Support Tickets ({{ stats.open_tickets or 0 }})
+  </div>
+  <button type="button" class="help-float-btn" onclick="switchAdminTab('tickets')" aria-label="Support Tickets" title="Support Tickets">
+    ?
+  </button>
+</div>
+{% endif %}
 </body>
 </html>

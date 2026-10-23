@@ -6,6 +6,7 @@ import sys
 import uuid
 import zipfile
 from pathlib import Path
+import fitz  # PyMuPDF
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
 import pypdfium2 as pdfium
@@ -125,15 +126,47 @@ def compress_image(input_path, output_path, quality=60, max_dimension=None):
     return output_path
 
 
-def compress_pdf(input_path, output_path, quality=60, max_dimension=1600, dpi=120, mode="auto"):
-    if mode == "rasterize":
-        return _compress_pdf_rasterize(input_path, output_path, quality, max_dimension, dpi)
-    if mode == "native":
-        return _compress_pdf_native(input_path, output_path, quality, max_dimension)
+def compress_pdf(input_path, output_path, level="medium", image_dpi=150, quality=75, **kwargs):
+    """Fast, low-memory PDF compression using PyMuPDF native C routines."""
+    presets = {
+        "low": (200, 85),
+        "medium": (150, 72),
+        "high": (100, 55),
+        "extreme": (72, 40),
+    }
+    if isinstance(level, str) and level in presets:
+        image_dpi, quality = presets[level]
+    elif "dpi" in kwargs and kwargs.get("dpi"):
+        try:
+            image_dpi = int(kwargs["dpi"])
+        except (ValueError, TypeError):
+            pass
+
+    if "quality" in kwargs and kwargs.get("quality") is not None:
+        try:
+            quality = int(kwargs["quality"])
+        except (ValueError, TypeError):
+            pass
+
+    doc = fitz.open(str(input_path))
     try:
-        return _compress_pdf_native(input_path, output_path, quality, max_dimension)
-    except Exception:
-        return _compress_pdf_rasterize(input_path, output_path, quality, max_dimension, dpi)
+        if hasattr(doc, "rewrite_images"):
+            doc.rewrite_images(
+                dpi_threshold=image_dpi + 20,
+                dpi_target=image_dpi,
+                quality=quality,
+            )
+        doc.save(
+            str(output_path),
+            garbage=4,           # Deduplicate and remove unreferenced objects
+            deflate=True,        # Compress uncompressed streams
+            deflate_images=True, # Compress images
+            deflate_fonts=True,  # Compress fonts
+            clean=True,
+        )
+    finally:
+        doc.close()
+    return output_path
 
 
 def _compress_pdf_native(input_path, output_path, quality=60, max_dimension=1600):

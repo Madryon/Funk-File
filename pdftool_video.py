@@ -27,45 +27,43 @@ def _ffmpeg_bin():
     return ffmpeg
 
 
-def extract_audio(in_path: str, out_path: str, bitrate: str = "192k") -> str:
-    """
-    Extract audio from a video file into an mp3 using ffmpeg.
-    """
-    in_path = str(in_path)
-    out_path = str(out_path)
+def extract_audio(video_path: str, mp3_output_path: str, bitrate: str | None = None, **kwargs) -> str:
+    """Stream audio directly to MP3 via ffmpeg without decoding video frames."""
+    video_path = str(video_path)
+    mp3_output_path = str(mp3_output_path)
 
-    if not os.path.exists(in_path):
+    if not os.path.exists(video_path):
         raise VideoToolError("Input video file not found.")
 
-    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
-
-    ffmpeg = _ffmpeg_bin()
+    Path(mp3_output_path).parent.mkdir(parents=True, exist_ok=True)
+    ffmpeg = shutil.which("ffmpeg") or "ffmpeg"
 
     cmd = [
         ffmpeg,
-        "-y",                # overwrite output
-        "-i", in_path,
-        "-vn",               # no video
+        "-y",
+        "-i", video_path,
+        "-vn",                   # Skip video decoding for massive speed/RAM savings
         "-acodec", "libmp3lame",
-        "-b:a", bitrate,
-        out_path,
+        "-q:a", "4",             # High-speed VBR encoding
+        mp3_output_path,
     ]
 
     try:
-        result = subprocess.run(
+        subprocess.run(
             cmd,
+            check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
-            timeout=600,
+            timeout=90,
         )
     except subprocess.TimeoutExpired:
         raise VideoToolError("Audio extraction timed out.")
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        stderr = getattr(e, "stderr", None)
+        err_msg = stderr.decode(errors="ignore")[-2000:] if stderr else str(e)
+        raise VideoToolError(f"ffmpeg failed to extract audio: {err_msg}")
 
-    if result.returncode != 0 or not os.path.exists(out_path):
-        stderr = result.stderr.decode(errors="ignore")[-2000:]
-        raise VideoToolError(f"ffmpeg failed to extract audio: {stderr}")
-
-    return out_path
+    return mp3_output_path
 import pdftool
 
 def video_to_images(in_path: str, out_dir: str, fmt: str = "png", quality: int = 85,

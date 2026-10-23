@@ -1,1 +1,1 @@
-web: gunicorn -w 3 --threads 2 --timeout 120 -b 0.0.0.0:$PORT app:app
+web: gunicorn app:app --workers 2 --threads 4 --timeout 120 --max-requests 150 --max-requests-jitter 20

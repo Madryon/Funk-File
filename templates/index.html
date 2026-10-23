@@ -335,6 +335,386 @@ html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);co
 .history-empty{justify-content:center;color:var(--text-faint)}
 .history-actions{display:flex;gap:10px;margin-top:12px;justify-content:flex-end}
 
+/* Floating Help & Bug Button */
+.help-fab-wrapper {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+.help-fab-pill {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #5b6cff;
+  color: #3b4cca;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(91, 108, 255, 0.28);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  letter-spacing: 0.2px;
+}
+.help-fab-pill:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  border-color: #3b4cca;
+  box-shadow: 0 10px 26px rgba(91, 108, 255, 0.4);
+}
+.help-fab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: help-dot-pulse 2s infinite ease-in-out;
+}
+@keyframes help-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.help-float-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #5b6cff;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+  color: #5b6cff;
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(91, 108, 255, 0.35), 0 0 0 3px rgba(91, 108, 255, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+.help-float-btn:hover {
+  transform: translateY(-2px) scale(1.06);
+  background: #5b6cff;
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(91, 108, 255, 0.5);
+}
+.help-float-btn:active {
+  transform: scale(0.95);
+}
+
+/* Tooltip */
+.help-float-btn::before {
+  content: "Help / Report a bug";
+  position: absolute;
+  right: 62px;
+  white-space: nowrap;
+  background: rgba(13, 17, 23, 0.92);
+  color: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 7px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.help-float-btn:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Nav button in header auth bar */
+.btn-help-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid rgba(91, 108, 255, 0.45);
+  background: rgba(91, 108, 255, 0.1);
+  color: #5b6cff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-help-nav:hover {
+  background: rgba(91, 108, 255, 0.2);
+  border-color: #5b6cff;
+  transform: translateY(-1px);
+}
+
+/* Dark theme overrides for floating button & pill */
+[data-theme="batman"] .help-fab-pill {
+  background: #14151a;
+  border: 1.5px solid #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 16px rgba(245, 197, 24, 0.35);
+}
+[data-theme="batman"] .help-fab-dot {
+  background: #f5c518;
+  box-shadow: 0 0 8px #f5c518;
+}
+[data-theme="batman"] .help-float-btn {
+  background: #14151a;
+  border: 2px solid #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 18px rgba(245, 197, 24, 0.4);
+}
+[data-theme="batman"] .help-float-btn:hover {
+  background: #f5c518;
+  color: #0a0a0c;
+  box-shadow: 0 0 26px rgba(245, 197, 24, 0.7);
+}
+[data-theme="batman"] .help-float-btn::before {
+  background: #14151a;
+  border: 1px solid #2a2d36;
+  color: #f5c518;
+}
+[data-theme="batman"] .btn-help-nav {
+  border-color: #f5c518;
+  background: rgba(245, 197, 24, 0.12);
+  color: #f5c518;
+}
+
+[data-theme="baddie"] .help-fab-pill {
+  background: rgba(20, 0, 40, 0.9);
+  border: 1.5px solid #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 18px rgba(255, 46, 147, 0.4);
+}
+[data-theme="baddie"] .help-fab-dot {
+  background: #00F0FF;
+  box-shadow: 0 0 8px #00F0FF;
+}
+[data-theme="baddie"] .help-float-btn {
+  background: rgba(30, 5, 60, 0.9);
+  border: 2px solid #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 20px rgba(255, 46, 147, 0.5);
+}
+[data-theme="baddie"] .help-float-btn:hover {
+  background: #FF2E93;
+  color: #ffffff;
+  box-shadow: 0 0 28px rgba(255, 46, 147, 0.8);
+}
+[data-theme="baddie"] .btn-help-nav {
+  border-color: #FF2E93;
+  background: rgba(255, 46, 147, 0.15);
+  color: #00F0FF;
+}
+
+@media (max-width: 600px) {
+  .help-fab-wrapper {
+    bottom: 16px;
+    right: 16px;
+  }
+  .help-fab-pill {
+    display: none;
+  }
+}
+
+/* Help Modal Styling */
+.help-modal-box {
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.25);
+  padding: 24px;
+}
+[data-theme="batman"] .help-modal-box {
+  background: linear-gradient(145deg, #181920 0%, #121318 100%);
+  border: 1px solid #2a2d36;
+}
+.help-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ink-line);
+}
+.help-modal-head h3 {
+  font-family: Fraunces, serif;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.help-modal-close {
+  background: none;
+  border: 0;
+  font-size: 24px;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.help-modal-close:hover { color: var(--text); }
+
+/* Tabs inside Help Modal */
+.help-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--ink-soft);
+  padding: 4px;
+  border-radius: 9px;
+  margin-bottom: 18px;
+  border: 1px solid var(--ink-line);
+}
+.help-tab-btn {
+  flex: 1;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font: 600 12.5px 'IBM Plex Sans', sans-serif;
+  padding: 8px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.help-tab-btn.active {
+  background: var(--ink);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+[data-theme="batman"] .help-tab-btn.active {
+  background: #2a2d36;
+  color: #f5c518;
+}
+[data-theme="baddie"] .help-tab-btn.active {
+  background: rgba(255,46,147,.25);
+  color: #fff;
+}
+
+/* Help Form Elements */
+.help-form-group {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.help-form-group label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'IBM Plex Mono', monospace;
+  display: flex;
+  justify-content: space-between;
+}
+.help-form-group input[type="text"],
+.help-form-group select,
+.help-form-group textarea {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ink-line);
+  background: var(--ink);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13.5px;
+  outline: none;
+}
+.help-form-group textarea {
+  resize: vertical;
+  min-height: 85px;
+}
+.help-file-input {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.help-char-count {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: normal;
+}
+
+/* Ticket List inside My Tickets tab */
+.my-tickets-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.my-ticket-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--ink-line);
+  border-radius: 10px;
+  padding: 14px;
+  transition: all .2s;
+}
+.my-ticket-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.my-ticket-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.my-ticket-date {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.my-ticket-msg {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-top: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.my-ticket-reply {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(91, 108, 255, 0.1);
+  border-left: 3px solid #5b6cff;
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.4;
+}
+[data-theme="batman"] .my-ticket-reply {
+  background: rgba(245, 197, 24, 0.1);
+  border-left-color: #f5c518;
+}
+.my-ticket-reply strong {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--stamp);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 3px;
+}
+
 /* ============ MOBILE ============ */
 @media(max-width:900px){.tabs{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:820px){.scanner-layout{grid-template-columns:1fr}}
@@ -418,8 +798,8 @@ html[data-theme="light"] .b2 { animation: blob-float-2 22s ease-in-out infinite;
 html[data-theme="light"] .b3 { animation: blob-float-3 20s ease-in-out infinite; }
 
 /* Glass surfaces */
-html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb),
-:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb) {
+html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card),
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card) {
   background: var(--g-bg);
   -webkit-backdrop-filter: blur(20px) saturate(170%);
   backdrop-filter: blur(20px) saturate(170%);
@@ -644,17 +1024,6 @@ html[data-theme="light"] .ticket-perf,
 </style>
 </head>
 <body>
-<!-- Ambient Light Mode Blobs -->
-<div class="blob b1" aria-hidden="true"></div>
-<div class="blob b2" aria-hidden="true"></div>
-<div class="blob b3" aria-hidden="true"></div>
-
-<!-- Gotham Background Layer -->
-<div class="batman-bg-container" id="batmanBg" aria-hidden="true">
-  <div class="gotham-dark-overlay"></div>
-  <canvas id="gotham-canvas"></canvas>
-</div>
-
 <div class="topline"></div>
 <div class="container">
 
@@ -684,7 +1053,7 @@ html[data-theme="light"] .ticket-perf,
 <div class="rule"></div>
 
 <!-- Login / register / admin modal -->
-<div class="modal-overlay" id="authModal"><div class="modal-box">
+<div class="modal-overlay" id="authModal" hidden aria-hidden="true"><div class="modal-box">
   <div class="auth-tabs" id="authTabs">
     <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="Auth.setMode('register')">Register</button>
     <button type="button" class="auth-tab-btn" id="authTabLogin" onclick="Auth.setMode('login')">Log In</button>
@@ -709,7 +1078,7 @@ html[data-theme="light"] .ticket-perf,
 </div></div>
 
 <!-- Camera modal -->
-<div class="scan-modal-backdrop" id="camModal"><div class="scan-modal">
+<div class="scan-modal-backdrop" id="camModal" hidden aria-hidden="true"><div class="scan-modal">
   <div class="scan-modal-head"><h3>Capture a document</h3><button class="scan-modal-close" id="camClose" aria-label="Close">×</button></div>
   <div class="scan-modal-body"><video id="camVideo" autoplay playsinline muted></video><canvas id="camCanvas"></canvas></div>
   <div class="scan-modal-foot">
@@ -719,9 +1088,9 @@ html[data-theme="light"] .ticket-perf,
   </div>
 </div></div>
 
-<div id="home"></div>
+<div id="home" hidden></div>
 
-<div id="toolView" hidden>
+<div id="toolView">
   <button class="back-link" id="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> All Tools</button>
   <nav class="tabs" id="tabs"></nav>
   <div id="panels">
@@ -751,7 +1120,7 @@ html[data-theme="light"] .ticket-perf,
           </div>
           <div class="scan-build-row">
             <div><label for="scanFmt">Export as</label><select id="scanFmt"><option value="docx">DOCX (editable Word)</option><option value="pdf">PDF (image-only)</option></select></div>
-            <div><label for="scanLang">OCR language</label><select id="scanLang"></select></div>
+            <div><label for="scanLang">OCR language</label><select id="scanLang" aria-label="OCR Language"><option value="eng" selected>English (OCR)</option><option value="spa">Spanish (OCR)</option><option value="fra">French (OCR)</option><option value="deu">German (OCR)</option><option value="hin">Hindi (OCR)</option><option value="a4">A4 Page</option></select></div>
           </div>
           <label class="scan-checkbox-row"><input type="checkbox" id="scanOcr" checked> Run OCR (extract text into editable DOCX)</label>
           <div id="scanOcrNote" hidden class="hint-text">OCR isn't available on this server — exports will still work, just without extracted text.</div>
@@ -792,6 +1161,134 @@ html[data-theme="light"] .ticket-perf,
 </div><!-- /toolView -->
 
 <footer>Files are processed on the server and removed automatically after closing the Tab</footer>
+</div>
+
+<!-- Floating Help & Report Bug Widget (Pinned to bottom-right viewport) -->
+<div class="help-fab-wrapper" id="helpFabWrapper">
+  <div class="help-fab-pill" id="helpFabPill" onclick="HelpModal.open()" title="Click to get help or report a bug">
+    <span class="help-fab-dot"></span>
+    <span>Help / Report Bug</span>
+  </div>
+  <button type="button" class="help-float-btn" id="helpFloatBtn" onclick="HelpModal.open()" aria-label="Help / Report a bug" title="Help / Report a bug">
+    ?
+  </button>
+</div>
+
+<!-- Help / Report a Bug Modal -->
+<div class="modal-overlay" id="helpModal" hidden aria-hidden="true">
+  <div class="help-modal-box">
+    <div class="help-modal-head">
+      <h3>
+        <span style="font-size:20px;">💬</span>
+        <span>Help / Report an Issue</span>
+      </h3>
+      <button type="button" class="help-modal-close" onclick="HelpModal.close()" aria-label="Close">×</button>
+    </div>
+
+    <!-- If Not Logged In: Auth Gate Notice -->
+    <div id="helpAuthGate" style="display:none">
+      <div style="text-align: center; padding: 24px 12px;">
+        <div style="font-size: 42px; margin-bottom: 12px;">🔒</div>
+        <h4 style="font-size: 16px; margin-bottom: 8px;">Please register or log in to report a problem</h4>
+        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 22px;">
+          Support requests and bug reports are linked to your user account so you can view replies and check resolution status.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button type="button" class="btn-primary" onclick="HelpModal.close(); Auth.open('login');" style="padding: 10px 20px; font-size: 13.5px;">Log In</button>
+          <button type="button" onclick="HelpModal.close(); Auth.open('register');" style="padding: 10px 20px; border-radius: 8px; border: 1px solid var(--ink-line); background: var(--ink); color: var(--text); font: 600 13.5px inherit; cursor: pointer;">Register</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logged In Content -->
+    <div id="helpMainContent">
+      <div class="help-tabs">
+        <button type="button" class="help-tab-btn active" id="btnHelpTabReport" onclick="HelpModal.setTab('report')">
+          <span>📝 Report an Issue</span>
+        </button>
+        <button type="button" class="help-tab-btn" id="btnHelpTabMine" onclick="HelpModal.setTab('mine')">
+          <span>📁 My Tickets</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: Report Issue Form -->
+      <div id="helpTabReportView">
+        <div id="helpAlert" class="alert" style="display:none; margin-bottom: 14px;"></div>
+        <form id="helpForm" autocomplete="off">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" id="helpPageUrl" name="page_url">
+          <input type="hidden" id="helpUserAgent" name="user_agent">
+
+          <div class="help-form-group">
+            <label for="helpType">Type of Request</label>
+            <select name="type" id="helpType" required>
+              <option value="Bug">Bug (Feature or tool broken)</option>
+              <option value="Problem" selected>Problem (Error or failed file processing)</option>
+              <option value="Feature request">Feature request (New tool or suggestion)</option>
+              <option value="Help / Question">Help / Question (How do I use this?)</option>
+            </select>
+          </div>
+
+          <div class="help-form-group">
+            <label for="helpTool">Tool / Page Affected</label>
+            <select name="tool_affected" id="helpTool">
+              <option value="Doc Scanner">Doc Scanner</option>
+              <option value="Compress PDF">Compress PDF</option>
+              <option value="Merge PDF">Merge PDF</option>
+              <option value="Split PDF">Split PDF</option>
+              <option value="Convert PDF">Convert PDF / Images</option>
+              <option value="PDF to Word">PDF to Word</option>
+              <option value="Video to MP3">Video to MP3</option>
+              <option value="Video to Frames">Video to Frames</option>
+              <option value="QR Code Generator">QR Code Generator</option>
+              <option value="Account / Auth">Account / Auth</option>
+              <option value="General / Website" selected>General / Website</option>
+            </select>
+          </div>
+
+          <div class="help-form-group">
+            <label for="helpSubject">
+              <span>Subject</span>
+              <span style="font-weight:normal; font-size:11px; text-transform:none;">(Max 120 chars)</span>
+            </label>
+            <input type="text" id="helpSubject" name="subject" maxlength="120" placeholder="Brief summary of the issue..." required>
+          </div>
+
+          <div class="help-form-group">
+            <label for="helpMessage">
+              <span>Message</span>
+              <span id="helpCharCount" class="help-char-count">0 / 2000</span>
+            </label>
+            <textarea id="helpMessage" name="message" maxlength="2000" rows="4" placeholder="Describe the problem, file type, or steps to reproduce..." required></textarea>
+          </div>
+
+          <div class="help-form-group">
+            <label for="helpScreenshot">
+              <span>Optional Screenshot</span>
+              <span style="font-weight:normal; font-size:11px; text-transform:none;">(PNG, JPG, WEBP &bull; Max 3 MB)</span>
+            </label>
+            <input type="file" id="helpScreenshot" name="screenshot" accept=".png,.jpg,.jpeg,.webp" class="help-file-input">
+          </div>
+
+          <button type="submit" class="submit-btn" id="helpSubmitBtn" style="margin-top: 14px;">
+            <span class="btn-label">Submit Ticket</span>
+            <div class="btn-spinner"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab 2: My Tickets List -->
+      <div id="helpTabMineView" style="display:none">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:12px; color:var(--text-muted); font-weight:600; text-transform:uppercase; font-family:'IBM Plex Mono',monospace;">Your Submitted Tickets</span>
+          <button type="button" onclick="HelpModal.loadMyTickets()" style="background:none; border:0; color:var(--stamp); font-size:12px; font-weight:600; cursor:pointer;">↻ Refresh</button>
+        </div>
+        <div class="my-tickets-wrap" id="myTicketsList">
+          <div style="text-align:center; padding:24px; color:var(--text-muted);">Loading your tickets...</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
@@ -958,8 +1455,8 @@ const Auth = (() => {
   function renderBar() {
     $('authNote').hidden = !!currentUser;
     $('authBar').innerHTML = currentUser
-      ? `<span class="auth-user">Welcome, <strong>${esc(currentUser.username)}</strong></span><button onclick="Auth.toggleHistory()">📁 History</button><button onclick="Auth.open('admin')" style="background:rgba(91,108,255,.12);border-color:var(--brass);font-weight:600">🛡️ Admin</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
-      : `<button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button><button onclick="Auth.open('admin')" class="auth-btn-admin" style="background:linear-gradient(135deg,rgba(91,108,255,.18),rgba(168,85,247,.18));border:1px solid var(--brass);color:var(--text);font-weight:600">🛡️ Admin Login</button>`;
+      ? `<span class="auth-user">Welcome, <strong>${esc(currentUser.username)}</strong></span><button type="button" class="btn-help-nav" onclick="HelpModal.open()" title="Get help or report a bug"><span style="color:#5b6cff;">💬</span> Help / Report Bug</button><button onclick="Auth.toggleHistory()">📁 History</button><button onclick="Auth.open('admin')" style="background:rgba(91,108,255,.12);border-color:var(--brass);font-weight:600">🛡️ Admin</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
+      : `<button type="button" class="btn-help-nav" onclick="HelpModal.open()" title="Get help or report a bug"><span style="color:#5b6cff;">💬</span> Help / Report Bug</button><button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button><button onclick="Auth.open('admin')" class="auth-btn-admin" style="background:linear-gradient(135deg,rgba(91,108,255,.18),rgba(168,85,247,.18));border:1px solid var(--brass);color:var(--text);font-weight:600">🛡️ Admin Login</button>`;
 
     // Update badges on tool cards
     $$('.tool-badge.auth-badge').forEach(b => {
@@ -1023,7 +1520,10 @@ const Auth = (() => {
     err.textContent = '';
     $('authForm').reset();
     setMode(m || 'login');
-    $('authModal').classList.add('open');
+    const modal = $('authModal');
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('open');
     setTimeout(() => {
       if (m === 'admin') {
         $('authPass') && $('authPass').focus();
@@ -1040,12 +1540,18 @@ const Auth = (() => {
     err.textContent = '';
     $('authForm').reset();
     setMode(preferredMode || 'register');
-    $('authModal').classList.add('open');
+    const modal = $('authModal');
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('open');
     setTimeout(() => $('authUser').focus(), 100);
   }
 
   const close = () => {
-    $('authModal').classList.remove('open');
+    const modal = $('authModal');
+    modal.classList.remove('open');
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
     err.textContent = '';
     pendingTool = null;
   };
@@ -1292,7 +1798,7 @@ T.filter(t => t.modes).forEach(t => {
 
 /* ================= NAVIGATION (home ⇄ tool view) ================= */
 const SUB_HOME = 'ALL YOUR TOOLS IN ONE PLACE · CLICK ANY CARD TO START', SUB_TOOL = 'DROP YOUR FILES · WE PROCESS THEM · YOU CLAIM THE RESULT';
-$('sub').textContent = SUB_HOME;
+$('sub').textContent = SUB_TOOL;
 const show = id => {
   const tool = T.find(x => x.id === id);
   if (tool && tool.auth && authReady && !Auth.isLoggedIn()) {
@@ -1302,6 +1808,10 @@ const show = id => {
   $$('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab == id));
   $$('.panel').forEach(x => x.classList.toggle('active', x.id == id));
 };
+// Render the default active tool tab immediately on initial load
+show('scanner');
+$('toolView').hidden = false;
+$('home').hidden = true;
 $$('.tool-card').forEach(c => c.onclick = async () => {
   const id = c.dataset.tool;
   const t = T.find(x => x.id === id);
@@ -1429,8 +1939,26 @@ const Scan = (() => {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
     $('camVideo').srcObject = stream;
   };
-  const closeCam = () => { $('camModal').classList.remove('open'); stream?.getTracks().forEach(t => t.stop()); stream = null; };
-  $('scanCam').onclick = async () => { $('camModal').classList.add('open'); try { await startCam(); } catch (e) { alert('Camera unavailable: ' + e.message); closeCam(); } };
+  const closeCam = () => {
+    const modal = $('camModal');
+    modal.classList.remove('open');
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    stream?.getTracks().forEach(t => t.stop());
+    stream = null;
+  };
+  $('scanCam').onclick = async () => {
+    const modal = $('camModal');
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('open');
+    try {
+      await startCam();
+    } catch (e) {
+      alert('Camera unavailable: ' + e.message);
+      closeCam();
+    }
+  };
   $('camFlip').onclick = () => { facing = facing == 'environment' ? 'user' : 'environment'; startCam(); };
   $('camClose').onclick = $('camCancel').onclick = closeCam;
   $('camShot').onclick = () => {
@@ -1549,6 +2077,181 @@ const Scan = (() => {
   $('qr').addEventListener('input', render);
   $('qr').addEventListener('change', render);
   render();
+})();
+
+/* ================= HELP & BUG REPORTING MODAL ================= */
+window.HelpModal = (() => {
+  const modal = $('helpModal');
+
+  function open() {
+    if (!Auth.isLoggedIn()) {
+      $('helpAuthGate').style.display = 'block';
+      $('helpMainContent').style.display = 'none';
+    } else {
+      $('helpAuthGate').style.display = 'none';
+      $('helpMainContent').style.display = 'block';
+
+      // Auto-detect currently active tool
+      const activeTab = document.querySelector('.tab.active')?.dataset.tab;
+      const toolMap = {
+        'scanner': 'Doc Scanner',
+        'compress': 'Compress PDF',
+        'merge': 'Merge PDF',
+        'split': 'Split PDF',
+        'convert': 'Convert PDF',
+        'pdf2docx': 'PDF to Word',
+        'video_audio': 'Video to MP3',
+        'video_frames': 'Video to Frames',
+        'qr': 'QR Code Generator'
+      };
+      if (activeTab && toolMap[activeTab] && $('helpTool')) {
+        $('helpTool').value = toolMap[activeTab];
+      }
+
+      setTab('report');
+    }
+
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('open');
+  }
+
+  function close() {
+    modal.classList.remove('open');
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    const alertBox = $('helpAlert');
+    if (alertBox) alertBox.style.display = 'none';
+  }
+
+  function setTab(tab) {
+    const reportView = $('helpTabReportView');
+    const mineView = $('helpTabMineView');
+    const btnReport = $('btnHelpTabReport');
+    const btnMine = $('btnHelpTabMine');
+
+    if (tab === 'mine') {
+      if (reportView) reportView.style.display = 'none';
+      if (mineView) mineView.style.display = 'block';
+      if (btnReport) btnReport.classList.remove('active');
+      if (btnMine) btnMine.classList.add('active');
+      loadMyTickets();
+    } else {
+      if (reportView) reportView.style.display = 'block';
+      if (mineView) mineView.style.display = 'none';
+      if (btnReport) btnReport.classList.add('active');
+      if (btnMine) btnMine.classList.remove('active');
+    }
+  }
+
+  async function loadMyTickets() {
+    const listEl = $('myTicketsList');
+    if (!listEl) return;
+    listEl.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">Loading your tickets...</div>';
+    try {
+      const res = await fetch('/api/tickets/mine', {
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load tickets');
+      const tickets = data.tickets || [];
+      if (tickets.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center; padding:24px; color:var(--text-muted); font-size:13px;">You have not submitted any tickets yet.</div>';
+        return;
+      }
+      listEl.innerHTML = tickets.map(t => `
+        <div class="my-ticket-card">
+          <div class="my-ticket-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="type-pill">${esc(t.type)}</span>
+              <span class="status-pill status-${esc(t.status)}">${esc(t.status.replace('_', ' ').toUpperCase())}</span>
+            </div>
+            <span class="my-ticket-date">${esc(t.created_at)}</span>
+          </div>
+          <div class="my-ticket-title">${esc(t.subject)} ${t.has_screenshot ? '<span title="Screenshot attached">📎</span>' : ''}</div>
+          <div class="my-ticket-msg">${esc(t.message)}</div>
+          ${t.admin_note ? `
+            <div class="my-ticket-reply">
+              <strong>💬 Admin Response</strong>
+              <div>${esc(t.admin_note)}</div>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    } catch (err) {
+      listEl.innerHTML = `<div style="text-align:center; padding:24px; color:#ff6b6b; font-size:13px;">Failed to load tickets: ${esc(err.message)}</div>`;
+    }
+  }
+
+  // Bind message character counter
+  const msgEl = $('helpMessage');
+  if (msgEl) {
+    msgEl.addEventListener('input', () => {
+      $('helpCharCount').textContent = `${msgEl.value.length} / 2000`;
+    });
+  }
+
+  // Bind form submission
+  const form = $('helpForm');
+  if (form) {
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = $('helpSubmitBtn');
+      const alertBox = $('helpAlert');
+      alertBox.style.display = 'none';
+
+      $('helpPageUrl').value = window.location.href;
+      $('helpUserAgent').value = navigator.userAgent;
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      const fd = new FormData(form);
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || (document.querySelector('input[name="csrf_token"]')?.value || '');
+      if (csrfToken) fd.append('csrf_token', csrfToken);
+
+      try {
+        const res = await fetch('/api/tickets', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: fd
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to submit ticket');
+        }
+        form.reset();
+        $('helpCharCount').textContent = '0 / 2000';
+        alertBox.className = 'alert alert-success';
+        alertBox.innerHTML = `<span>✓</span><span>Thanks, ticket #${data.ticket_id} received.</span> <button type="button" style="margin-left:8px; background:none; border:0; color:inherit; text-decoration:underline; cursor:pointer; font-weight:600;" onclick="HelpModal.setTab('mine')">View in My Tickets</button>`;
+        alertBox.style.display = 'flex';
+      } catch (err) {
+        alertBox.className = 'alert alert-error';
+        alertBox.innerHTML = `<span>✕</span><span>${err.message}</span>`;
+        alertBox.style.display = 'flex';
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    };
+  }
+
+  if (modal) {
+    modal.onclick = (e) => { if (e.target === modal) close(); };
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal && !modal.hidden) close();
+  });
+
+  // Auto-open if redirected with #help or ?openHelp=1
+  if (location.hash === '#help' || new URLSearchParams(location.search).get('openHelp') === '1') {
+    setTimeout(open, 180);
+  }
+
+  return { open, close, setTab, loadMyTickets };
 })();
 
 /* ================= GOTHAM CANVAS ================= */

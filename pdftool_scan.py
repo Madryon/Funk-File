@@ -13,24 +13,64 @@ Premium document scanner functions:
 
 import os
 from pathlib import Path
-
-import cv2
-import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter
 
-# OCR is optional — only works if the tesseract BINARY is installed.
-# Importing the pytesseract package always succeeds once it's pip-installed,
-# even if the underlying `tesseract` executable is missing, so we explicitly
-# probe the binary itself here. Render's native Python environment, for
-# example, does not allow apt-get/sudo and has no tesseract preinstalled —
-# without this check, ocr_available() would incorrectly report True there.
-try:
-    import pytesseract
-    pytesseract.get_tesseract_version()
-    TESSERACT_AVAILABLE = True
-except Exception:
-    pytesseract = None
-    TESSERACT_AVAILABLE = False
+# Lazy imports for heavy CV & OCR modules to reduce worker memory and boot time
+_cv2 = None
+_np = None
+_pytesseract = None
+_tesseract_checked = False
+_tesseract_available = False
+
+
+def _get_cv2():
+    global _cv2
+    if _cv2 is None:
+        import cv2
+        _cv2 = cv2
+    return _cv2
+
+
+def _get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
+
+
+def _get_pytesseract():
+    global _pytesseract
+    if _pytesseract is None:
+        try:
+            import pytesseract
+            _pytesseract = pytesseract
+        except Exception:
+            _pytesseract = None
+    return _pytesseract
+
+
+def ocr_available() -> bool:
+    """Check if tesseract binary is actually available on the server."""
+    global _tesseract_checked, _tesseract_available
+    if not _tesseract_checked:
+        try:
+            pt = _get_pytesseract()
+            if pt is not None:
+                pt.get_tesseract_version()
+                _tesseract_available = True
+            else:
+                _tesseract_available = False
+        except Exception:
+            _tesseract_available = False
+        _tesseract_checked = True
+    return _tesseract_available
+
+
+def __getattr__(name):
+    if name == "TESSERACT_AVAILABLE":
+        return ocr_available()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -39,17 +79,22 @@ except Exception:
 
 def _pil_to_cv(img):
     """PIL RGB -> OpenCV BGR"""
+    cv2 = _get_cv2()
+    np = _get_np()
     rgb = np.array(img.convert("RGB"))
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 
 def _cv_to_pil(arr):
     """OpenCV BGR -> PIL RGB"""
+    cv2 = _get_cv2()
     rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
     return Image.fromarray(rgb)
 
 
 def _load_image(path_or_bytes):
+    cv2 = _get_cv2()
+    np = _get_np()
     if isinstance(path_or_bytes, (bytes, bytearray)):
         arr = np.frombuffer(path_or_bytes, dtype=np.uint8)
         bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -60,14 +105,13 @@ def _load_image(path_or_bytes):
     return bgr
 
 
-
-
 # ─────────────────────────────────────────────────────────────
 # Auto-edge detection + perspective correction (premium feature)
 # ─────────────────────────────────────────────────────────────
 
 def _order_points(pts):
     """Order 4 points as TL, TR, BR, BL."""
+    np = _get_np()
     rect = np.zeros((4, 2), dtype="float32")
     s = pts.sum(axis=1)
     rect[0] = pts[np.argmin(s)]      # top-left (smallest sum)
@@ -80,6 +124,8 @@ def _order_points(pts):
 
 def _four_point_transform(image, pts):
     """Apply perspective warp given 4 points."""
+    cv2 = _get_cv2()
+    np = _get_np()
     rect = _order_points(pts)
     (tl, tr, br, bl) = rect
     width_a = np.linalg.norm(br - bl)
@@ -101,6 +147,8 @@ def _four_point_transform(image, pts):
 
 def _find_document_contour(image):
     """Find the most-likely document quadrilateral in an image."""
+    cv2 = _get_cv2()
+    np = _get_np()
     h, w = image.shape[:2]
     # resize for faster processing
     scale = 800.0 / max(h, w) if max(h, w) > 800 else 1.0
@@ -154,6 +202,8 @@ def apply_filter(image_bgr, filter_name="magic_color", brightness=1.0,
 
     filter_name ∈ {original, bw, grayscale, magic_color, enhanced, sharpen}
     """
+    cv2 = _get_cv2()
+    np = _get_np()
     img = image_bgr
 
     if filter_name == "bw":
@@ -235,6 +285,7 @@ def rotate_image(image_bgr, angle):
     """Rotate around center, expanding canvas to fit. Returns BGR."""
     if not angle:
         return image_bgr
+    cv2 = _get_cv2()
     angle = float(angle) % 360
     # Lossless path for orthogonal rotations
     if angle == 90:
@@ -271,13 +322,6 @@ def process_scan(input_path, output_path,
     crop: dict {x,y,w,h} in original-image pixels or None
 
     Order of operations: crop -> rotate -> perspective -> filter.
-    Crop runs FIRST because the frontend's crop UI always measures
-    x/y/w/h against the as-uploaded photo (it crops on whatever image
-    is currently displayed, which is the original until a page is
-    exported) — running crop first keeps those coordinates valid
-    regardless of whether rotate/perspective are also requested,
-    instead of requiring the crop box to already be in rotated or
-    perspective-warped coordinate space.
     """
     img = _load_image(input_path)
 
@@ -304,6 +348,7 @@ def process_scan(input_path, output_path,
     out_dir = Path(output_path).parent
     out_dir.mkdir(parents=True, exist_ok=True)
     fmt = Path(output_path).suffix.lstrip(".").lower() or "jpg"
+    cv2 = _get_cv2()
     if fmt in ("jpg", "jpeg"):
         cv2.imwrite(str(output_path), img,
                     [cv2.IMWRITE_JPEG_QUALITY, 92])
@@ -323,16 +368,15 @@ def process_scan(input_path, output_path,
 
 def ocr_image(image_path, lang="eng"):
     """Run OCR on a single image. Returns extracted text (may be empty)."""
-    if not TESSERACT_AVAILABLE:
+    if not ocr_available():
         return ""
     try:
-        return pytesseract.image_to_string(str(image_path), lang=lang) or ""
+        pt = _get_pytesseract()
+        if pt is None:
+            return ""
+        return pt.image_to_string(str(image_path), lang=lang) or ""
     except Exception:
         return ""
-
-
-def ocr_available():
-    return TESSERACT_AVAILABLE
 
 
 # ─────────────────────────────────────────────────────────────
@@ -357,47 +401,69 @@ def images_to_pdf_simple(image_paths, output_path):
 
 
 def images_to_docx(image_paths, output_path, ocr_lang="eng", use_ocr=True):
-    if use_ocr and TESSERACT_AVAILABLE:
-        from docx import Document
-        from docx.shared import Pt, Inches
-        doc = Document()
-        for sec in doc.sections:
-            sec.top_margin = Inches(0.7)
-            sec.bottom_margin = Inches(0.7)
-            sec.left_margin = Inches(0.7)
-            sec.right_margin = Inches(0.7)
+    """
+    Build DOCX from images. If OCR is requested and tesseract binary is available,
+    extracts text into editable paragraphs. If OCR is unavailable or fails,
+    cleanly falls back without raising TesseractNotFoundError.
+    """
+    if use_ocr and ocr_available():
+        try:
+            from docx import Document
+            from docx.shared import Pt, Inches
+            doc = Document()
+            for sec in doc.sections:
+                sec.top_margin = Inches(0.7)
+                sec.bottom_margin = Inches(0.7)
+                sec.left_margin = Inches(0.7)
+                sec.right_margin = Inches(0.7)
 
-        for idx, p in enumerate(image_paths, start=1):
-            heading = doc.add_paragraph()
-            run = heading.add_run(f"Page {idx}")
-            run.bold = True
-            run.font.size = Pt(14)
+            for idx, p in enumerate(image_paths, start=1):
+                heading = doc.add_paragraph()
+                run = heading.add_run(f"Page {idx}")
+                run.bold = True
+                run.font.size = Pt(14)
 
-            text = ocr_image(p, lang=ocr_lang) or ""
-            if text.strip():
-                for line in text.splitlines():
-                    para = doc.add_paragraph()
-                    r = para.add_run(line)
-                    r.font.size = Pt(11)
-            else:
-                note = doc.add_paragraph()
-                nr = note.add_run("(no text recognized on this page)")
-                nr.italic = True
-                nr.font.size = Pt(10)
+                text = ocr_image(p, lang=ocr_lang) or ""
+                if text.strip():
+                    for line in text.splitlines():
+                        para = doc.add_paragraph()
+                        r = para.add_run(line)
+                        r.font.size = Pt(11)
+                else:
+                    note = doc.add_paragraph()
+                    nr = note.add_run("(no text recognized on this page)")
+                    nr.italic = True
+                    nr.font.size = Pt(10)
 
-            if idx < len(image_paths):
-                doc.add_page_break()
+                if idx < len(image_paths):
+                    doc.add_page_break()
 
-        doc.save(str(output_path))
-    else:
-        tmp_pdf = str(output_path) + ".intermediate.pdf"
-        images_to_pdf_simple(image_paths, tmp_pdf)
+            doc.save(str(output_path))
+            return output_path
+        except Exception:
+            # Fall back gracefully to intermediate PDF/image conversion
+            pass
+
+    tmp_pdf = str(output_path) + ".intermediate.pdf"
+    images_to_pdf_simple(image_paths, tmp_pdf)
+    try:
         from pdf2docx import Converter
         cv = Converter(tmp_pdf)
         try:
             cv.convert(str(output_path))
         finally:
             cv.close()
+    except Exception:
+        # If pdf2docx also fails or cannot convert, embed images directly in DOCX
+        from docx import Document
+        from docx.shared import Inches
+        doc = Document()
+        for idx, p in enumerate(image_paths):
+            doc.add_picture(str(p), width=Inches(6.0))
+            if idx < len(image_paths) - 1:
+                doc.add_page_break()
+        doc.save(str(output_path))
+    finally:
         try:
             os.remove(tmp_pdf)
         except OSError:

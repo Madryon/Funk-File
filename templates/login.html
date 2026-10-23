@@ -326,6 +326,167 @@ body {
   background: linear-gradient(135deg, #FF2E93, #B026FF);
   color: #fff;
 }
+
+/* Floating Help & Bug Button */
+.help-fab-wrapper {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+.help-fab-pill {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1.5px solid #5b6cff;
+  color: #3b4cca;
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(91, 108, 255, 0.28);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  letter-spacing: 0.2px;
+}
+.help-fab-pill:hover {
+  transform: translateY(-2px);
+  background: #ffffff;
+  border-color: #3b4cca;
+  box-shadow: 0 10px 26px rgba(91, 108, 255, 0.4);
+}
+.help-fab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: help-dot-pulse 2s infinite ease-in-out;
+}
+@keyframes help-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.help-float-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #5b6cff;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+  color: #5b6cff;
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(91, 108, 255, 0.35), 0 0 0 3px rgba(91, 108, 255, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+.help-float-btn:hover {
+  transform: translateY(-2px) scale(1.06);
+  background: #5b6cff;
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(91, 108, 255, 0.5);
+}
+.help-float-btn:active {
+  transform: scale(0.95);
+}
+
+.help-float-btn::before {
+  content: "Help / Report a bug";
+  position: absolute;
+  right: 62px;
+  white-space: nowrap;
+  background: rgba(13, 17, 23, 0.92);
+  color: #fff;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 11px;
+  border-radius: 7px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.help-float-btn:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+[data-theme="batman"] .help-fab-pill {
+  background: #14151a;
+  border: 1.5px solid #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 16px rgba(245, 197, 24, 0.35);
+}
+[data-theme="batman"] .help-fab-dot {
+  background: #f5c518;
+  box-shadow: 0 0 8px #f5c518;
+}
+[data-theme="batman"] .help-float-btn {
+  background: #14151a;
+  border: 2px solid #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 18px rgba(245, 197, 24, 0.4);
+}
+[data-theme="batman"] .help-float-btn:hover {
+  background: #f5c518;
+  color: #0a0a0c;
+  box-shadow: 0 0 26px rgba(245, 197, 24, 0.7);
+}
+[data-theme="batman"] .help-float-btn::before {
+  background: #14151a;
+  border: 1px solid #2a2d36;
+  color: #f5c518;
+}
+
+[data-theme="baddie"] .help-fab-pill {
+  background: rgba(20, 0, 40, 0.9);
+  border: 1.5px solid #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 18px rgba(255, 46, 147, 0.4);
+}
+[data-theme="baddie"] .help-fab-dot {
+  background: #00F0FF;
+  box-shadow: 0 0 8px #00F0FF;
+}
+[data-theme="baddie"] .help-float-btn {
+  background: rgba(30, 5, 60, 0.9);
+  border: 2px solid #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 20px rgba(255, 46, 147, 0.5);
+}
+[data-theme="baddie"] .help-float-btn:hover {
+  background: #FF2E93;
+  color: #ffffff;
+  box-shadow: 0 0 28px rgba(255, 46, 147, 0.8);
+}
+
+@media (max-width: 600px) {
+  .help-fab-wrapper {
+    bottom: 16px;
+    right: 16px;
+  }
+  .help-fab-pill {
+    display: none;
+  }
+}
 </style>
 
 <!-- ============ GLASSMORPHISM · LIGHT MODE ONLY ============ -->
@@ -501,10 +662,22 @@ html[data-theme="light"] .btn-submit,
   {% endif %}
 </div>
 
-<div style="display:flex;gap:16px;justify-content:center;margin-top:16px;font-size:13px;">
+<div style="display:flex;gap:16px;justify-content:center;margin-top:16px;font-size:13px;flex-wrap:wrap;">
   <a href="/" class="foot-link">← Back to Funk Files</a>
   <span style="color:var(--text-faint)">·</span>
+  <a href="/?openHelp=1" class="foot-link" style="color:var(--stamp);font-weight:600">💬 Help / Report Bug</a>
+  <span style="color:var(--text-faint)">·</span>
   <a href="/admin/login" class="foot-link" style="color:var(--brass);font-weight:600">🛡️ Admin Login</a>
+</div>
+
+<!-- Floating Help & Report Bug Widget -->
+<div class="help-fab-wrapper" id="helpFabWrapper" onclick="location.href='/?openHelp=1'" style="cursor:pointer;" title="Click to get help or report a bug">
+  <div class="help-fab-pill">
+    <span class="help-fab-dot"></span> Help / Report Bug
+  </div>
+  <button type="button" class="help-float-btn" aria-label="Help / Report a bug" title="Help / Report a bug">
+    ?
+  </button>
 </div>
 
 <script>
