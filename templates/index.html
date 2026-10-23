@@ -276,8 +276,154 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 #qrEcho{margin-top:14px;font:11.5px 'IBM Plex Mono',monospace;color:var(--text-faint);word-break:break-all}
 input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1px solid var(--ink-line);background:var(--ink-soft)}
 
-/* ============ AUTH + HISTORY ============ */
-.auth-bar{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:8px 0 0;font-size:13px}
+/* ============ REFINED AUTH BAR & 3-DOT MENU ============ */
+.auth-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 0 0;
+  position: relative;
+}
+.auth-bar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-auth-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1.5px solid #5b6cff;
+  background: rgba(255, 255, 255, 0.9);
+  color: #3b4cca;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(91, 108, 255, 0.18);
+}
+.btn-auth-main:hover {
+  background: #ffffff;
+  border-color: #3b4cca;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(91, 108, 255, 0.28);
+}
+.btn-auth-main svg {
+  stroke: currentColor;
+}
+
+.auth-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ink-line);
+  background: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.auth-user-badge:hover {
+  border-color: var(--brass);
+}
+.auth-user-avatar {
+  font-size: 14px;
+}
+.auth-user-name {
+  color: var(--text);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 3-Dot Kebab Menu */
+.kebab-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+.kebab-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-line);
+  background: var(--ink-soft);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+.kebab-btn:hover {
+  border-color: var(--brass);
+  background: var(--ink-raised);
+}
+.kebab-btn svg {
+  fill: currentColor;
+}
+.kebab-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 190px;
+  background: var(--ink);
+  border: 1px solid var(--ink-line);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: kebab-fade 0.15s ease;
+}
+@keyframes kebab-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.kebab-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  width: 100%;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+.kebab-item:hover {
+  background: var(--ink-raised);
+}
+.kebab-item.danger {
+  color: var(--stamp);
+}
+.kebab-item.danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+.kebab-divider {
+  height: 1px;
+  background: var(--ink-line);
+  margin: 4px 0;
+}
+
 .auth-user{color:var(--text-muted);font-weight:500}
 .auth-user strong{color:var(--brass)}
 .auth-bar button,.history-actions button{border:1px solid var(--ink-line);background:var(--ink-soft);color:var(--text);padding:5px 14px;border-radius:999px;cursor:pointer;font:600 12px inherit;font-family:inherit;transition:.15s}
@@ -286,6 +432,61 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
 .auth-bar .auth-logout:hover,.history-actions .danger:hover{background:var(--stamp);color:#fff}
 .auth-note{text-align:center;font-size:12.5px;color:var(--text-faint);padding:8px 14px;margin-top:6px;border-radius:6px;background:rgba(128,128,128,.07);border:1px dashed rgba(128,128,128,.3)}
 .auth-note strong{color:var(--brass)}
+
+/* Dark theme overrides for kebab and auth button */
+[data-theme="batman"] .btn-auth-main {
+  background: #14151a;
+  border-color: #f5c518;
+  color: #f5c518;
+  box-shadow: 0 0 12px rgba(245, 197, 24, 0.25);
+}
+[data-theme="batman"] .kebab-btn {
+  background: #14151a;
+  border-color: #2a2d36;
+  color: #f5c518;
+}
+[data-theme="batman"] .kebab-dropdown {
+  background: #14151a;
+  border-color: #2a2d36;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+[data-theme="batman"] .kebab-item:hover {
+  background: #1f222b;
+}
+
+[data-theme="baddie"] .btn-auth-main {
+  background: linear-gradient(135deg, rgba(255, 46, 147, 0.3), rgba(176, 38, 255, 0.3));
+  border-color: #FF2E93;
+  color: #00F0FF;
+  box-shadow: 0 0 16px rgba(255, 46, 147, 0.35);
+}
+[data-theme="baddie"] .kebab-btn {
+  background: rgba(30, 5, 60, 0.8);
+  border-color: rgba(255, 46, 147, 0.4);
+  color: #00F0FF;
+}
+[data-theme="baddie"] .kebab-dropdown {
+  background: rgba(20, 0, 40, 0.95);
+  border-color: rgba(255, 46, 147, 0.4);
+  box-shadow: 0 8px 32px rgba(255, 46, 147, 0.25);
+}
+[data-theme="baddie"] .kebab-item:hover {
+  background: rgba(255, 46, 147, 0.2);
+}
+
+html[data-theme="light"] .btn-auth-main,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .btn-auth-main {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid #5b6cff;
+  color: #3b4cca;
+  box-shadow: 0 4px 14px rgba(91, 108, 255, 0.18);
+}
+html[data-theme="light"] .kebab-dropdown,
+:root:not([data-theme="batman"]):not([data-theme="baddie"]) .kebab-dropdown {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(91, 108, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(91, 108, 255, 0.15);
+}
 .modal-overlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex;animation:rise .2s ease}
 .modal-box{background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
@@ -1055,9 +1256,8 @@ html[data-theme="light"] .ticket-perf,
 <!-- Login / register / admin modal -->
 <div class="modal-overlay" id="authModal" hidden aria-hidden="true"><div class="modal-box">
   <div class="auth-tabs" id="authTabs">
-    <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="Auth.setMode('register')">Register</button>
+    <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="Auth.setMode('register')">Register / Sign-Up</button>
     <button type="button" class="auth-tab-btn" id="authTabLogin" onclick="Auth.setMode('login')">Log In</button>
-    <button type="button" class="auth-tab-btn" id="authTabAdmin" onclick="Auth.setMode('admin')">🛡️ Admin</button>
   </div>
   <h2 id="authTitle"></h2><p class="modal-sub" id="authSub"></p>
   <form id="authForm" autocomplete="off">
@@ -1070,6 +1270,12 @@ html[data-theme="light"] .ticket-perf,
     </div>
     <div id="authPassGroup">
       <label for="authPass" id="authPassLabel">Password</label><input type="password" id="authPass" placeholder="Enter password" required>
+    </div>
+    <div id="authAdminCheckboxGroup" style="margin-top:12px; display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" id="authIsAdmin" onchange="Auth.toggleAdminLogin(this.checked)" style="width:16px; height:16px; cursor:pointer; accent-color:#5b6cff;">
+      <label for="authIsAdmin" style="margin:0; font-size:12.5px; font-weight:600; cursor:pointer; text-transform:none; letter-spacing:0; color:var(--text-muted); display:inline-flex; align-items:center; gap:4px;">
+        🛡️ Login as Admin
+      </label>
     </div>
     <div class="modal-error" id="authError"></div>
     <div class="modal-actions"><button type="submit" class="btn-primary" id="authSubmit"></button><button type="button" onclick="Auth.close()">Cancel</button></div>
@@ -1088,9 +1294,9 @@ html[data-theme="light"] .ticket-perf,
   </div>
 </div></div>
 
-<div id="home" hidden></div>
+<div id="home"></div>
 
-<div id="toolView">
+<div id="toolView" hidden>
   <button class="back-link" id="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> All Tools</button>
   <nav class="tabs" id="tabs"></nav>
   <div id="panels">
@@ -1455,8 +1661,37 @@ const Auth = (() => {
   function renderBar() {
     $('authNote').hidden = !!currentUser;
     $('authBar').innerHTML = currentUser
-      ? `<span class="auth-user">Welcome, <strong>${esc(currentUser.username)}</strong></span><button type="button" class="btn-help-nav" onclick="HelpModal.open()" title="Get help or report a bug"><span style="color:#5b6cff;">💬</span> Help / Report Bug</button><button onclick="Auth.toggleHistory()">📁 History</button><button onclick="Auth.open('admin')" style="background:rgba(91,108,255,.12);border-color:var(--brass);font-weight:600">🛡️ Admin</button><button class="auth-logout" onclick="Auth.logout()">Logout</button>`
-      : `<button type="button" class="btn-help-nav" onclick="HelpModal.open()" title="Get help or report a bug"><span style="color:#5b6cff;">💬</span> Help / Report Bug</button><button onclick="Auth.open('login')">Log In</button><button onclick="Auth.open('register')">Register</button><button onclick="Auth.open('admin')" class="auth-btn-admin" style="background:linear-gradient(135deg,rgba(91,108,255,.18),rgba(168,85,247,.18));border:1px solid var(--brass);color:var(--text);font-weight:600">🛡️ Admin Login</button>`;
+      ? `<div class="auth-bar-group">
+          <div class="auth-user-badge" onclick="Auth.toggleHistory()" title="Click to view file history">
+            <span class="auth-user-avatar">👤</span>
+            <span class="auth-user-name">${esc(currentUser.username)}</span>
+          </div>
+          <div class="kebab-menu-wrap" id="kebabWrap">
+            <button type="button" class="kebab-btn" id="kebabBtn" onclick="Auth.toggleMenu(event)" aria-label="More options" title="More options">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+            </button>
+            <div class="kebab-dropdown" id="kebabDropdown" style="display:none;">
+              <button type="button" class="kebab-item" onclick="Auth.closeMenu(); Auth.toggleHistory();"><span>📁</span><span>File History</span></button>
+              <button type="button" class="kebab-item" onclick="Auth.closeMenu(); HelpModal.open();"><span>💬</span><span>Help &amp; Report Bug</span></button>
+              <div class="kebab-divider"></div>
+              <button type="button" class="kebab-item danger" onclick="Auth.closeMenu(); Auth.logout();"><span>🚪</span><span>Logout</span></button>
+            </div>
+          </div>
+        </div>`
+      : `<div class="auth-bar-group">
+          <button type="button" class="btn-auth-main" onclick="Auth.open('login')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Login / Sign-Up</span>
+          </button>
+          <div class="kebab-menu-wrap" id="kebabWrap">
+            <button type="button" class="kebab-btn" id="kebabBtn" onclick="Auth.toggleMenu(event)" aria-label="More options" title="More options">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+            </button>
+            <div class="kebab-dropdown" id="kebabDropdown" style="display:none;">
+              <button type="button" class="kebab-item" onclick="Auth.closeMenu(); HelpModal.open();"><span>💬</span><span>Help &amp; Report Bug</span></button>
+            </div>
+          </div>
+        </div>`;
 
     // Update badges on tool cards
     $$('.tool-badge.auth-badge').forEach(b => {
@@ -1470,6 +1705,27 @@ const Auth = (() => {
     });
   }
 
+  function toggleAdminLogin(checked) {
+    if (checked) {
+      setMode('admin');
+    } else {
+      setMode('login');
+    }
+  }
+
+  function toggleMenu(e) {
+    if (e) e.stopPropagation();
+    const d = $('kebabDropdown');
+    if (d) {
+      d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+    }
+  }
+
+  function closeMenu() {
+    const d = $('kebabDropdown');
+    if (d) d.style.display = 'none';
+  }
+
   function setMode(m) {
     mode = m;
     err.textContent = '';
@@ -1480,21 +1736,30 @@ const Auth = (() => {
     if ($('authUserGroup')) $('authUserGroup').style.display = adm ? 'none' : 'block';
     if ($('authUser')) $('authUser').required = !adm;
 
-    const tabReg = $('authTabRegister'), tabLog = $('authTabLogin'), tabAdm = $('authTabAdmin');
-    if (tabReg && tabLog && tabAdm) {
+    const chk = $('authIsAdmin');
+    if (chk) chk.checked = adm;
+    const chkGroup = $('authAdminCheckboxGroup');
+    if (chkGroup) chkGroup.style.display = reg ? 'none' : 'flex';
+
+    const tabReg = $('authTabRegister'), tabLog = $('authTabLogin');
+    if (tabReg && tabLog) {
       tabReg.classList.toggle('active', reg);
-      tabLog.classList.toggle('active', !reg && !adm);
-      tabAdm.classList.toggle('active', adm);
+      tabLog.classList.toggle('active', !reg);
     }
 
     if (adm) {
       $('authTitle').textContent = '🛡️ Administrator Access';
       $('authSub').textContent = 'Enter the master password to access the administration dashboard.';
-      $('authSubmit').textContent = 'Authenticate & Enter';
-      $('authToggle').innerHTML = `Switch to <a onclick="Auth.setMode('login')">Standard Sign In</a>`;
+      $('authPassLabel').textContent = 'Admin Master Password';
+      $('authPass').placeholder = 'Enter master password';
+      $('authSubmit').textContent = 'Authenticate & Enter Admin';
+      $('authToggle').innerHTML = `Switch back to <a onclick="Auth.setMode('login')">Standard Sign In</a>`;
       setTimeout(() => $('authPass') && $('authPass').focus(), 100);
       return;
     }
+
+    $('authPassLabel').textContent = 'Password';
+    $('authPass').placeholder = 'Enter password';
 
     if (pendingTool) {
       $('authTitle').textContent = reg ? '🔒 Create Account to Unlock' : '🔒 Log In to Unlock';
@@ -1503,15 +1768,15 @@ const Auth = (() => {
         : `Log in to use <strong>${esc(pendingTool.name)}</strong>. You will be taken straight to it!`;
       $('authSubmit').textContent = reg ? `Register & Open ${pendingTool.tab || pendingTool.name}` : `Log In & Open ${pendingTool.tab || pendingTool.name}`;
       $('authToggle').innerHTML = reg
-        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a> | <a onclick="Auth.setMode('admin')">Admin</a>`
-        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a> | <a onclick="Auth.setMode('admin')">Admin</a>`;
+        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a>`
+        : `Don't have an account? <a onclick="Auth.setMode('register')">Sign Up</a>`;
     } else {
       $('authTitle').textContent = reg ? 'Create Account' : 'Log In';
       $('authSub').textContent = reg ? 'Sign up to track your processed files' : 'Sign in to track your file history';
-      $('authSubmit').textContent = reg ? 'Register' : 'Log In';
+      $('authSubmit').textContent = reg ? 'Create Account' : 'Log In';
       $('authToggle').innerHTML = reg
-        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a> | <a onclick="Auth.setMode('admin')">Admin</a>`
-        : `Don't have an account? <a onclick="Auth.setMode('register')">Register</a> | <a onclick="Auth.setMode('admin')">Admin</a>`;
+        ? `Already have an account? <a onclick="Auth.setMode('login')">Log In</a>`
+        : `Don't have an account? <a onclick="Auth.setMode('register')">Sign Up</a>`;
     }
   }
 
@@ -1700,7 +1965,14 @@ const Auth = (() => {
       renderBar();
     });
 
-  return { open, requireAuth, setMode, close, logout, toggleHistory, refresh, del, clearAll, isLoggedIn, getUser, authInitPromise };
+  document.addEventListener('click', e => {
+    const wrap = $('kebabWrap');
+    if (wrap && !wrap.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  return { open, requireAuth, setMode, toggleAdminLogin, toggleMenu, closeMenu, close, logout, toggleHistory, refresh, del, clearAll, isLoggedIn, getUser, authInitPromise };
 })();
 
 /* ================= BUILD PAGE FROM T ================= */
@@ -1808,10 +2080,19 @@ const show = id => {
   $$('.tab').forEach(x => x.classList.toggle('active', x.dataset.tab == id));
   $$('.panel').forEach(x => x.classList.toggle('active', x.id == id));
 };
-// Render the default active tool tab immediately on initial load
-show('scanner');
-$('toolView').hidden = false;
-$('home').hidden = true;
+// Check if a specific tool was requested via URL hash (e.g. #compress, #scanner)
+const targetTool = location.hash ? T.find(x => x.id === location.hash.replace('#', '')) : null;
+if (targetTool) {
+  show(targetTool.id);
+  $('toolView').hidden = false;
+  $('home').hidden = true;
+  $('sub').textContent = SUB_TOOL;
+} else {
+  // Always default to Home View on page load
+  $('toolView').hidden = true;
+  $('home').hidden = false;
+  $('sub').textContent = SUB_HOME;
+}
 $$('.tool-card').forEach(c => c.onclick = async () => {
   const id = c.dataset.tool;
   const t = T.find(x => x.id === id);
