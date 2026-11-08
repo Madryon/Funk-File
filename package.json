@@ -1,0 +1,11 @@
+{
+  "name": "funk-files",
+  "version": "1.0.0",
+  "description": "Funk Files - Fast, safe PDF & file tools",
+  "scripts": {
+    "captcha:seed": "node -e \"const { spawn } = require('child_process'); const fs = require('fs'); const py = fs.existsSync('.venv/Scripts/python.exe') ? '.venv/Scripts/python.exe' : (fs.existsSync('.venv/bin/python') ? '.venv/bin/python' : 'python'); const p = spawn(py, ['seed_captcha_images.py'], { stdio: 'inherit' }); p.on('exit', code => process.exit(code || 0));\""
+  },
+  "keywords": ["pdf", "tools", "captcha"],
+  "author": "",
+  "license": "MIT"
+}

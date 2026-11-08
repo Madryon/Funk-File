@@ -3,6 +3,7 @@ __pycache__/
 uploads/
 outputs/
 app.db
+captcha_store.db*
 .env
 .env.*
 !.env.example

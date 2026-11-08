@@ -257,6 +257,7 @@
         this.audioPanel.classList.add('active');
         this.titleEl.textContent = 'Audio Challenge';
         this.audioInput.value = '';
+        this.verifyBtn.disabled = false;
         setTimeout(() => this.audioInput.focus(), 100);
       } else {
         this.audioPanel.classList.remove('active');
@@ -264,12 +265,14 @@
         if (this.challenge) {
           this.titleEl.textContent = this.challenge.category || 'Images';
         }
+        this.verifyBtn.disabled = !this.imagesLoaded;
       }
     }
 
     async loadNewChallenge() {
       this.statusMsg.textContent = '';
       this.selectedIndexes.clear();
+      this.imagesLoaded = false;
       this.verifyBtn.disabled = true;
 
       if (this.mode === 'image') {
@@ -310,7 +313,18 @@
       this.gridEl.classList.toggle('grid-4x4', is4x4);
       this.gridEl.innerHTML = '';
 
+      this.imagesLoaded = false;
+      this.verifyBtn.disabled = true;
+
       const images = this.challenge.images || [];
+      const totalImages = images.length;
+      let loadedCount = 0;
+      let hasError = false;
+
+      if (totalImages === 0) {
+        return;
+      }
+
       images.forEach((imgItem, idx) => {
         const tile = document.createElement('div');
         tile.className = 'captcha-tile';
@@ -319,12 +333,63 @@
         tile.setAttribute('tabindex', '0');
         tile.setAttribute('aria-label', `Challenge image ${idx + 1}`);
 
-        tile.innerHTML = `
-          <img src="${imgItem.url}" alt="" loading="eager" draggable="false">
-          <div class="captcha-overlay">
-            <div class="captcha-tile-check">${ICONS.check}</div>
-          </div>
-        `;
+        // Skeleton placeholder while image is downloading
+        const skeleton = document.createElement('div');
+        skeleton.className = 'captcha-skeleton';
+        skeleton.setAttribute('aria-hidden', 'true');
+        tile.appendChild(skeleton);
+
+        // Challenge Image
+        const img = document.createElement('img');
+        img.alt = '';
+        img.loading = 'eager';
+        img.draggable = false;
+
+        img.onload = () => {
+          if (!tile.classList.contains('loaded')) {
+            tile.classList.add('loaded');
+            loadedCount++;
+            if (loadedCount >= totalImages && !hasError) {
+              this.imagesLoaded = true;
+              if (this.mode === 'image') {
+                this.verifyBtn.disabled = false;
+              }
+            }
+          }
+        };
+
+        img.onerror = () => {
+          // Retry once with cache-busting parameter
+          if (!img.dataset.retried) {
+            img.dataset.retried = '1';
+            const sep = imgItem.url.includes('?') ? '&' : '?';
+            img.src = `${imgItem.url}${sep}_retry=1&_t=${Date.now()}`;
+            return;
+          }
+
+          // If retry fails too, trigger safety recovery
+          if (!hasError) {
+            hasError = true;
+            this.imagesLoaded = false;
+            this.verifyBtn.disabled = true;
+            this.statusMsg.style.color = 'var(--text-muted)';
+            this.statusMsg.textContent = "Couldn't load images, loading a new challenge";
+            setTimeout(() => {
+              if (this.isOpen()) {
+                this.loadNewChallenge();
+              }
+            }, 1200);
+          }
+        };
+
+        img.src = imgItem.url;
+        tile.appendChild(img);
+
+        // Selection overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'captcha-overlay';
+        overlay.innerHTML = `<div class="captcha-tile-check">${ICONS.check}</div>`;
+        tile.appendChild(overlay);
 
         const toggleTile = () => {
           if (this.selectedIndexes.has(idx)) {
@@ -349,8 +414,6 @@
 
         this.gridEl.appendChild(tile);
       });
-
-      this.verifyBtn.disabled = false;
     }
 
     playAudio() {

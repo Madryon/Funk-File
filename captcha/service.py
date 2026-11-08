@@ -1,7 +1,7 @@
 """
 captcha/service.py
 Core service managing CAPTCHA challenges, dynamic image manipulation, token signing,
-and failed login tracking.
+startup bank validation, and multi-worker process-safe verification.
 """
 
 import io
@@ -9,9 +9,7 @@ import os
 import time
 import random
 import secrets
-import threading
 from pathlib import Path
-from collections import defaultdict
 from PIL import Image, ImageEnhance
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask import current_app
@@ -30,73 +28,113 @@ from captcha.config import (
     TOKEN_TTL_SECONDS,
     MIN_TIME_TO_SUBMIT,
     FAILED_LOGINS_FOR_HARD,
+    CATEGORY_TO_INDEX,
+    INDEX_TO_CATEGORY,
 )
-from captcha.rate_limiter import rate_limiter
+from captcha.storage import storage
 
 
 def get_secret_key() -> str:
     try:
         if current_app:
-            return current_app.config.get("SECRET_KEY", "pdf-toolbox-captcha-secret-key-32ch!")
+            return current_app.config.get("SECRET_KEY", "pdf-toolbox-secure-fallback-key-32chars!")
     except Exception:
         pass
-    return os.environ.get("SECRET_KEY", "pdf-toolbox-captcha-secret-key-32ch!")
+    return os.environ.get("SECRET_KEY", "pdf-toolbox-secure-fallback-key-32chars!")
+
+
+class _ChallengeDictProxy:
+    def __init__(self, challenge_id: str):
+        self.cid = challenge_id
+
+    def __getitem__(self, item):
+        ch = storage.get_challenge(self.cid)
+        if not ch:
+            raise KeyError(self.cid)
+        return ch[item]
+
+    def __setitem__(self, key, value):
+        if key == "created_at":
+            storage.update_challenge_created_at(self.cid, float(value))
+
+    def __contains__(self, item):
+        ch = storage.get_challenge(self.cid)
+        return ch is not None and item in ch
+
+
+class _ChallengesAccessor:
+    def __getitem__(self, cid: str):
+        ch = storage.get_challenge(cid)
+        if not ch:
+            raise KeyError(cid)
+        return _ChallengeDictProxy(cid)
+
+    def __contains__(self, cid: str):
+        return storage.get_challenge(cid) is not None
 
 
 class CaptchaService:
     def __init__(self):
-        self._lock = threading.Lock()
-        self._challenges = {}          # challenge_id -> challenge_dict
-        self._image_tokens = {}        # image_token -> {path, expires_at}
-        self._audio_tokens = {}        # challenge_id -> {code, expires_at}
-        self._burned_tokens = {}       # token -> burned_at
-        self._failed_logins = defaultdict(int)  # ip -> failed_login_count
+        self._available_categories = {}
+        self._challenges = _ChallengesAccessor()
+        self._ensure_and_validate_bank()
 
-    def _cleanup_expired(self):
-        """Prunes expired challenges, image tokens, and old burned tokens."""
-        now = time.time()
-        # Clean challenges
-        expired_ch = [cid for cid, ch in self._challenges.items() if now > ch["expires_at"]]
-        for cid in expired_ch:
-            del self._challenges[cid]
+    def _ensure_and_validate_bank(self):
+        """
+        Scans the image bank at startup. If any category has fewer than 40 valid images,
+        automatically seeds them. Only categories with >= 40 valid images are made active.
+        """
+        IMAGE_BANK_DIR.mkdir(parents=True, exist_ok=True)
+        need_seed = False
 
-        # Clean image tokens
-        expired_tokens = [tok for tok, it in self._image_tokens.items() if now > it["expires_at"]]
-        for tok in expired_tokens:
-            del self._image_tokens[tok]
+        for cat in CATEGORIES:
+            cat_dir = IMAGE_BANK_DIR / cat
+            if not cat_dir.exists() or len(list(cat_dir.glob("*.jpg"))) < 40:
+                need_seed = True
+                break
 
-        # Clean audio tokens
-        expired_audio = [cid for cid, at in self._audio_tokens.items() if now > at["expires_at"]]
-        for cid in expired_audio:
-            del self._audio_tokens[cid]
+        neg_dir = IMAGE_BANK_DIR / NEGATIVE_CATEGORY
+        if not neg_dir.exists() or len(list(neg_dir.glob("*.jpg"))) < 40:
+            need_seed = True
 
-        # Clean burned tokens older than 15 minutes
-        cutoff = now - 900
-        expired_burned = [tok for tok, t in self._burned_tokens.items() if t < cutoff]
-        for tok in expired_burned:
-            del self._burned_tokens[tok]
+        if need_seed:
+            try:
+                from seed_captcha_images import seed_and_validate
+                print("[CAPTCHA] Auto-seeding missing or incomplete image bank...")
+                seed_and_validate()
+            except Exception as e:
+                print(f"[CAPTCHA WARNING] Auto-seeding encountered an error: {e}")
+
+        # Scan and register categories that have at least 40 valid images
+        self._available_categories = {}
+        for cat, info in CATEGORIES.items():
+            cat_dir = IMAGE_BANK_DIR / cat
+            valid_images = [f for f in cat_dir.glob("*.jpg") if f.stat().st_size > 100]
+            if len(valid_images) >= 40:
+                self._available_categories[cat] = info
+            else:
+                print(f"[CAPTCHA WARNING] Dropping category '{cat}' - only {len(valid_images)} valid images found on disk (minimum is 40).")
+
+        if not self._available_categories:
+            print("[CAPTCHA CRITICAL WARNING] No categories meet the minimum image requirement!")
 
     # ================= FAILED LOGINS TRACKING =================
 
     def record_failed_login(self, ip: str, session_obj=None) -> int:
-        with self._lock:
-            self._failed_logins[ip] += 1
-            count = self._failed_logins[ip]
+        count = storage.record_failed_login(ip)
         if session_obj is not None:
             session_obj["failed_logins"] = session_obj.get("failed_logins", 0) + 1
         return count
 
     def get_failed_logins(self, ip: str, session_obj=None) -> int:
-        with self._lock:
-            ip_count = self._failed_logins.get(ip, 0)
+        ip_count = storage.get_failed_logins(ip)
         session_count = 0
         if session_obj is not None:
             session_count = session_obj.get("failed_logins", 0)
         return max(ip_count, session_count)
 
     def reset_failed_logins(self, ip: str, session_obj=None) -> None:
-        with self._lock:
-            self._failed_logins.pop(ip, None)
+        storage.reset_failed_logins(ip)
         if session_obj is not None:
             session_obj.pop("failed_logins", None)
 
@@ -104,124 +142,135 @@ class CaptchaService:
 
     def create_challenge(self, ip: str, session_id: str = None, failed_logins: int = 0) -> dict:
         """
-        Builds a new randomized challenge. Answers are stored strictly on the server.
-        Uses 4x4 grid if failed_logins >= 3, otherwise 3x3 grid.
+        Builds a new randomized challenge. Answers are stored strictly on the server in shared SQLite storage.
+        Image tokens are cryptographically signed so any Gunicorn worker can serve them without 404s.
         """
-        with self._lock:
-            self._cleanup_expired()
+        # Re-check bank if empty
+        if not self._available_categories:
+            self._ensure_and_validate_bank()
 
-            grid_size = HARD_GRID_SIZE if failed_logins >= FAILED_LOGINS_FOR_HARD else DEFAULT_GRID_SIZE
-            total_tiles = grid_size * grid_size
+        if not self._available_categories:
+            raise RuntimeError("No valid CAPTCHA categories available on server.")
 
-            # Pick target category
-            target_category = random.choice(list(CATEGORIES.keys()))
-            cat_info = CATEGORIES[target_category]
+        grid_size = HARD_GRID_SIZE if failed_logins >= FAILED_LOGINS_FOR_HARD else DEFAULT_GRID_SIZE
+        total_tiles = grid_size * grid_size
 
-            # Collect available images for target category
-            target_dir = IMAGE_BANK_DIR / target_category
-            target_images = list(target_dir.glob("*.jpg"))
-            if not target_images:
-                raise RuntimeError(f"No images found for category '{target_category}' in {target_dir}. Run seed script.")
+        # Pick random target category
+        target_category = random.choice(list(self._available_categories.keys()))
+        cat_info = self._available_categories[target_category]
 
-            # Collect distractor images from other categories + negative
-            distractor_dirs = [IMAGE_BANK_DIR / c for c in CATEGORIES if c != target_category]
-            distractor_dirs.append(IMAGE_BANK_DIR / NEGATIVE_CATEGORY)
-            distractor_images = []
-            for d in distractor_dirs:
-                if d.exists():
-                    distractor_images.extend(list(d.glob("*.jpg")))
+        target_dir = IMAGE_BANK_DIR / target_category
+        target_images = [f for f in target_dir.glob("*.jpg") if f.stat().st_size > 100]
 
-            if not distractor_images:
-                raise RuntimeError(f"No distractor images found in {IMAGE_BANK_DIR}.")
+        # Collect distractor images
+        distractor_dirs = [IMAGE_BANK_DIR / c for c in CATEGORIES if c != target_category]
+        distractor_dirs.append(IMAGE_BANK_DIR / NEGATIVE_CATEGORY)
+        distractor_images = []
+        for d in distractor_dirs:
+            if d.exists():
+                distractor_images.extend([f for f in d.glob("*.jpg") if f.stat().st_size > 100])
 
-            # Determine number of correct images
-            if grid_size == HARD_GRID_SIZE:
-                k_correct = random.randint(MIN_CORRECT_COUNT_HARD, min(MAX_CORRECT_COUNT_HARD, len(target_images)))
-            else:
-                k_correct = random.randint(MIN_CORRECT_COUNT, min(MAX_CORRECT_COUNT, len(target_images)))
+        if grid_size == HARD_GRID_SIZE:
+            k_correct = random.randint(MIN_CORRECT_COUNT_HARD, min(MAX_CORRECT_COUNT_HARD, len(target_images)))
+        else:
+            k_correct = random.randint(MIN_CORRECT_COUNT, min(MAX_CORRECT_COUNT, len(target_images)))
 
-            num_distractors = total_tiles - k_correct
+        num_distractors = total_tiles - k_correct
 
-            selected_correct = random.sample(target_images, k_correct)
-            selected_distractors = random.sample(distractor_images, num_distractors)
+        selected_correct = random.sample(target_images, k_correct)
+        selected_distractors = random.sample(distractor_images, num_distractors)
 
-            # Combine and shuffle
-            tile_entries = [{"is_correct": True, "path": p} for p in selected_correct] + \
-                           [{"is_correct": False, "path": p} for p in selected_distractors]
-            random.shuffle(tile_entries)
+        tile_entries = [{"is_correct": True, "cat": target_category, "file": p.name, "path": p} for p in selected_correct] + \
+                       [{"is_correct": False, "cat": p.parent.name, "file": p.name, "path": p} for p in selected_distractors]
+        random.shuffle(tile_entries)
 
-            correct_indices = {i for i, entry in enumerate(tile_entries) if entry["is_correct"]}
+        # Before returning challenge, verify that every selected file exists and is readable
+        for entry in tile_entries:
+            if not entry["path"].exists():
+                # Fallback to any valid file in that category
+                valid_fallback = list((IMAGE_BANK_DIR / entry["cat"]).glob("*.jpg"))
+                if valid_fallback:
+                    entry["path"] = valid_fallback[0]
+                    entry["file"] = valid_fallback[0].name
 
-            # Generate tokens
-            now = time.time()
-            expires_at = now + CHALLENGE_TTL_SECONDS
-            challenge_id = secrets.token_urlsafe(24)
+        correct_indices = {i for i, entry in enumerate(tile_entries) if entry["is_correct"]}
 
-            # Generate 4-digit code for audio alternative
-            audio_code = "".join(random.choices("0123456789", k=4))
-            self._audio_tokens[challenge_id] = {
-                "code": audio_code,
-                "expires_at": expires_at,
-            }
+        now = time.time()
+        expires_at = now + CHALLENGE_TTL_SECONDS
+        challenge_id = secrets.token_urlsafe(24)
+        audio_code = "".join(random.choices("0123456789", k=4))
 
-            public_images = []
-            for i, entry in enumerate(tile_entries):
-                img_token = secrets.token_urlsafe(16)
-                self._image_tokens[img_token] = {
-                    "path": entry["path"],
-                    "challenge_id": challenge_id,
-                    "expires_at": expires_at,
-                }
-                public_images.append({
-                    "id": i,
-                    "url": f"/api/captcha/image/{img_token}",
-                })
+        # Store challenge in shared process-safe SQLite database
+        storage.store_challenge(challenge_id, {
+            "category": target_category,
+            "grid_size": grid_size,
+            "correct_indices": correct_indices,
+            "audio_code": audio_code,
+            "created_at": now,
+            "expires_at": expires_at,
+            "ip": ip,
+            "session_id": session_id,
+        })
 
-            self._challenges[challenge_id] = {
-                "id": challenge_id,
-                "category": target_category,
-                "grid_size": grid_size,
-                "correct_indices": correct_indices,
-                "audio_code": audio_code,
-                "created_at": now,
-                "expires_at": expires_at,
-                "ip": ip,
-                "session_id": session_id,
-            }
+        # Generate cryptographically signed, stateless image tokens
+        # Payload stores only category integer index and filename (no plain category names)
+        img_serializer = URLSafeTimedSerializer(get_secret_key(), salt="captcha-image")
+        public_images = []
+        for i, entry in enumerate(tile_entries):
+            cat_idx = CATEGORY_TO_INDEX.get(entry["cat"], 8)
+            img_token = img_serializer.dumps({
+                "c": cat_idx,
+                "f": entry["file"],
+                "cid": challenge_id,
+            })
+            public_images.append({
+                "id": i,
+                "url": f"/api/captcha/image/{img_token}",
+            })
 
-            return {
-                "challengeId": challenge_id,
-                "instruction": cat_info["instruction"],
-                "category": cat_info["display"],
-                "gridSize": grid_size,
-                "images": public_images,
-                "audioUrl": f"/api/captcha/audio/{challenge_id}",
-            }
+        return {
+            "challengeId": challenge_id,
+            "instruction": cat_info["instruction"],
+            "category": cat_info["display"],
+            "gridSize": grid_size,
+            "images": public_images,
+            "audioUrl": f"/api/captcha/audio/{challenge_id}",
+        }
 
     # ================= DYNAMIC IMAGE SERVING =================
 
     def get_challenge_image(self, token: str) -> io.BytesIO | None:
         """
-        Serves an image with dynamic server-side transformations:
-        1. Strips EXIF
-        2. Random crop (92-98%)
-        3. Random brightness adjustment (0.92-1.08)
-        4. Subtle noise/hash alteration
+        Resolves image token cryptographically, works across all Gunicorn workers.
+        Re-usable for the entire 2-minute lifetime.
+        Never exposes category names or original paths to the client.
         """
-        with self._lock:
-            info = self._image_tokens.get(token)
-            if not info or time.time() > info["expires_at"]:
-                return None
-            img_path = info["path"]
-
-        if not Path(img_path).exists():
+        img_serializer = URLSafeTimedSerializer(get_secret_key(), salt="captcha-image")
+        try:
+            payload = img_serializer.loads(token, max_age=CHALLENGE_TTL_SECONDS)
+        except (SignatureExpired, BadSignature, Exception):
             return None
+
+        cat_idx = payload.get("c", 8)
+        filename = payload.get("f", "img_01.jpg")
+        category = INDEX_TO_CATEGORY.get(cat_idx, NEGATIVE_CATEGORY)
+
+        img_path = IMAGE_BANK_DIR / category / filename
+        if not img_path.exists():
+            # Fallback to any valid image in that category
+            cat_dir = IMAGE_BANK_DIR / category
+            fallback_list = list(cat_dir.glob("*.jpg"))
+            if fallback_list:
+                img_path = fallback_list[0]
+            else:
+                return None
 
         try:
             with Image.open(img_path) as raw_img:
                 img = raw_img.convert("RGB")
 
-            # 1. Random crop (92% - 98%)
+            # Dynamic transforms per request:
+            # 1. Random subtle crop (92-98%)
             w, h = img.size
             crop_pct = random.uniform(0.92, 0.98)
             cw, ch = int(w * crop_pct), int(h * crop_pct)
@@ -229,11 +278,11 @@ class CaptchaService:
             top = random.randint(0, h - ch)
             img = img.crop((left, top, left + cw, top + ch)).resize((300, 300), Image.Resampling.BILINEAR)
 
-            # 2. Random brightness
+            # 2. Random subtle brightness (0.92 - 1.08)
             factor = random.uniform(0.92, 1.08)
             img = ImageEnhance.Brightness(img).enhance(factor)
 
-            # 3. Save to memory without EXIF
+            # 3. Save as JPEG without EXIF
             buf = io.BytesIO()
             img.save(buf, format="JPEG", quality=85, optimize=True)
             buf.seek(0)
@@ -242,11 +291,10 @@ class CaptchaService:
             return None
 
     def get_audio_code(self, challenge_id: str) -> str | None:
-        with self._lock:
-            item = self._audio_tokens.get(challenge_id)
-            if item and time.time() <= item["expires_at"]:
-                return item["code"]
-            return None
+        ch = storage.get_challenge(challenge_id)
+        if ch and time.time() <= ch["expires_at"]:
+            return ch["audio_code"]
+        return None
 
     # ================= VERIFICATION & TOKEN BURNING =================
 
@@ -260,37 +308,34 @@ class CaptchaService:
         session_id: str = None,
     ) -> tuple[bool, str, str | None]:
         """
-        Verifies a challenge.
-        On success, burns challenge and returns (True, "Verified", signed_token).
-        On failure, returns (False, error_msg, None).
+        Verifies challenge selection or audio answer.
+        One-time use: challenge is atomically popped from shared SQLite storage.
         """
-        # Honeypot check
         if honeypot:
-            rate_limiter.record_verification_failure(ip)
+            storage.record_verification_failure(ip)
             return False, "Bot activity detected.", None
 
-        with self._lock:
-            # ONE-TIME USE: challenge is popped immediately
-            challenge = self._challenges.pop(challenge_id, None)
+        # Atomically pop challenge (ONE-TIME USE)
+        challenge = storage.pop_challenge(challenge_id)
 
         if not challenge:
-            rate_limiter.record_verification_failure(ip)
+            storage.record_verification_failure(ip)
             return False, "Challenge not found or already used. Please request a new challenge.", None
 
         now = time.time()
         if now > challenge["expires_at"]:
-            rate_limiter.record_verification_failure(ip)
+            storage.record_verification_failure(ip)
             return False, "Challenge has expired. Please try again.", None
 
-        # Minimum time-to-submit check (2 seconds)
+        # Minimum 2-second time-to-submit check
         elapsed = now - challenge["created_at"]
         if elapsed < MIN_TIME_TO_SUBMIT:
-            rate_limiter.record_verification_failure(ip)
+            storage.record_verification_failure(ip)
             return False, f"Verification submitted too quickly ({elapsed:.1f}s). Please take your time.", None
 
         # Verify answer
         is_correct = False
-        if audio_answer is not None and audio_answer.strip():
+        if audio_answer is not None and str(audio_answer).strip():
             expected = challenge["audio_code"].strip()
             submitted = str(audio_answer).strip()
             is_correct = (submitted == expected)
@@ -299,13 +344,13 @@ class CaptchaService:
             is_correct = (submitted_set == challenge["correct_indices"])
 
         if not is_correct:
-            in_cooldown, remaining = rate_limiter.record_verification_failure(ip)
+            in_cooldown, remaining = storage.record_verification_failure(ip)
             if in_cooldown:
                 return False, f"Too many failed verification attempts. Please wait {remaining} seconds.", None
             return False, "Incorrect selection. Please try again.", None
 
         # Verification succeeded
-        rate_limiter.record_verification_success(ip)
+        storage.record_verification_success(ip)
 
         # Generate signed token valid for 5 minutes
         s = URLSafeTimedSerializer(get_secret_key(), salt="captcha-token")
@@ -320,19 +365,18 @@ class CaptchaService:
     def verify_token(self, token: str, ip: str = None) -> tuple[bool, str | None]:
         """
         Validates and burns a captchaToken. Called by login, signup, and reset routes.
-        Returns: (is_valid, error_message)
+        Process-safe across all Gunicorn workers via shared storage.
         """
         if not token or not token.strip():
             return False, "CAPTCHA verification is required. Please check the 'I'm not a robot' box."
 
         clean_token = token.strip()
-        with self._lock:
-            if clean_token in self._burned_tokens:
-                return False, "CAPTCHA token has already been used. Please verify again."
+        if storage.is_token_burned(clean_token):
+            return False, "CAPTCHA token has already been used. Please verify again."
 
         s = URLSafeTimedSerializer(get_secret_key(), salt="captcha-token")
         try:
-            data = s.loads(clean_token, max_age=TOKEN_TTL_SECONDS)
+            s.loads(clean_token, max_age=TOKEN_TTL_SECONDS)
         except SignatureExpired:
             return False, "CAPTCHA token has expired. Please verify again."
         except BadSignature:
@@ -340,10 +384,8 @@ class CaptchaService:
         except Exception:
             return False, "CAPTCHA verification failed."
 
-        # Burn token so it cannot be reused
-        with self._lock:
-            self._burned_tokens[clean_token] = time.time()
-
+        # Burn token so it cannot be reused across any worker
+        storage.burn_token(clean_token)
         return True, None
 
 

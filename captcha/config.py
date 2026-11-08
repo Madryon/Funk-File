@@ -48,6 +48,10 @@ CATEGORIES = {
 
 NEGATIVE_CATEGORY = "negative"
 
+CATEGORIES_LIST = ["cat", "dog", "car", "bicycle", "traffic_light", "airplane", "boat", "tree", "negative"]
+CATEGORY_TO_INDEX = {c: i for i, c in enumerate(CATEGORIES_LIST)}
+INDEX_TO_CATEGORY = {i: c for i, c in enumerate(CATEGORIES_LIST)}
+
 # Grid configuration
 DEFAULT_GRID_SIZE = 3  # 3x3 = 9 images
 HARD_GRID_SIZE = 4     # 4x4 = 16 images

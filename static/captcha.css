@@ -283,6 +283,31 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.captcha-tile.loaded img {
+  opacity: 1;
+}
+
+.captcha-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--ink-raised) 25%, var(--ink-line) 50%, var(--ink-raised) 75%);
+  background-size: 200% 100%;
+  animation: captcha-shimmer 1.5s infinite;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.captcha-tile.loaded .captcha-skeleton {
+  display: none;
+}
+
+@keyframes captcha-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Selected overlay */

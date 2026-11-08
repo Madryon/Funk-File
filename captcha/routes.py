@@ -64,6 +64,7 @@ def get_challenge():
 
 
 @captcha_bp.route("/image/<token>", methods=["GET"])
+@captcha_bp.route("/img/<token>", methods=["GET"])
 def get_image(token: str):
     """
     Serves challenge images dynamically with random crop, brightness, and noise.
