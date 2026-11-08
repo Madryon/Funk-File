@@ -597,6 +597,16 @@ html[data-theme="light"] .btn-submit,
     </div>
   {% endfor %}
   {% if error %}
+    <div class="alert alert-error" id="serverAlert">
+      <span>✕</span>
+      <span>{{ error }}</span>
+    </div>
+  {% endif %}
+  <div class="alert alert-error" id="clientAlert" style="display:none;">
+    <span>✕</span>
+    <span class="msg"></span>
+  </div>
+  {% if False %}
     <div class="alert alert-error">
       <span>✕</span>
       <span>{{ error }}</span>
@@ -609,7 +619,7 @@ html[data-theme="light"] .btn-submit,
     <h2>Set New Password</h2>
     <p>Enter a new password for account <strong>{{ username }}</strong>.</p>
   </div>
-  <form method="POST" action="/reset-password">
+  <form method="POST" action="/reset-password" id="authForm">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="token" value="{{ token }}">
     <div class="field">
@@ -626,7 +636,7 @@ html[data-theme="light"] .btn-submit,
     <h2>Create an Account</h2>
     <p>Sign up to unlock all PDF, image, and video tools with full processing history.</p>
   </div>
-  <form method="POST" action="/register{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}">
+  <form method="POST" action="/register{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" id="authForm">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="field">
       <label for="username">Username</label>
@@ -650,7 +660,7 @@ html[data-theme="light"] .btn-submit,
     <h2>Welcome Back</h2>
     <p>Enter your username or email to access your tools and file history.</p>
   </div>
-  <form method="POST" action="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}">
+  <form method="POST" action="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" id="authForm">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="field">
       <label for="username">Username or Email</label>
@@ -701,12 +711,190 @@ html[data-theme="light"] .btn-submit,
 })();
 </script>
 <script src="/static/captcha.js"></script>
+<script src="/static/password-toggle.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('captchaBox')) {
-    window.authCaptcha = useCaptcha({
+  const captchaBox = document.getElementById('captchaBox');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const authForm = document.getElementById('authForm');
+  const clientAlert = document.getElementById('clientAlert');
+  const serverAlert = document.getElementById('serverAlert');
+  const passInput = document.getElementById('password');
+  const userInput = document.getElementById('username');
+  const emailInput = document.getElementById('email');
+
+  let authCaptcha = null;
+  if (captchaBox) {
+    authCaptcha = useCaptcha({
       container: '#captchaBox',
       submitBtn: '#btnSubmit'
+    });
+    window.authCaptcha = authCaptcha;
+  }
+
+  let cooldownTimer = null;
+  function startCooldown(seconds) {
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    let remaining = seconds;
+    if (btnSubmit) btnSubmit.disabled = true;
+
+    const renderCooldown = () => {
+      const mins = Math.floor(remaining / 60);
+      const secs = remaining % 60;
+      let timeText = '';
+      if (mins > 0 && secs > 0) {
+        timeText = `${mins}m ${secs}s`;
+      } else if (mins > 0) {
+        timeText = `${mins} minute${mins > 1 ? 's' : ''}`;
+      } else {
+        timeText = `${secs} second${secs !== 1 ? 's' : ''}`;
+      }
+      showError(`Too many attempts, try again in ${timeText}.`);
+    };
+
+    renderCooldown();
+    cooldownTimer = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+        hideError();
+        if (authCaptcha) authCaptcha.reset();
+        if (btnSubmit) btnSubmit.disabled = false;
+      } else {
+        renderCooldown();
+      }
+    }, 1000);
+  }
+
+  function showError(msg) {
+    if (serverAlert) serverAlert.style.display = 'none';
+    if (clientAlert) {
+      clientAlert.querySelector('.msg').textContent = msg;
+      clientAlert.style.display = 'flex';
+    }
+  }
+
+  function hideError() {
+    if (clientAlert) clientAlert.style.display = 'none';
+    if (serverAlert) serverAlert.style.display = 'none';
+  }
+
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (cooldownTimer) return;
+
+      hideError();
+      const password = passInput ? passInput.value : '';
+      if (!password) {
+        showError('Password is required.');
+        if (passInput) passInput.focus();
+        return;
+      }
+
+      const token = authCaptcha ? authCaptcha.getToken() : '';
+      if (!token && captchaBox) {
+        showError("Please complete the 'I\'m not a robot' verification.");
+        if (authCaptcha) authCaptcha.openChallenge();
+        return;
+      }
+
+      const originalBtnText = btnSubmit ? btnSubmit.textContent : '';
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add('loading');
+        btnSubmit.textContent = 'Please wait...';
+      }
+
+      let success = false;
+      let cooldownSecs = 0;
+      let errorMessage = '';
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      try {
+        const payload = {
+          password: password,
+          captchaToken: token
+        };
+        if (userInput) payload.username = userInput.value.trim();
+        if (emailInput) payload.email = emailInput.value.trim();
+        
+        const csrfTokenEl = authForm.querySelector('input[name="csrf_token"]') || document.querySelector('meta[name="csrf-token"]');
+        const csrfVal = csrfTokenEl ? (csrfTokenEl.value || csrfTokenEl.content) : '';
+
+        const actionUrl = authForm.getAttribute('action') || window.location.pathname;
+        const res = await fetch(actionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRFToken': csrfVal
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        let data = null;
+        try {
+          data = await res.json();
+        } catch {}
+
+        if (res.ok && data) {
+          success = true;
+          const urlParams = new URLSearchParams(window.location.search);
+          const nextUrl = urlParams.get('next') || data.redirect || '/';
+          window.location.href = nextUrl;
+          return;
+        }
+
+        if (res.status === 429) {
+          cooldownSecs = (data && data.cooldown) ? data.cooldown : 60;
+          errorMessage = (data && data.error) || 'Too many attempts, try again in 1 minute.';
+        } else {
+          errorMessage = (data && data.error) || (res.status === 401 ? 'Invalid username or password.' : 'An error occurred. Please try again.');
+        }
+      } catch (err) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          errorMessage = 'Server not responding, try again.';
+        } else {
+          errorMessage = 'Network error. Please try again.';
+        }
+      } finally {
+        if (!success) {
+          // 1. Show error at the top of the form
+          showError(errorMessage);
+
+          // 2. Keep username/email filled in (do NOT clear userInput or emailInput)
+          // 3. Clear password field and focus it
+          if (passInput) {
+            passInput.value = '';
+            passInput.focus();
+            if (passInput.hidePassword) passInput.hidePassword();
+          }
+
+          // 4. Reset CAPTCHA: uncheck "I'm not a robot", discard token, load fresh challenge
+          if (authCaptcha) {
+            authCaptcha.reset();
+          }
+
+          // 5. Re-enable submit button and remove loading state
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.classList.remove('loading');
+            btnSubmit.textContent = originalBtnText;
+          }
+
+          // 6. If in cooldown (429), activate countdown timer
+          if (cooldownSecs > 0) {
+            startCooldown(cooldownSecs);
+          }
+        }
+      }
     });
   }
 });

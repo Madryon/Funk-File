@@ -523,3 +523,63 @@
     transform: none !important;
   }
 }
+
+/* ---------- Universal Show/Hide Password Toggle ---------- */
+.password-input-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.password-input-wrap input {
+  width: 100% !important;
+  padding-right: 48px !important;
+}
+
+.password-toggle-btn {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  color: var(--text-muted, #6B7280) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 9px 9px 0 !important;
+  transition: color 0.15s ease, transform 0.1s ease !important;
+  z-index: 5 !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text, #111827) !important;
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid var(--stamp, #5b6cff) !important;
+  outline-offset: -2px !important;
+}
+
+[data-theme="batman"] .password-toggle-btn {
+  color: var(--text-muted, #8b8f9a) !important;
+}
+[data-theme="batman"] .password-toggle-btn:hover,
+[data-theme="batman"] .password-toggle-btn:focus-visible {
+  color: #f5c518 !important;
+}
+
+[data-theme="baddie"] .password-toggle-btn {
+  color: var(--text-muted, #E8DFFF) !important;
+}
+[data-theme="baddie"] .password-toggle-btn:hover,
+[data-theme="baddie"] .password-toggle-btn:focus-visible {
+  color: #FF2E93 !important;
+}

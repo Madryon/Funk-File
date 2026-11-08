@@ -524,11 +524,17 @@
       }
     };
 
-    const onReset = () => {
+    const onReset = (autoLoadNew = true) => {
       token = '';
       verified = false;
       if (checkbox) checkbox.reset();
-      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      }
+      if (modal && autoLoadNew) {
+        modal.loadNewChallenge();
+      }
       if (typeof options.onReset === 'function') {
         options.onReset();
       }

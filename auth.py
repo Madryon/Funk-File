@@ -107,6 +107,23 @@ def unauthorized():
 
 # ================= USER AUTH ROUTES =================
 
+def wants_json() -> bool:
+    return (
+        request.is_json
+        or request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        or "application/json" in request.headers.get("Accept", "")
+    )
+
+
+def auth_error(msg: str, status_code: int = 400, mode: str = "login", cooldown: int = None, **kwargs):
+    if wants_json():
+        payload = {"error": msg}
+        if cooldown is not None:
+            payload["cooldown"] = cooldown
+        return jsonify(payload), status_code
+    return render_template("login.html", mode=mode, error=msg, **kwargs), status_code
+
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register_view():
     if current_user.is_authenticated:
@@ -115,12 +132,18 @@ def register_view():
     if request.method == "GET":
         return render_template("login.html", mode="register")
 
+    ip = get_client_ip()
+    from captcha.rate_limiter import rate_limiter
+    in_cooldown, remaining = rate_limiter.is_in_cooldown(ip)
+    if in_cooldown:
+        return auth_error(f"Too many attempts, try again in {remaining} seconds.", 429, mode="register", cooldown=remaining)
+
     # Verify CAPTCHA first
     from captcha.provider import get_captcha_provider
     is_valid, captcha_err = get_captcha_provider().verify_request(request)
     if not is_valid:
         msg = captcha_err or "CAPTCHA verification is required."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="register", error=msg), 400)
+        return auth_error(msg, 400, mode="register")
 
     payload = request.get_json(silent=True) if request.is_json else request.form
     username = (payload.get("username") or "").strip()
@@ -129,8 +152,7 @@ def register_view():
 
     # Basic validations
     if not username or not password:
-        msg = "Username and password are required."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="register", error=msg), 400)
+        return auth_error("Username and password are required.", 400, mode="register")
 
     if not email:
         # Fallback email if user registered via brief modal without email field
@@ -138,24 +160,19 @@ def register_view():
 
     email_regex = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
     if not re.match(email_regex, email):
-        msg = "Please provide a valid email address."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="register", error=msg), 400)
+        return auth_error("Please provide a valid email address.", 400, mode="register")
 
     if len(username) < 3 or len(username) > 80:
-        msg = "Username must be between 3 and 80 characters."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="register", error=msg), 400)
+        return auth_error("Username must be between 3 and 80 characters.", 400, mode="register")
 
     if len(password) < 6:
-        msg = "Password must be at least 6 characters long."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="register", error=msg), 400)
+        return auth_error("Password must be at least 6 characters long.", 400, mode="register")
 
     if User.query.filter_by(username=username).first():
-        msg = "Username is already taken. Please choose another."
-        return jsonify({"error": msg}), 409 if request.is_json else (render_template("login.html", mode="register", error=msg), 409)
+        return auth_error("Username is already taken. Please choose another.", 409, mode="register")
 
     if User.query.filter_by(email=email).first():
-        msg = "An account with this email already exists."
-        return jsonify({"error": msg}), 409 if request.is_json else (render_template("login.html", mode="register", error=msg), 409)
+        return auth_error("An account with this email already exists.", 409, mode="register")
 
     user = User(username=username, email=email, is_active=True)
     user.set_password(password)
@@ -165,8 +182,8 @@ def register_view():
     record_login_event(user)
     login_user(user, remember=True)
 
-    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
-        return jsonify({"id": user.id, "username": user.username, "email": user.email}), 201
+    if wants_json():
+        return jsonify({"id": user.id, "username": user.username, "email": user.email, "redirect": url_for("index")}), 201
 
     next_url = request.args.get("next") or url_for("index")
     return redirect(next_url)
@@ -181,21 +198,26 @@ def login_view():
     if request.method == "GET":
         return render_template("login.html", mode="login")
 
+    ip = get_client_ip()
+    from captcha.rate_limiter import rate_limiter
+    in_cooldown, remaining = rate_limiter.is_in_cooldown(ip)
+    if in_cooldown:
+        return auth_error(f"Too many attempts, try again in {remaining} seconds.", 429, mode="login", cooldown=remaining)
+
     # Verify CAPTCHA first
     from captcha.provider import get_captcha_provider
     from captcha.service import captcha_service
     is_valid, captcha_err = get_captcha_provider().verify_request(request)
     if not is_valid:
         msg = captcha_err or "CAPTCHA verification is required."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="login", error=msg), 400)
+        return auth_error(msg, 400, mode="login")
 
     payload = request.get_json(silent=True) if request.is_json else request.form
     identifier = (payload.get("username") or payload.get("email") or payload.get("identifier") or "").strip()
     password = payload.get("password") or ""
 
     if not identifier or not password:
-        msg = "Username/email and password are required."
-        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="login", error=msg), 400)
+        return auth_error("Username and password are required.", 400, mode="login")
 
     # Check if this is an admin authentication via standard login
     from admin import get_admin_password
@@ -217,7 +239,7 @@ def login_view():
                 db.session.rollback()
             except Exception:
                 pass
-        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
+        if wants_json():
             return jsonify({"id": getattr(admin_user, "id", 0), "username": "admin", "redirect": url_for("admin.dashboard")}), 200
         return redirect(url_for("admin.dashboard"))
 
@@ -245,20 +267,21 @@ def login_view():
             user = None
 
     if user is None or not user.check_password(password):
-        captcha_service.record_failed_login(get_client_ip(), session)
-        msg = "Invalid username/email or password."
-        return jsonify({"error": msg}), 401 if request.is_json else (render_template("login.html", mode="login", error=msg), 401)
+        captcha_service.record_failed_login(ip, session)
+        in_cd, rem = rate_limiter.is_in_cooldown(ip)
+        if in_cd:
+            return auth_error(f"Too many attempts, try again in {rem} seconds.", 429, mode="login", cooldown=rem)
+        return auth_error("Invalid username or password.", 401, mode="login")
 
     if not user.is_active:
-        msg = "This account has been disabled. Please contact an administrator."
-        return jsonify({"error": msg}), 403 if request.is_json else (render_template("login.html", mode="login", error=msg), 403)
+        return auth_error("This account has been disabled. Please contact an administrator.", 403, mode="login")
 
-    captcha_service.reset_failed_logins(get_client_ip(), session)
+    captcha_service.reset_failed_logins(ip, session)
     record_login_event(user)
     login_user(user, remember=True)
 
-    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
-        return jsonify({"id": user.id, "username": user.username, "email": user.email}), 200
+    if wants_json():
+        return jsonify({"id": user.id, "username": user.username, "email": user.email, "redirect": url_for("index")}), 200
 
     next_url = request.args.get("next") or url_for("index")
     return redirect(next_url)

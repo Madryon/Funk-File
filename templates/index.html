@@ -1261,6 +1261,7 @@ html[data-theme="light"] .ticket-perf,
     <button type="button" class="auth-tab-btn" id="authTabLogin" onclick="Auth.setMode('login')">Log In</button>
   </div>
   <h2 id="authTitle"></h2><p class="modal-sub" id="authSub"></p>
+  <div class="modal-error" id="authError" style="margin-bottom:12px;"></div>
   <form id="authForm" autocomplete="off">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div id="authUserGroup">
@@ -1279,7 +1280,7 @@ html[data-theme="light"] .ticket-perf,
       </label>
     </div>
     <div id="authCaptchaContainer"></div>
-    <div class="modal-error" id="authError"></div>
+    
     <div class="modal-actions"><button type="submit" class="btn-primary" id="authSubmit"></button><button type="button" onclick="Auth.close()">Cancel</button></div>
   </form>
   <div class="modal-toggle" id="authToggle"></div>
@@ -1829,6 +1830,42 @@ const Auth = (() => {
     setTimeout(() => $('authUser').focus(), 100);
   }
 
+    let cooldownTimer = null;
+  function startCooldown(seconds) {
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    let remaining = seconds;
+    const btn = $('authSubmit');
+    if (btn) btn.disabled = true;
+
+    const renderCooldown = () => {
+      const mins = Math.floor(remaining / 60);
+      const secs = remaining % 60;
+      let timeText = '';
+      if (mins > 0 && secs > 0) {
+        timeText = `${mins}m ${secs}s`;
+      } else if (mins > 0) {
+        timeText = `${mins} minute${mins > 1 ? 's' : ''}`;
+      } else {
+        timeText = `${secs} second${secs !== 1 ? 's' : ''}`;
+      }
+      err.textContent = `Too many attempts, try again in ${timeText}.`;
+    };
+
+    renderCooldown();
+    cooldownTimer = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+        err.textContent = '';
+        if (modalCaptcha) modalCaptcha.reset();
+        if (btn) btn.disabled = false;
+      } else {
+        renderCooldown();
+      }
+    }, 1000);
+  }
+
   const close = () => {
     const modal = $('authModal');
     modal.classList.remove('open');
@@ -1836,92 +1873,195 @@ const Auth = (() => {
     modal.setAttribute('aria-hidden', 'true');
     err.textContent = '';
     pendingTool = null;
+    if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
     if (modalCaptcha) modalCaptcha.reset();
   };
 
   $('authForm').onsubmit = async e => {
     e.preventDefault();
-    err.textContent = '';
-    const password = $('authPass').value;
-    if (!password) return err.textContent = 'Password is required';
+    if (cooldownTimer) return;
 
+    err.textContent = '';
+    const passEl = $('authPass');
+    const password = passEl ? passEl.value : '';
+    if (!password) {
+      err.textContent = 'Password is required.';
+      if (passEl) passEl.focus();
+      return;
+    }
+
+    const submitBtn = $('authSubmit');
+    const originalBtnText = submitBtn ? submitBtn.textContent : '';
+    let success = false;
+    let cooldownSecs = 0;
+    let errorMessage = '';
+
+    // Handle Admin Mode
     if (mode === 'admin') {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.textContent = 'Authenticating...';
+      }
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       try {
-        let res = await api('/admin/login', {
+        const res = await api('/admin/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ password })
+          body: JSON.stringify({ password }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         let d = null;
         try { d = await res.json(); } catch {}
         if (res.ok && d && d.ok) {
+          success = true;
           window.location.href = d.redirect || '/admin';
           return;
         }
-        if (d && d.error) {
-          return err.textContent = d.error;
-        }
         if (res.status === 429) {
-          return err.textContent = 'Too many attempts. Please wait a minute and try again.';
+          cooldownSecs = (d && d.cooldown) ? d.cooldown : 60;
+          errorMessage = (d && d.error) || 'Too many attempts, try again in 1 minute.';
+        } else {
+          errorMessage = (d && d.error) || 'Invalid admin password (default is: AdminPass2026!)';
         }
-        // Fallback endpoint
-        let res2 = await api('/auth/admin-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ password })
-        });
-        let d2 = null;
-        try { d2 = await res2.json(); } catch {}
-        if (res2.ok && d2 && d2.ok) {
-          window.location.href = d2.redirect || '/admin';
-          return;
-        }
-        if (d2 && d2.error) {
-          return err.textContent = d2.error;
-        }
-        return err.textContent = 'Invalid admin password (default is: AdminPass2026!)';
       } catch (ex) {
-        return err.textContent = 'Connection error. Please try again.';
+        clearTimeout(timeoutId);
+        if (ex.name === 'AbortError') {
+          errorMessage = 'Server not responding, try again.';
+        } else {
+          errorMessage = 'Network error. Please try again.';
+        }
+      } finally {
+        if (!success) {
+          err.textContent = errorMessage;
+          if (passEl) {
+            passEl.value = '';
+            passEl.focus();
+            if (passEl.hidePassword) passEl.hidePassword();
+          }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.textContent = originalBtnText;
+          }
+          if (cooldownSecs > 0) {
+            startCooldown(cooldownSecs);
+          }
+        }
       }
+      return;
     }
 
+    // Standard User Login / Register
     const captchaToken = modalCaptcha ? modalCaptcha.getToken() : '';
-    if (!captchaToken && mode !== 'admin') {
-      return err.textContent = "Please complete the 'I\'m not a robot' verification.";
+    if (!captchaToken) {
+      err.textContent = "Please complete the 'I'm not a robot' verification.";
+      if (modalCaptcha) modalCaptcha.openChallenge();
+      return;
     }
 
-    const username = $('authUser').value.trim();
-    if (!username) return err.textContent = 'Username is required';
-    const email = $('authEmail') ? $('authEmail').value.trim() : '';
+    const userEl = $('authUser');
+    const username = userEl ? userEl.value.trim() : '';
+    if (!username) {
+      err.textContent = 'Username is required.';
+      if (userEl) userEl.focus();
+      return;
+    }
+
+    const emailEl = $('authEmail');
+    const email = emailEl ? emailEl.value.trim() : '';
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add('loading');
+      submitBtn.textContent = (mode === 'register') ? 'Creating account...' : 'Signing in...';
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
       const body = { username, password, captchaToken };
       if (mode === 'register' && email) body.email = email;
       const res = await api(mode === 'register' ? '/register' : '/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal
       });
-      const d = await res.json();
-      if (!res.ok) return err.textContent = d.error || 'Something went wrong';
-      currentUser = { id: d.id, username: d.username };
-      const target = pendingTool;
-      close();
-      renderBar();
-      if (d.redirect) {
-        window.location.href = d.redirect;
+      clearTimeout(timeoutId);
+
+      let d = null;
+      try { d = await res.json(); } catch {}
+
+      if (res.ok && d) {
+        success = true;
+        currentUser = { id: d.id, username: d.username };
+        const target = pendingTool;
+        close();
+        renderBar();
+        if (d.redirect) {
+          window.location.href = d.redirect;
+          return;
+        }
+        if (target) {
+          show(target.id);
+          $('home').hidden = true;
+          $('toolView').hidden = false;
+          $('sub').textContent = SUB_TOOL;
+          scrollTo({ top: 0, behavior: 'smooth' });
+          const st = $(target.id + 'Status');
+          if (st) say(st, `✓ Welcome, ${esc(currentUser.username)}! ${esc(target.name)} is unlocked.`, 'info');
+        }
         return;
       }
-      if (target) {
-        show(target.id);
-        $('home').hidden = true;
-        $('toolView').hidden = false;
-        $('sub').textContent = SUB_TOOL;
-        scrollTo({ top: 0, behavior: 'smooth' });
-        const st = $(target.id + 'Status');
-        if (st) say(st, `✓ Welcome, ${esc(currentUser.username)}! ${esc(target.name)} is unlocked.`, 'info');
+
+      // Handle failure
+      if (res.status === 429) {
+        cooldownSecs = (d && d.cooldown) ? d.cooldown : 60;
+        errorMessage = (d && d.error) || 'Too many attempts, try again in 1 minute.';
+      } else {
+        errorMessage = (d && d.error) || (res.status === 401 ? 'Invalid username or password.' : 'An error occurred. Please try again.');
       }
-    } catch {
-      err.textContent = 'Network error. Please try again.';
+    } catch (ex) {
+      clearTimeout(timeoutId);
+      if (ex.name === 'AbortError') {
+        errorMessage = 'Server not responding, try again.';
+      } else {
+        errorMessage = 'Network error. Please try again.';
+      }
+    } finally {
+      if (!success) {
+        // 1. Show error at the top of the form
+        err.textContent = errorMessage;
+
+        // 2. Keep username/email filled in (do NOT clear username or email)
+        // 3. Clear password field and focus it
+        if (passEl) {
+          passEl.value = '';
+          passEl.focus();
+          if (passEl.hidePassword) passEl.hidePassword();
+        }
+
+        // 4. Reset CAPTCHA: uncheck "I'm not a robot", discard token, load fresh challenge
+        if (modalCaptcha) {
+          modalCaptcha.reset();
+        }
+
+        // 5. Re-enable submit button and remove loading state
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
+          submitBtn.textContent = originalBtnText;
+        }
+
+        // 6. If in cooldown (429), activate countdown timer
+        if (cooldownSecs > 0) {
+          startCooldown(cooldownSecs);
+        }
+      }
     }
   };
 
@@ -2630,5 +2770,6 @@ window.BatmanTheme = (() => {
 })();
 </script>
 <script src="/static/captcha.js"></script>
+<script src="/static/password-toggle.js"></script>
 </body>
 </html>

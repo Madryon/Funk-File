@@ -114,7 +114,8 @@ def verify_challenge():
     if in_cooldown:
         return jsonify({
             "success": False,
-            "error": f"Too many failed verification attempts. Please wait {remaining} seconds."
+            "error": f"Too many failed verification attempts. Please wait {remaining} seconds.",
+            "cooldown": remaining
         }), 429
 
     payload = request.get_json(silent=True) or request.form
@@ -143,7 +144,11 @@ def verify_challenge():
             "message": "Verified successfully.",
         }), 200
     else:
-        return jsonify({
+        in_cd, rem = rate_limiter.is_in_cooldown(ip)
+        err_res = {
             "success": False,
             "error": msg or "Incorrect answer. Please try again.",
-        }), 400
+        }
+        if in_cd or rem > 0:
+            err_res["cooldown"] = rem
+        return jsonify(err_res), 400
