@@ -115,6 +115,13 @@ def register_view():
     if request.method == "GET":
         return render_template("login.html", mode="register")
 
+    # Verify CAPTCHA first
+    from captcha.provider import get_captcha_provider
+    is_valid, captcha_err = get_captcha_provider().verify_request(request)
+    if not is_valid:
+        msg = captcha_err or "CAPTCHA verification is required."
+        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="register", error=msg), 400)
+
     payload = request.get_json(silent=True) if request.is_json else request.form
     username = (payload.get("username") or "").strip()
     email = (payload.get("email") or "").strip().lower()
@@ -174,6 +181,14 @@ def login_view():
     if request.method == "GET":
         return render_template("login.html", mode="login")
 
+    # Verify CAPTCHA first
+    from captcha.provider import get_captcha_provider
+    from captcha.service import captcha_service
+    is_valid, captcha_err = get_captcha_provider().verify_request(request)
+    if not is_valid:
+        msg = captcha_err or "CAPTCHA verification is required."
+        return jsonify({"error": msg}), 400 if request.is_json else (render_template("login.html", mode="login", error=msg), 400)
+
     payload = request.get_json(silent=True) if request.is_json else request.form
     identifier = (payload.get("username") or payload.get("email") or payload.get("identifier") or "").strip()
     password = payload.get("password") or ""
@@ -230,6 +245,7 @@ def login_view():
             user = None
 
     if user is None or not user.check_password(password):
+        captcha_service.record_failed_login(get_client_ip(), session)
         msg = "Invalid username/email or password."
         return jsonify({"error": msg}), 401 if request.is_json else (render_template("login.html", mode="login", error=msg), 401)
 
@@ -237,6 +253,7 @@ def login_view():
         msg = "This account has been disabled. Please contact an administrator."
         return jsonify({"error": msg}), 403 if request.is_json else (render_template("login.html", mode="login", error=msg), 403)
 
+    captcha_service.reset_failed_logins(get_client_ip(), session)
     record_login_event(user)
     login_user(user, remember=True)
 
@@ -305,6 +322,11 @@ def reset_password():
         return redirect(url_for("auth.login_view"))
 
     if request.method == "POST":
+        from captcha.provider import get_captcha_provider
+        is_valid, captcha_err = get_captcha_provider().verify_request(request)
+        if not is_valid:
+            return render_template("login.html", mode="reset", token=token, username=user.username, error=captcha_err or "CAPTCHA verification failed."), 400
+
         new_password = (request.form.get("password") or "").strip()
         if len(new_password) < 6:
             return render_template("login.html", mode="reset", token=token, username=user.username, error="Password must be at least 6 characters.")

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="/static/captcha.css">
 
 <style>
 /* ============ BASE TOKENS ============ */
@@ -615,7 +616,8 @@ html[data-theme="light"] .btn-submit,
       <label for="password">New Password</label>
       <input type="password" id="password" name="password" minlength="6" placeholder="At least 6 characters" required autofocus>
     </div>
-    <button type="submit" class="btn-submit">Update Password & Sign In</button>
+    <div id="captchaBox"></div>
+    <button type="submit" class="btn-submit" id="btnSubmit">Update Password & Sign In</button>
   </form>
 
   {% elif mode == 'register' %}
@@ -638,7 +640,8 @@ html[data-theme="light"] .btn-submit,
       <label for="password">Password</label>
       <input type="password" id="password" name="password" minlength="6" placeholder="At least 6 characters" required>
     </div>
-    <button type="submit" class="btn-submit">Create Account</button>
+    <div id="captchaBox"></div>
+    <button type="submit" class="btn-submit" id="btnSubmit">Create Account</button>
   </form>
 
   {% else %}
@@ -657,7 +660,8 @@ html[data-theme="light"] .btn-submit,
       <label for="password">Password</label>
       <input type="password" id="password" name="password" placeholder="Enter your password" required>
     </div>
-    <button type="submit" class="btn-submit">Sign In</button>
+    <div id="captchaBox"></div>
+    <button type="submit" class="btn-submit" id="btnSubmit">Sign In</button>
   </form>
   {% endif %}
 </div>
@@ -695,6 +699,17 @@ html[data-theme="light"] .btn-submit,
   let saved; try { saved = localStorage.getItem('pdf-toolbox-theme'); } catch {}
   apply(saved || 'light');
 })();
+</script>
+<script src="/static/captcha.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('captchaBox')) {
+    window.authCaptcha = useCaptcha({
+      container: '#captchaBox',
+      submitBtn: '#btnSubmit'
+    });
+  }
+});
 </script>
 </body>
 </html>

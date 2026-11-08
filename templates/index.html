@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<link rel="stylesheet" href="/static/captcha.css">
 <style>
 /* ============ THEMES (only colors change between themes) ============ */
 :root{--ink:#fff;--ink-soft:#F8F9FA;--ink-raised:#EEF1F4;--ink-line:#C9CDD3;--paper:#F1F3F5;--paper-dim:#E5E8EC;--stamp:#BD3A2B;--stamp-deep:#8F2A1F;--brass:#C9A227;--brass-soft:#8A7434;--moss:#6E8C5C;--text:#0D1117;--text-muted:#4B5563;--text-faint:#6B7280;--on-paper:#212529;--sw-bg:rgba(255,255,255,.9);--sw-border:#C9CDD3;--sw-shadow:0 6px 20px rgba(0,0,0,.1);--radius:16px;--radius-sm:9px}
@@ -1277,6 +1278,7 @@ html[data-theme="light"] .ticket-perf,
         🛡️ Login as Admin
       </label>
     </div>
+    <div id="authCaptchaContainer"></div>
     <div class="modal-error" id="authError"></div>
     <div class="modal-actions"><button type="submit" class="btn-primary" id="authSubmit"></button><button type="button" onclick="Auth.close()">Cancel</button></div>
   </form>
@@ -1780,7 +1782,21 @@ const Auth = (() => {
     }
   }
 
+  let modalCaptcha = null;
+  function ensureCaptcha() {
+    if (!modalCaptcha && window.useCaptcha && $('authCaptchaContainer')) {
+      modalCaptcha = window.useCaptcha({
+        container: '#authCaptchaContainer',
+        submitBtn: '#authSubmit'
+      });
+    }
+    if (modalCaptcha) {
+      modalCaptcha.reset();
+    }
+  }
+
   function open(m) {
+    ensureCaptcha();
     pendingTool = null;
     err.textContent = '';
     $('authForm').reset();
@@ -1804,6 +1820,7 @@ const Auth = (() => {
     pendingTool = t;
     err.textContent = '';
     $('authForm').reset();
+    ensureCaptcha();
     setMode(preferredMode || 'register');
     const modal = $('authModal');
     modal.hidden = false;
@@ -1819,6 +1836,7 @@ const Auth = (() => {
     modal.setAttribute('aria-hidden', 'true');
     err.textContent = '';
     pendingTool = null;
+    if (modalCaptcha) modalCaptcha.reset();
   };
 
   $('authForm').onsubmit = async e => {
@@ -1867,11 +1885,16 @@ const Auth = (() => {
       }
     }
 
+    const captchaToken = modalCaptcha ? modalCaptcha.getToken() : '';
+    if (!captchaToken && mode !== 'admin') {
+      return err.textContent = "Please complete the 'I\'m not a robot' verification.";
+    }
+
     const username = $('authUser').value.trim();
     if (!username) return err.textContent = 'Username is required';
     const email = $('authEmail') ? $('authEmail').value.trim() : '';
     try {
-      const body = { username, password };
+      const body = { username, password, captchaToken };
       if (mode === 'register' && email) body.email = email;
       const res = await api(mode === 'register' ? '/register' : '/login', {
         method: 'POST',
@@ -2606,5 +2629,6 @@ window.BatmanTheme = (() => {
   return { initCanvas };
 })();
 </script>
+<script src="/static/captcha.js"></script>
 </body>
 </html>

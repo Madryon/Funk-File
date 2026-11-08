@@ -71,6 +71,8 @@ limiter.init_app(app)
 csrf.init_app(app)
 
 # Register Blueprints
+from captcha import captcha_bp
+app.register_blueprint(captcha_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(history_bp)
 
