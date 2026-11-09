@@ -3,6 +3,7 @@ import os
 import time
 from datetime import datetime, timedelta
 from functools import wraps
+from pathlib import Path
 
 from flask import (
     Blueprint,
@@ -24,17 +25,35 @@ from models import LoginEvent, User, db
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-DEFAULT_ADMIN_PASSWORD = "AdminPass2026!"
-
-
 def get_admin_password() -> str:
+    """
+    Retrieve the admin master password.
+    Sources (in order of priority):
+    1. os.environ['ADMIN_PASSWORD']
+    2. .env file in project root (for local development)
+    Returns empty string if not configured (NO hardcoded default password).
+    """
     raw = os.environ.get("ADMIN_PASSWORD")
     if not raw:
-        return DEFAULT_ADMIN_PASSWORD
+        env_file = Path(__file__).resolve().parent / ".env"
+        if env_file.is_file():
+            try:
+                with open(env_file, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line.startswith("#") or not line:
+                            continue
+                        if line.startswith("ADMIN_PASSWORD="):
+                            raw = line.split("=", 1)[1].strip()
+                            break
+            except Exception:
+                pass
+    if not raw:
+        return ""
     val = raw.strip().strip("'\"")
     if val.startswith("ADMIN_PASSWORD="):
         val = val[len("ADMIN_PASSWORD="):].strip().strip("'\"")
-    return val or DEFAULT_ADMIN_PASSWORD
+    return val
 
 
 def is_admin_authenticated() -> bool:
@@ -52,40 +71,39 @@ def is_admin_authenticated() -> bool:
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Must refuse if ADMIN_PASSWORD is not configured in env
-        if not get_admin_password():
-            abort(404)
-        # Return 404 (not 403) for /admin/* to non-admins
         if not is_admin_authenticated():
-            abort(404)
+            if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
+                return jsonify({"error": "Admin authentication required.", "redirect": url_for("admin.login")}), 401
+            return redirect(url_for("admin.login"))
         return f(*args, **kwargs)
     return decorated_function
-
-
-@admin_bp.before_request
-def check_admin_env():
-    # If the env var is missing, refuse all admin routes with 404
-    if not get_admin_password():
-        abort(404)
 
 
 # ================= ADMIN AUTH =================
 
 @admin_bp.route("/login", methods=["GET", "POST"])
+@admin_bp.route("/login/", methods=["GET", "POST"])
 @limiter.limit("15 per minute", methods=["POST"])
 def login():
     if is_admin_authenticated():
         return redirect(url_for("admin.dashboard"))
 
+    admin_pass = get_admin_password()
+
     if request.method == "GET":
-        return render_template("admin.html", mode="login")
+        cfg_warning = None
+        if not admin_pass:
+            cfg_warning = "ADMIN_PASSWORD is not configured in server environment variables. Admin login is currently disabled."
+        return render_template("admin.html", mode="login", error=cfg_warning)
+
+    if not admin_pass:
+        msg = "Admin access is disabled because ADMIN_PASSWORD is not configured on the server."
+        if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in request.headers.get("Accept", ""):
+            return jsonify({"error": msg}), 503
+        return render_template("admin.html", mode="login", error=msg), 503
 
     payload = request.get_json(silent=True) if request.is_json else request.form
     password = (payload.get("password") or "").strip()
-
-    admin_pass = get_admin_password()
-    if not admin_pass:
-        abort(404)
 
     # Secure comparison using hmac.compare_digest
     if not password or not hmac.compare_digest(password.encode("utf-8"), admin_pass.encode("utf-8")):
@@ -112,6 +130,7 @@ def logout():
 # ================= ADMIN DASHBOARD =================
 
 @admin_bp.route("", methods=["GET"])
+@admin_bp.route("/", methods=["GET"])
 @admin_required
 def dashboard():
     now = datetime.utcnow()

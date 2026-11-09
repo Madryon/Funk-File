@@ -755,6 +755,7 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
   font-weight: 500;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
   transition: background 0.15s ease;
 }
 .kebab-item:hover {
@@ -1923,6 +1924,8 @@ const Auth = (() => {
               <button type="button" class="kebab-item" onclick="Auth.closeMenu(); Auth.toggleHistory();"><span>📁</span><span>File History</span></button>
               <button type="button" class="kebab-item" onclick="Auth.closeMenu(); HelpModal.open();"><span>💬</span><span>Help &amp; Report Bug</span></button>
               <div class="kebab-divider"></div>
+              <a href="/admin" class="kebab-item" onclick="Auth.closeMenu();"><span>🛡️</span><span>Admin Panel</span></a>
+              <div class="kebab-divider"></div>
               <button type="button" class="kebab-item danger" onclick="Auth.closeMenu(); Auth.logout();"><span>🚪</span><span>Logout</span></button>
             </div>
           </div>
@@ -1938,6 +1941,8 @@ const Auth = (() => {
             </button>
             <div class="kebab-dropdown" id="kebabDropdown" style="display:none;">
               <button type="button" class="kebab-item" onclick="Auth.closeMenu(); HelpModal.open();"><span>💬</span><span>Help &amp; Report Bug</span></button>
+              <div class="kebab-divider"></div>
+              <a href="/admin" class="kebab-item" onclick="Auth.closeMenu();"><span>🛡️</span><span>Admin Panel</span></a>
             </div>
           </div>
         </div>`;
@@ -2170,7 +2175,7 @@ const Auth = (() => {
           cooldownSecs = (d && d.cooldown) ? d.cooldown : 60;
           errorMessage = (d && d.error) || 'Too many attempts, try again in 1 minute.';
         } else {
-          errorMessage = (d && d.error) || 'Invalid admin password (default is: AdminPass2026!)';
+          errorMessage = (d && d.error) || 'Invalid admin password.';
         }
       } catch (ex) {
         clearTimeout(timeoutId);

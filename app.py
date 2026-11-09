@@ -7,6 +7,7 @@ from datetime import timedelta, datetime
 from flask import Flask, render_template, jsonify, g, request, session, redirect, url_for, abort, send_file, flash
 from flask_login import current_user, login_required
 from flask_wtf.csrf import CSRFError
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from auth import login_manager, auth_bp
 from admin import admin_bp, admin_required, is_admin_authenticated
@@ -39,6 +40,7 @@ class Ticket(db.Model):
     user = db.relationship("User", backref=db.backref("tickets", cascade="all, delete-orphan", lazy="dynamic", order_by="Ticket.created_at.desc()"))
 
 app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 app.config["JSON_SORT_KEYS"] = False
 
@@ -76,7 +78,7 @@ app.register_blueprint(captcha_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(history_bp)
 
-# Hidden Admin Panel: registered and active (defaults to 'AdminPass2026!' if ADMIN_PASSWORD is unset)
+# Admin Panel: registered and active (requires ADMIN_PASSWORD environment variable)
 app.register_blueprint(admin_bp)
 
 # Register Tool Blueprints

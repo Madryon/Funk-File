@@ -368,6 +368,8 @@ def reset_password():
 def auth_admin_login():
     from admin import get_admin_password
     admin_pass = get_admin_password()
+    if not admin_pass:
+        return jsonify({"error": "Admin access is disabled because ADMIN_PASSWORD is not configured on the server."}), 503
     payload = request.get_json(silent=True) if request.is_json else request.form
     password = (payload.get("password") or "").strip()
     if not password or not hmac.compare_digest(password.encode("utf-8"), admin_pass.encode("utf-8")):

@@ -247,6 +247,81 @@ class AuthRetryFlowTestCase(unittest.TestCase):
                 html = f.read()
             self.assertIn("password-toggle.js", html, f"{tmpl} missing password-toggle.js inclusion")
 
+    def test_admin_panel_security_and_accessibility(self):
+        """Verify default password is removed, admin routes work, and unauthenticated access redirects."""
+        import os
+        from pathlib import Path
+        from admin import get_admin_password
+
+        # 1. No hardcoded default password in codebase
+        base = Path(app.root_path)
+        for rel in ["admin.py", "app.py", "auth.py", "templates/index.html", "templates/admin.html"]:
+            p = base / rel
+            if p.exists():
+                with open(p, "r", encoding="utf-8") as f:
+                    content = f.read()
+                self.assertNotIn("AdminPass2026!", content, f"{rel} still contains old hardcoded default password")
+
+        # 2. Unauthenticated access to /admin and /admin/ redirects to login (NOT 404)
+        r1 = self.client.get("/admin")
+        self.assertEqual(r1.status_code, 302, "Unauthenticated /admin should redirect to login")
+        self.assertIn("/admin/login", r1.headers.get("Location", ""))
+
+        r2 = self.client.get("/admin/")
+        self.assertEqual(r2.status_code, 302, "Unauthenticated /admin/ should redirect to login")
+        self.assertIn("/admin/login", r2.headers.get("Location", ""))
+
+        # 3. With ADMIN_PASSWORD set, verify authentication flow
+        orig_pass = os.environ.get("ADMIN_PASSWORD")
+        try:
+            os.environ["ADMIN_PASSWORD"] = "Secr3tAdminKey!"
+            self.assertEqual(get_admin_password(), "Secr3tAdminKey!")
+
+            # Wrong password returns 401 and does NOT leak password
+            import re
+            r_login_page = self.client.get("/admin/login")
+            self.assertEqual(r_login_page.status_code, 200)
+            m = re.search(r'name="csrf-token" content="([^"]+)"', r_login_page.data.decode("utf-8"))
+            csrf = m.group(1) if m else None
+
+            r_wrong = self.client.post(
+                "/admin/login",
+                json={"password": "WrongPassword99!"},
+                headers={"X-CSRFToken": csrf, "Accept": "application/json"}
+            )
+            self.assertEqual(r_wrong.status_code, 401)
+            self.assertEqual(r_wrong.json.get("error"), "Invalid admin password.")
+
+            # Correct password returns 200 and logs in
+            r_ok = self.client.post(
+                "/admin/login",
+                json={"password": "Secr3tAdminKey!"},
+                headers={"X-CSRFToken": csrf, "Accept": "application/json"}
+            )
+            self.assertEqual(r_ok.status_code, 200)
+            self.assertTrue(r_ok.json.get("ok"))
+
+            # Dashboard now loads 200
+            r_dash = self.client.get("/admin")
+            self.assertEqual(r_dash.status_code, 200)
+
+            # Trailing slash also loads 200
+            r_dash_slash = self.client.get("/admin/")
+            self.assertEqual(r_dash_slash.status_code, 200)
+
+            # Logout
+            r_logout = self.client.post("/admin/logout", headers={"X-CSRFToken": csrf})
+            self.assertEqual(r_logout.status_code, 302)
+
+            # Back to redirecting
+            r_dash_after = self.client.get("/admin")
+            self.assertEqual(r_dash_after.status_code, 302)
+        finally:
+            if orig_pass is not None:
+                os.environ["ADMIN_PASSWORD"] = orig_pass
+            elif "ADMIN_PASSWORD" in os.environ:
+                del os.environ["ADMIN_PASSWORD"]
+
 
 if __name__ == "__main__":
     unittest.main()
