@@ -61,12 +61,9 @@
   box-shadow: 0 0 0 3px rgba(91, 108, 255, 0.25);
 }
 
+[data-theme="dark"] .captcha-box:focus-visible,
 [data-theme="batman"] .captcha-box:focus-visible {
-  box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.35);
-}
-
-[data-theme="baddie"] .captcha-box:focus-visible {
-  box-shadow: 0 0 0 3px rgba(255, 46, 147, 0.4);
+  box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.35);
 }
 
 /* Loading spinner */
@@ -80,8 +77,8 @@
   display: none;
 }
 
-[data-theme="batman"] .captcha-spinner,
-[data-theme="baddie"] .captcha-spinner {
+[data-theme="dark"] .captcha-spinner,
+[data-theme="batman"] .captcha-spinner {
   border-color: rgba(255, 255, 255, 0.2);
   border-top-color: var(--stamp);
 }
@@ -174,15 +171,14 @@
   animation: captcha-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+[data-theme="dark"] .captcha-modal-card,
 [data-theme="batman"] .captcha-modal-card {
-  border: 1px solid #2a2d36;
-  border-top: 3px solid var(--stamp);
-  box-shadow: 0 0 30px rgba(245, 197, 24, 0.15);
-}
-
-[data-theme="baddie"] .captcha-modal-card {
-  border: 1px solid rgba(255, 46, 147, 0.4);
-  box-shadow: 0 0 35px rgba(255, 46, 147, 0.3);
+  background: var(--g-glass, rgba(255, 255, 255, 0.07));
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid var(--g-border, rgba(255, 255, 255, 0.16));
+  border-radius: 20px;
+  box-shadow: var(--g-shadow, 0 8px 32px rgba(0, 0, 0, 0.45)), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 /* Modal Instruction Header */
@@ -195,8 +191,10 @@
   justify-content: space-between;
 }
 
+[data-theme="dark"] .captcha-header,
 [data-theme="batman"] .captcha-header {
-  color: #0a0a0c;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--g-accent, #7c8cff), var(--g-accent2, #c084fc));
 }
 
 .captcha-header-text {
@@ -320,12 +318,9 @@
   justify-content: center;
 }
 
+[data-theme="dark"] .captcha-tile .captcha-overlay,
 [data-theme="batman"] .captcha-tile .captcha-overlay {
-  background: rgba(245, 197, 24, 0.45);
-}
-
-[data-theme="baddie"] .captcha-tile .captcha-overlay {
-  background: rgba(255, 46, 147, 0.5);
+  background: rgba(124, 140, 255, 0.45);
 }
 
 .captcha-tile.selected {
@@ -348,8 +343,10 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+[data-theme="dark"] .captcha-tile-check,
 [data-theme="batman"] .captcha-tile-check {
-  color: #0a0a0c;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--g-accent, #7c8cff), var(--g-accent2, #c084fc));
 }
 
 /* Audio Alternative Mode */
@@ -568,18 +565,13 @@
   outline-offset: -2px !important;
 }
 
+[data-theme="dark"] .password-toggle-btn,
 [data-theme="batman"] .password-toggle-btn {
-  color: var(--text-muted, #8b8f9a) !important;
+  color: var(--g-muted, #a3acd0) !important;
 }
+[data-theme="dark"] .password-toggle-btn:hover,
+[data-theme="dark"] .password-toggle-btn:focus-visible,
 [data-theme="batman"] .password-toggle-btn:hover,
 [data-theme="batman"] .password-toggle-btn:focus-visible {
-  color: #f5c518 !important;
-}
-
-[data-theme="baddie"] .password-toggle-btn {
-  color: var(--text-muted, #E8DFFF) !important;
-}
-[data-theme="baddie"] .password-toggle-btn:hover,
-[data-theme="baddie"] .password-toggle-btn:focus-visible {
-  color: #FF2E93 !important;
+  color: var(--g-accent, #7c8cff) !important;
 }

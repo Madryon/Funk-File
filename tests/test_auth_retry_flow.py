@@ -238,7 +238,7 @@ class AuthRetryFlowTestCase(unittest.TestCase):
         self.assertIn(".password-toggle-btn", css_code)
         self.assertIn("44px", css_code)  # mobile touch target
         self.assertIn('data-theme="batman"', css_code)
-        self.assertIn('data-theme="baddie"', css_code)
+        self.assertIn('data-theme="dark"', css_code)
 
         # 3. Check templates inclusion
         for tmpl in ["login.html", "index.html", "admin.html"]:
