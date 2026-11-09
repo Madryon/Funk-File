@@ -262,14 +262,12 @@ class AuthRetryFlowTestCase(unittest.TestCase):
                     content = f.read()
                 self.assertNotIn("AdminPass2026!", content, f"{rel} still contains old hardcoded default password")
 
-        # 2. Unauthenticated access to /admin and /admin/ redirects to login (NOT 404)
+        # 2. Unauthenticated access to /admin and /admin/ returns 404 Not Found (never redirects)
         r1 = self.client.get("/admin")
-        self.assertEqual(r1.status_code, 302, "Unauthenticated /admin should redirect to login")
-        self.assertIn("/admin/login", r1.headers.get("Location", ""))
+        self.assertEqual(r1.status_code, 404, "Unauthenticated /admin must return 404 Not Found")
 
         r2 = self.client.get("/admin/")
-        self.assertEqual(r2.status_code, 302, "Unauthenticated /admin/ should redirect to login")
-        self.assertIn("/admin/login", r2.headers.get("Location", ""))
+        self.assertEqual(r2.status_code, 404, "Unauthenticated /admin/ must return 404 Not Found")
 
         # 3. With ADMIN_PASSWORD set, verify authentication flow
         orig_pass = os.environ.get("ADMIN_PASSWORD")
@@ -315,7 +313,7 @@ class AuthRetryFlowTestCase(unittest.TestCase):
 
             # Back to redirecting
             r_dash_after = self.client.get("/admin")
-            self.assertEqual(r_dash_after.status_code, 302)
+            self.assertEqual(r_dash_after.status_code, 404, "After logout, /admin must return 404 Not Found")
         finally:
             if orig_pass is not None:
                 os.environ["ADMIN_PASSWORD"] = orig_pass

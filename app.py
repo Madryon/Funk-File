@@ -1,43 +1,52 @@
-import os
-import time
-import shutil
 import html
+import json
+import os
+import re
+import shutil
+import time
 import uuid
-from datetime import timedelta, datetime
-from flask import Flask, render_template, jsonify, g, request, session, redirect, url_for, abort, send_file, flash
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from flask import (
+    Flask,
+    abort,
+    flash,
+    g,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from flask_login import current_user, login_required
 from flask_wtf.csrf import CSRFError
+from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from auth import login_manager, auth_bp
 from admin import admin_bp, admin_required, is_admin_authenticated
-from history import history_bp, create_history_entry
-from models import db, User, LoginEvent
+from auth import auth_bp, login_manager
+from extensions import csrf, limiter
+from history import create_history_entry, history_bp
+from models import (
+    ErrorLog,
+    FileHistory,
+    LoginEvent,
+    ProcessingJob,
+    SiteSetting,
+    Ticket,
+    User,
+    db,
+    init_or_migrate_db,
+)
 from scheduler import start_cleanup_scheduler
-from extensions import limiter, csrf
-from utils import BASE_DIR, UPLOAD_DIR, OUTPUT_DIR
+from utils import BASE_DIR, OUTPUT_DIR, UPLOAD_DIR
 
 TICKET_SCREENSHOT_DIR = UPLOAD_DIR / "tickets"
 TICKET_SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
-
-
-class Ticket(db.Model):
-    __tablename__ = "tickets"
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    type = db.Column(db.String(50), nullable=False)
-    subject = db.Column(db.String(120), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    page_url = db.Column(db.String(500), nullable=True)
-    user_agent = db.Column(db.String(500), nullable=True)
-    screenshot_path = db.Column(db.String(255), nullable=True)
-    status = db.Column(db.String(20), default="open", nullable=False, index=True)
-    admin_note = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-
-    user = db.relationship("User", backref=db.backref("tickets", cascade="all, delete-orphan", lazy="dynamic", order_by="Ticket.created_at.desc()"))
 
 app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
@@ -62,7 +71,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Secret key & Session security
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "pdf-toolbox-secure-fallback-key-32chars!").strip().strip("'\"")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
-app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE", "true").lower() in ("true", "1")
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("COOKIE_SECURE", "false").lower() in ("true", "1")
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
@@ -77,15 +86,13 @@ from captcha import captcha_bp
 app.register_blueprint(captcha_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(history_bp)
-
-# Admin Panel: registered and active (requires ADMIN_PASSWORD environment variable)
 app.register_blueprint(admin_bp)
 
 # Register Tool Blueprints
-from routes_pdf import pdf_bp
 from routes_image import image_bp
-from routes_video import video_bp
+from routes_pdf import pdf_bp
 from routes_scan import scan_bp
+from routes_video import video_bp
 
 app.register_blueprint(pdf_bp)
 app.register_blueprint(image_bp)
@@ -93,104 +100,309 @@ app.register_blueprint(video_bp)
 app.register_blueprint(scan_bp)
 
 
-# ================= DATABASE INITIALIZATION & ROBUST MIGRATION =================
-
-def migrate_database():
-    try:
-        db.create_all()
-        with db.engine.connect() as conn:
-            from sqlalchemy import text
-            dialect = db.engine.dialect.name
-            if dialect == "postgresql":
-                statements = [
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER DEFAULT 0",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE",
-                    "UPDATE users SET email = LOWER(username) || '@pdf-toolbox.local' WHERE email IS NULL OR email = ''",
-                    "UPDATE users SET is_active = TRUE WHERE is_active IS NULL",
-                    "UPDATE users SET login_count = 0 WHERE login_count IS NULL",
-                    "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users (email)",
-                    """CREATE TABLE IF NOT EXISTS login_events (
-                        id SERIAL PRIMARY KEY,
-                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                        ip VARCHAR(64),
-                        user_agent VARCHAR(255),
-                        logged_in_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )""",
-                    "CREATE INDEX IF NOT EXISTS ix_login_events_user_id ON login_events (user_id)",
-                    "CREATE INDEX IF NOT EXISTS ix_login_events_logged_in_at ON login_events (logged_in_at)",
-                    """CREATE TABLE IF NOT EXISTS tickets (
-                        id SERIAL PRIMARY KEY,
-                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                        type VARCHAR(50) NOT NULL,
-                        subject VARCHAR(120) NOT NULL,
-                        message TEXT NOT NULL,
-                        page_url VARCHAR(500),
-                        user_agent VARCHAR(500),
-                        screenshot_path VARCHAR(255),
-                        status VARCHAR(20) DEFAULT 'open' NOT NULL,
-                        admin_note TEXT,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-                    )""",
-                    "CREATE INDEX IF NOT EXISTS ix_tickets_user_id ON tickets (user_id)",
-                    "CREATE INDEX IF NOT EXISTS ix_tickets_status ON tickets (status)",
-                    "CREATE INDEX IF NOT EXISTS ix_tickets_created_at ON tickets (created_at)"
-                ]
-                for stmt in statements:
-                    try:
-                        conn.execute(text(stmt))
-                        conn.commit()
-                    except Exception:
-                        try:
-                            conn.rollback()
-                        except Exception:
-                            pass
-            elif dialect == "sqlite":
-                res = conn.execute(text("PRAGMA table_info(users)"))
-                cols = {row[1] for row in res.fetchall()}
-                for col, typ in [
-                    ("email", "VARCHAR(120)"),
-                    ("last_login", "DATETIME"),
-                    ("login_count", "INTEGER DEFAULT 0"),
-                    ("is_active", "BOOLEAN DEFAULT 1"),
-                ]:
-                    if cols and col not in cols:
-                        try:
-                            conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {typ}"))
-                            conn.commit()
-                        except Exception:
-                            try:
-                                conn.rollback()
-                            except Exception:
-                                pass
-    except Exception as e:
-        print(f"[Warning] Failed to initialize/migrate database tables: {e}", flush=True)
-
-
-_db_migrated = False
-
-@app.before_request
-def _ensure_migrated():
-    global _db_migrated
-    if not _db_migrated:
-        migrate_database()
-        _db_migrated = True
-
+# ================= DATABASE INITIALIZATION =================
 
 with app.app_context():
-    migrate_database()
-    _db_migrated = True
+    init_or_migrate_db(app)
 
 
-@app.route("/migrate-db")
+# ================= SITE STATUS & 30-SECOND CACHE =================
+
+_site_status_cache = None
+_site_status_cache_time = 0
+
+
+def get_site_status():
+    global _site_status_cache, _site_status_cache_time
+    now_ts = time.time()
+    if _site_status_cache is not None and (now_ts - _site_status_cache_time < 30):
+        return _site_status_cache
+
+    try:
+        ann_row = SiteSetting.query.filter_by(key="announcement").first()
+        ann_data = json.loads(ann_row.value) if ann_row and ann_row.value else {}
+    except Exception:
+        ann_data = {}
+
+    try:
+        maint_row = SiteSetting.query.filter_by(key="maintenance").first()
+        maint_data = json.loads(maint_row.value) if maint_row and maint_row.value else {}
+    except Exception:
+        maint_data = {}
+
+    # Auto-expire announcement check
+    ann_active = bool(ann_data.get("active", False))
+    ann_expires = ann_data.get("expires_at")
+    if ann_active and ann_expires:
+        try:
+            exp_dt = datetime.fromisoformat(ann_expires.replace("Z", "+00:00")).replace(tzinfo=None)
+            if datetime.utcnow() >= exp_dt:
+                ann_active = False
+        except Exception:
+            pass
+
+    # Auto-expire maintenance check
+    maint_active = bool(maint_data.get("active", False))
+    maint_ends = maint_data.get("ends_at")
+    maint_ends_dt = None
+    if maint_active and maint_ends:
+        try:
+            maint_ends_dt = datetime.fromisoformat(maint_ends.replace("Z", "+00:00")).replace(tzinfo=None)
+            if datetime.utcnow() >= maint_ends_dt:
+                maint_active = False
+                # Auto disable in DB
+                try:
+                    if maint_row:
+                        maint_data["active"] = False
+                        maint_row.value = json.dumps(maint_data)
+                        db.session.commit()
+                except Exception:
+                    db.session.rollback()
+        except Exception:
+            pass
+
+    # Format IST for ends_at
+    ends_at_ist = None
+    if maint_ends_dt:
+        ist_dt = maint_ends_dt + timedelta(hours=5, minutes=30)
+        ends_at_ist = ist_dt.strftime("%d %b %Y, %I:%M %p IST")
+
+    res = {
+        "announcement": {
+            "active": ann_active,
+            "text": ann_data.get("text", "") if ann_active else "",
+            "type": ann_data.get("type", "info"),
+            "id": ann_data.get("id") or (str(int(ann_row.updated_at.timestamp())) if ann_row else "ann_0"),
+        },
+        "maintenance": {
+            "active": maint_active,
+            "message": maint_data.get("message", "We are currently undergoing scheduled maintenance. Please check back shortly."),
+            "ends_at": maint_ends if maint_active else None,
+            "ends_at_ist": ends_at_ist if maint_active else None,
+        }
+    }
+    _site_status_cache = res
+    _site_status_cache_time = now_ts
+    return res
+
+
+def invalidate_site_status_cache():
+    global _site_status_cache, _site_status_cache_time
+    _site_status_cache = None
+    _site_status_cache_time = 0
+
+
+@app.route("/api/site-status", methods=["GET"])
 @csrf.exempt
-def run_migration_endpoint():
-    migrate_database()
-    return jsonify({"ok": True, "message": "Database migration executed."})
+def api_site_status():
+    status = get_site_status()
+    resp = jsonify(status)
+    resp.headers["Cache-Control"] = "public, max-age=30"
+    return resp
 
 
+# ================= MAINTENANCE MODE ENFORCEMENT =================
+
+@app.before_request
+def check_maintenance():
+    # Admin bypass: authenticated admin sessions can test all pages and tools normally
+    if is_admin_authenticated():
+        return None
+
+    path = request.path
+    if (
+        path.startswith("/admin")
+        or path.startswith("/static/")
+        or path in ("/health", "/api/site-status")
+        or path.startswith("/favicon")
+    ):
+        return None
+
+    status = get_site_status()
+    maint = status.get("maintenance", {})
+    if maint.get("active"):
+        ends_at_str = maint.get("ends_at")
+        retry_after = 300
+        if ends_at_str:
+            try:
+                ends_dt = datetime.fromisoformat(ends_at_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                remaining = int((ends_dt - datetime.utcnow()).total_seconds())
+                retry_after = max(10, remaining)
+            except Exception:
+                retry_after = 300
+
+        msg = maint.get("message", "We are currently undergoing scheduled maintenance. Please check back shortly.")
+        ends_at_ist = maint.get("ends_at_ist", "Shortly")
+
+        # JSON response for tool APIs & AJAX
+        if request.is_json or request.path.startswith("/api/") or "application/json" in request.headers.get("Accept", ""):
+            resp = jsonify({
+                "error": "maintenance",
+                "message": msg,
+                "retry_after": retry_after,
+                "ends_at_ist": ends_at_ist,
+            })
+            resp.status_code = 503
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+        # Full-screen glass maintenance page for browser navigation
+        resp = make_response(render_template(
+            "maintenance.html",
+            message=msg,
+            ends_at=ends_at_str,
+            ends_at_ist=ends_at_ist,
+            retry_after=retry_after,
+        ), 503)
+        resp.headers["Retry-After"] = str(retry_after)
+        return resp
+
+
+# ================= SENSITIVE DATA REDACTION & ERROR LOGGING =================
+
+def sanitize_log_text(text: str) -> str:
+    """Strips sensitive data: passwords, tokens, auth headers, cookies."""
+    if not text:
+        return ""
+    # Strip password/token fields in urlencoded / form / json strings
+    text = re.sub(r'(password|passwd|token|secret|key|csrf_token)=[^&\s]+', r'\1=[REDACTED]', text, flags=re.IGNORECASE)
+    text = re.sub(r'("password"|"token"|"secret"|"key")\s*:\s*"[^"]+"', r'\1: "[REDACTED]"', text, flags=re.IGNORECASE)
+    text = re.sub(r'(Bearer\s+)[A-Za-z0-9_\-\.]+', r'\1[REDACTED]', text, flags=re.IGNORECASE)
+    return text
+
+
+def log_error_to_db(tool=None, error_type="Error", error_message="", http_status=500, traceback_text=None):
+    try:
+        from flask import has_request_context
+        user_id = None
+        username = "System"
+        ip = "—"
+        ua = "—"
+        route = ""
+        inferred_tool = "system"
+
+        if has_request_context():
+            user_id = current_user.id if current_user.is_authenticated else None
+            username = current_user.username if current_user.is_authenticated else "Guest"
+            ip = request.headers.get("X-Forwarded-For", request.remote_addr or "—").split(",")[0].strip()
+            ua = (request.user_agent.string if request.user_agent else "—")[:250]
+            route = request.path[:250]
+            inferred_tool = getattr(g, "tool_name", getattr(g, "inferred_tool", "system"))
+
+        clean_msg = sanitize_log_text(error_message)[:500]
+        clean_tb = sanitize_log_text(traceback_text)[:4000] if traceback_text else None
+
+        elog = ErrorLog(
+            user_id=user_id,
+            username_snapshot=username,
+            tool=tool or inferred_tool,
+            error_type=error_type[:40],
+            error_message=clean_msg,
+            traceback=clean_tb,
+            http_status=http_status,
+            route=route,
+            ip=ip,
+            user_agent=ua,
+            created_at=datetime.utcnow(),
+            status="new",
+        )
+        db.session.add(elog)
+        db.session.commit()
+        if has_request_context():
+            g.logged_error_id = elog.id
+        return elog
+    except Exception as ex:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        return None
+
+
+# ================= PROFILING & PROCESSING JOB RECORDING =================
+
+@app.before_request
+def start_request_profiling():
+    g.request_start_time = time.time()
+    g.request_content_length = request.content_length or 0
+    endpoint = request.endpoint or ""
+    tool_prefixes = ("pdf.", "image.", "video.", "scan.")
+    if any(endpoint.startswith(p) for p in tool_prefixes) or request.path in (
+        "/merge", "/compress", "/convert", "/pdf-to-word", "/split", "/lock", "/unlock",
+        "/images-to-pdf", "/watermark-text", "/watermark-image", "/qr-generate",
+        "/scan/process", "/scan/build", "/video-to-images", "/video-to-pdf", "/video-to-mp3"
+    ):
+        g.is_tool_request = True
+        g.inferred_tool = endpoint.split(".")[-1] if "." in endpoint else request.path.strip("/")
+
+
+@app.after_request
+def record_job_and_history(response):
+    # Log user file history on successful tool completion
+    if response.status_code < 400:
+        tool_name = getattr(g, "tool_name", None)
+        output_name = getattr(g, "output_name", None)
+        output_path = getattr(g, "output_path", None)
+        if tool_name and output_name and output_path:
+            try:
+                create_history_entry(tool_name, output_name, output_path)
+            except Exception:
+                pass
+
+    # Record processing jobs for tool operations
+    if getattr(g, "is_tool_request", False):
+        try:
+            duration_ms = int((time.time() - getattr(g, "request_start_time", time.time())) * 1000)
+            tool_name = getattr(g, "tool_name", getattr(g, "inferred_tool", "unknown"))
+            status = "success" if response.status_code < 400 else "failed"
+            user_id = current_user.id if current_user.is_authenticated else None
+            input_size = getattr(g, "request_content_length", 0)
+
+            error_id = getattr(g, "logged_error_id", None)
+            if response.status_code >= 400 and not error_id:
+                err_msg = ""
+                try:
+                    if response.is_json:
+                        j = response.get_json()
+                        err_msg = j.get("error") or str(j)
+                except Exception:
+                    pass
+                if not err_msg:
+                    err_msg = f"HTTP {response.status_code} on {request.path}"
+
+                err_type = "FileTooLarge" if response.status_code == 413 else "ProcessingError"
+                elog = log_error_to_db(
+                    tool=tool_name,
+                    error_type=err_type,
+                    error_message=err_msg[:500],
+                    http_status=response.status_code,
+                    traceback_text=None,
+                )
+                if elog:
+                    error_id = elog.id
+
+            job = ProcessingJob(
+                user_id=user_id,
+                tool=tool_name,
+                status=status,
+                started_at=datetime.utcnow() - timedelta(milliseconds=duration_ms),
+                finished_at=datetime.utcnow(),
+                duration_ms=duration_ms,
+                input_size_bytes=input_size,
+                error_id=error_id,
+            )
+            db.session.add(job)
+            db.session.commit()
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+
+    return response
+
+
+# ================= FILE CLEANUP =================
 
 def _cleanup_old(max_age_seconds: int = 3600) -> None:
     """Safely prune expired UUID job directories and temporary files."""
@@ -214,21 +426,7 @@ def _cleanup_old(max_age_seconds: int = 3600) -> None:
 start_cleanup_scheduler(_cleanup_old)
 
 
-@app.after_request
-def _log_history(response):
-    if response.status_code >= 400:
-        return response
-    tool_name = getattr(g, "tool_name", None)
-    output_name = getattr(g, "output_name", None)
-    output_path = getattr(g, "output_path", None)
-    if not tool_name or not output_name or not output_path:
-        return response
-    try:
-        create_history_entry(tool_name, output_name, output_path)
-    except Exception:
-        pass
-    return response
-
+# ================= BASE ROUTES =================
 
 @app.route("/")
 def index():
@@ -242,6 +440,8 @@ def health():
     return jsonify({"ok": True, "version": "2.0"})
 
 
+# ================= GLOBAL ERROR HANDLERS =================
+
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
     if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -251,11 +451,23 @@ def handle_csrf_error(e):
 
 @app.errorhandler(429)
 def ratelimit_handler(_e):
+    log_error_to_db(
+        tool=getattr(g, "tool_name", getattr(g, "inferred_tool", "rate_limiter")),
+        error_type="RateLimitExceeded",
+        error_message="Rate limit exceeded",
+        http_status=429,
+    )
     return jsonify({"error": "Too many attempts. Please wait a minute and try again."}), 429
 
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
+    log_error_to_db(
+        tool=getattr(g, "tool_name", getattr(g, "inferred_tool", "upload")),
+        error_type="PayloadTooLarge",
+        error_message="Uploaded file exceeds max content length (500 MB)",
+        http_status=413,
+    )
     return jsonify({"error": "File is too large. Please upload a smaller file."}), 413
 
 
@@ -268,10 +480,44 @@ def not_found_error(error):
 
 @app.errorhandler(500)
 def internal_server_error(error):
+    import traceback
+    tb = traceback.format_exc()
+    log_error_to_db(
+        tool=getattr(g, "tool_name", getattr(g, "inferred_tool", "server")),
+        error_type="InternalServerError",
+        error_message=str(error),
+        http_status=500,
+        traceback_text=tb,
+    )
     return jsonify({"error": "Server error while processing your file. Please try again."}), 500
 
 
-# ================= TICKETS & HELP REPORTING =================
+@app.errorhandler(Exception)
+def unhandled_exception(e):
+    if isinstance(e, HTTPException):
+        if e.code == 404:
+            return not_found_error(e)
+        if e.code == 413:
+            return request_entity_too_large(e)
+        if e.code == 429:
+            return ratelimit_handler(e)
+        return e
+
+    import traceback
+    tb = traceback.format_exc()
+    log_error_to_db(
+        tool=getattr(g, "tool_name", getattr(g, "inferred_tool", "unknown")),
+        error_type=type(e).__name__,
+        error_message=str(e),
+        http_status=500,
+        traceback_text=tb,
+    )
+    if request.is_json or request.path.startswith("/api/") or "application/json" in request.headers.get("Accept", ""):
+        return jsonify({"error": "An unexpected error occurred during processing."}), 500
+    return jsonify({"error": "Internal server error"}), 500
+
+
+# ================= SUPPORT TICKETS (USER ENDPOINTS) =================
 
 @app.route("/api/tickets", methods=["POST"])
 @login_required
@@ -302,7 +548,6 @@ def create_ticket():
     if len(message) > 2000:
         return jsonify({"error": "Message must not exceed 2000 characters."}), 400
 
-    # Sanitize text
     subject = html.escape(subject)
     message = html.escape(message)
     page_url = html.escape(page_url) if page_url else None
@@ -354,7 +599,7 @@ def create_ticket():
     return jsonify({
         "ok": True,
         "ticket_id": ticket.id,
-        "message": f"Thanks, ticket #{ticket.id} received"
+        "message": f"Thanks, ticket #{ticket.id} received",
     }), 201
 
 
@@ -367,119 +612,8 @@ def get_my_tickets():
     tickets = Ticket.query.filter_by(user_id=current_user.id).order_by(Ticket.created_at.desc()).all()
     return jsonify({
         "ok": True,
-        "tickets": [
-            {
-                "id": t.id,
-                "type": t.type,
-                "subject": t.subject,
-                "message": t.message,
-                "page_url": t.page_url,
-                "status": t.status,
-                "admin_note": t.admin_note,
-                "has_screenshot": bool(t.screenshot_path),
-                "created_at": t.created_at.strftime("%Y-%m-%d %H:%M") if t.created_at else "",
-                "updated_at": t.updated_at.strftime("%Y-%m-%d %H:%M") if t.updated_at else "",
-            }
-            for t in tickets
-        ]
+        "tickets": [t.to_dict() for t in tickets],
     })
-
-
-# ================= ADMIN TICKETS MANAGEMENT =================
-
-def admin_dashboard_with_tickets():
-    now = datetime.utcnow()
-    today_start = datetime(now.year, now.month, now.day)
-    week_start = today_start - timedelta(days=today_start.weekday())
-
-    total_users = User.query.count()
-    active_24h = User.query.filter(User.last_login >= now - timedelta(hours=24)).count()
-    active_7d = User.query.filter(User.last_login >= now - timedelta(days=7)).count()
-    total_logins = db.session.query(db.func.sum(User.login_count)).scalar() or LoginEvent.query.count()
-
-    open_tickets = Ticket.query.filter(Ticket.status.in_(["open", "in_progress"])).count()
-    tickets_today = Ticket.query.filter(Ticket.created_at >= today_start).count()
-    resolved_this_week = Ticket.query.filter(Ticket.status == "resolved", Ticket.updated_at >= week_start).count()
-
-    users = User.query.order_by(User.id.desc()).all()
-    recent_logins = LoginEvent.query.order_by(LoginEvent.logged_in_at.desc()).limit(50).all()
-    tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
-
-    login_time = session.get("admin_login_time", time.time())
-    remaining_secs = max(0, int(1800 - (time.time() - login_time)))
-
-    return render_template(
-        "admin.html",
-        mode="dashboard",
-        stats={
-            "total_users": total_users,
-            "active_24h": active_24h,
-            "active_7d": active_7d,
-            "total_logins": total_logins,
-            "open_tickets": open_tickets,
-            "tickets_today": tickets_today,
-            "resolved_this_week": resolved_this_week,
-        },
-        users=users,
-        recent_logins=recent_logins,
-        tickets=tickets,
-        remaining_secs=remaining_secs,
-    )
-
-app.view_functions["admin.dashboard"] = admin_required(admin_dashboard_with_tickets)
-
-
-@app.route("/admin/tickets/<int:ticket_id>/update", methods=["POST"])
-@admin_required
-def admin_update_ticket(ticket_id):
-    ticket = db.session.get(Ticket, ticket_id)
-    if not ticket:
-        abort(404)
-    status = request.form.get("status")
-    admin_note = request.form.get("admin_note", "").strip()
-    if status in ("open", "in_progress", "resolved", "closed"):
-        ticket.status = status
-    ticket.admin_note = admin_note or None
-    ticket.updated_at = datetime.utcnow()
-    db.session.commit()
-    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"ok": True, "status": ticket.status, "admin_note": ticket.admin_note})
-    flash(f"Ticket #{ticket.id} updated.", "success")
-    return redirect(url_for("admin.dashboard") + "#tickets")
-
-
-@app.route("/admin/tickets/<int:ticket_id>/delete", methods=["POST"])
-@admin_required
-def admin_delete_ticket(ticket_id):
-    ticket = db.session.get(Ticket, ticket_id)
-    if not ticket:
-        abort(404)
-    if ticket.screenshot_path:
-        s_file = TICKET_SCREENSHOT_DIR / ticket.screenshot_path
-        try:
-            s_file.unlink(missing_ok=True)
-        except OSError:
-            pass
-    db.session.delete(ticket)
-    db.session.commit()
-    if request.is_json or request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"ok": True})
-    flash(f"Ticket #{ticket_id} deleted.", "success")
-    return redirect(url_for("admin.dashboard") + "#tickets")
-
-
-@app.route("/admin/tickets/<int:ticket_id>/screenshot", methods=["GET"])
-@admin_required
-def admin_ticket_screenshot(ticket_id):
-    ticket = db.session.get(Ticket, ticket_id)
-    if not ticket or not ticket.screenshot_path:
-        abort(404)
-    s_path = (TICKET_SCREENSHOT_DIR / ticket.screenshot_path).resolve()
-    if not s_path.is_file() or not str(s_path).startswith(str(TICKET_SCREENSHOT_DIR.resolve())):
-        abort(404)
-    ext = s_path.suffix.lower()
-    mimetypes = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
-    return send_file(s_path, mimetype=mimetypes.get(ext, "application/octet-stream"))
 
 
 if __name__ == "__main__":

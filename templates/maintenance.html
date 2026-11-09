@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maintenance · Funk Files</title>
+<link rel="icon" type="image/png" href="/static/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta http-equiv="refresh" content="{{ retry_after|default(60) }}">
+
+<style>
+:root {
+  --g-bg: #f5f7fb;
+  --g-glass: rgba(255, 255, 255, 0.75);
+  --g-glass-strong: rgba(255, 255, 255, 0.9);
+  --g-border: rgba(0, 0, 0, 0.08);
+  --g-text: #0d1117;
+  --g-muted: #57606a;
+  --g-accent: #5b6cff;
+  --g-accent2: #9333ea;
+  --g-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  --card-glow: rgba(91, 108, 255, 0.15);
+}
+
+html[data-theme="dark"],
+[data-theme="dark"] {
+  --g-bg: #000000;
+  --g-glass: rgba(255, 255, 255, 0.06);
+  --g-glass-strong: rgba(255, 255, 255, 0.12);
+  --g-border: rgba(255, 255, 255, 0.14);
+  --g-text: #eef1ff;
+  --g-muted: #a3acd0;
+  --g-accent: #7c8cff;
+  --g-accent2: #c084fc;
+  --g-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+  --card-glow: rgba(124, 140, 255, 0.22);
+  background: #000000;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--g-bg);
+  color: var(--g-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+  overflow-x: hidden;
+  transition: background .3s, color .3s;
+}
+
+html[data-theme="dark"] body {
+  background: #000000 fixed !important;
+}
+
+/* Ambient glow blobs */
+.glow-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.38;
+  pointer-events: none;
+  z-index: 0;
+}
+.blob-1 { width: 380px; height: 380px; background: #6366f1; top: -100px; left: -100px; }
+.blob-2 { width: 340px; height: 340px; background: #a855f7; bottom: -80px; right: -80px; }
+.blob-3 { width: 280px; height: 280px; background: #ec4899; top: 40%; left: 60%; }
+
+/* Card */
+.maint-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 580px;
+  background: var(--g-glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--g-border);
+  border-radius: 24px;
+  box-shadow: var(--g-shadow), 0 0 60px var(--card-glow);
+  padding: 44px 36px;
+  text-align: center;
+  animation: cardFadeIn .6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.maint-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--g-glass-strong);
+  border: 1px solid var(--g-border);
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.maint-icon {
+  font-size: 42px;
+  animation: wrenchWiggle 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes wrenchWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15% { transform: rotate(-14deg); }
+  30% { transform: rotate(12deg); }
+  45% { transform: rotate(-8deg); }
+  60% { transform: rotate(4deg); }
+  75% { transform: rotate(0deg); }
+}
+
+.maint-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  color: #facc15;
+  margin-bottom: 16px;
+}
+
+.maint-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #facc15;
+  box-shadow: 0 0 10px #facc15;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+  color: var(--g-text);
+  line-height: 1.25;
+}
+
+.maint-message {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--g-muted);
+  margin-bottom: 28px;
+  word-wrap: break-word;
+}
+
+/* Countdown Grid */
+.countdown-box {
+  background: var(--g-glass-strong);
+  border: 1px solid var(--g-border);
+  border-radius: 16px;
+  padding: 20px 16px;
+  margin-bottom: 24px;
+}
+
+.countdown-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--g-muted);
+  margin-bottom: 12px;
+}
+
+.countdown-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.cd-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 68px;
+}
+
+.cd-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--g-accent);
+  line-height: 1;
+  background: var(--g-glass);
+  border: 1px solid var(--g-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.cd-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--g-muted);
+  text-transform: uppercase;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+}
+
+.cd-sep {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--g-muted);
+  margin-top: -18px;
+}
+
+.ist-info {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--g-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.ist-info strong {
+  color: var(--g-text);
+  font-weight: 600;
+}
+
+/* Actions */
+.maint-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--g-accent);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .15s, opacity .15s;
+  box-shadow: 0 4px 16px rgba(91, 108, 255, 0.35);
+}
+.btn-check:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn-check:active { transform: translateY(1px); }
+.btn-check.loading { opacity: 0.6; pointer-events: none; }
+
+.status-note {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--g-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Theme Switcher */
+.theme-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10;
+  background: var(--g-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--g-border);
+  color: var(--g-text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--g-shadow);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .2s, transform .15s;
+}
+.theme-toggle-btn:hover {
+  background: var(--g-glass-strong);
+  transform: translateY(-1px);
+}
+</style>
+</head>
+<body>
+
+<div class="glow-blob blob-1"></div>
+<div class="glow-blob blob-2"></div>
+<div class="glow-blob blob-3"></div>
+
+<main class="maint-card">
+  <div class="maint-icon-wrap">
+    <span class="maint-icon">🛠️</span>
+  </div>
+
+  <div>
+    <span class="maint-pill">
+      <span class="maint-pill-dot"></span>
+      Scheduled Maintenance
+    </span>
+  </div>
+
+  <h1>Funk Files is Upgrading</h1>
+
+  <p class="maint-message">
+    {{ message or "We are currently performing brief scheduled maintenance to improve speed and reliability. Funk Files will be back online shortly." }}
+  </p>
+
+  <div class="countdown-box" id="countdownBox">
+    <div class="countdown-title">Estimated Time Remaining</div>
+    <div class="countdown-grid">
+      <div class="cd-segment">
+        <span class="cd-val" id="cdHours">00</span>
+        <span class="cd-label">Hours</span>
+      </div>
+      <span class="cd-sep">:</span>
+      <div class="cd-segment">
+        <span class="cd-val" id="cdMinutes">00</span>
+        <span class="cd-label">Minutes</span>
+      </div>
+      <span class="cd-sep">:</span>
+      <div class="cd-segment">
+        <span class="cd-val" id="cdSeconds">00</span>
+        <span class="cd-label">Seconds</span>
+      </div>
+    </div>
+
+    <div class="ist-info">
+      <span>Expected completion:</span>
+      <strong id="istCompletion">{{ ends_at_ist or "Shortly" }}</strong>
+    </div>
+  </div>
+
+  <div class="maint-actions">
+    <button type="button" class="btn-check" id="checkBtn" onclick="checkStatusManual()">
+      <span id="btnIcon">⟳</span>
+      <span id="btnText">Check Status Now</span>
+    </button>
+  </div>
+
+  <div class="status-note" id="statusNote">
+    <span>●</span>
+    <span id="statusNoteText">Auto-checking every 30 seconds...</span>
+  </div>
+</main>
+
+<button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+  <span id="themeIcon">☀️</span>
+  <span id="themeLabel">Light</span>
+</button>
+
+<script>
+// Target UTC timestamp
+const endsAtStr = "{{ ends_at or '' }}";
+const endsAt = endsAtStr ? new Date(endsAtStr).getTime() : 0;
+
+function updateCountdown() {
+  if (!endsAt) {
+    document.getElementById('countdownBox').style.display = 'none';
+    return;
+  }
+  const now = Date.now();
+  const diff = Math.max(0, Math.floor((endsAt - now) / 1000));
+
+  const hours = Math.floor(diff / 3600);
+  const minutes = Math.floor((diff % 3600) / 60);
+  const seconds = diff % 60;
+
+  document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('cdMinutes').textContent = String(minutes).padStart(2, '0');
+  document.getElementById('cdSeconds').textContent = String(seconds).padStart(2, '0');
+
+  if (diff <= 0) {
+    document.getElementById('statusNoteText').textContent = 'Maintenance window closing, verifying online status...';
+    checkStatus();
+  }
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+// Auto status checking
+let isChecking = false;
+async function checkStatus() {
+  if (isChecking) return;
+  isChecking = true;
+  try {
+    const res = await fetch('/api/site-status?t=' + Date.now(), { cache: 'no-cache' });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.maintenance || !data.maintenance.active) {
+        document.getElementById('statusNoteText').textContent = '✅ Maintenance complete! Reloading...';
+        setTimeout(() => window.location.href = '/', 1000);
+        return;
+      }
+    }
+  } catch (e) {
+    // Network / server offline, still waiting
+  } finally {
+    isChecking = false;
+  }
+}
+
+// Poll every 30s
+setInterval(checkStatus, 30000);
+
+async function checkStatusManual() {
+  const btn = document.getElementById('checkBtn');
+  const btnText = document.getElementById('btnText');
+  btn.classList.add('loading');
+  btnText.textContent = 'Checking...';
+  try {
+    const res = await fetch('/api/site-status?t=' + Date.now(), { cache: 'no-cache' });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.maintenance || !data.maintenance.active) {
+        btnText.textContent = 'Online! Reloading...';
+        setTimeout(() => window.location.href = '/', 800);
+        return;
+      } else {
+        btnText.textContent = 'Still in Maintenance';
+        setTimeout(() => { btnText.textContent = 'Check Status Now'; btn.classList.remove('loading'); }, 2000);
+        return;
+      }
+    }
+  } catch (e) {}
+  btnText.textContent = 'Server Unavailable';
+  setTimeout(() => { btnText.textContent = 'Check Status Now'; btn.classList.remove('loading'); }, 2000);
+}
+
+// Theme handling
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('pdf-toolbox-theme', t); } catch (e) {}
+  const isDark = (t === 'dark');
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isDark ? 'Light' : 'Dark';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem('pdf-toolbox-theme') || 'dark'; } catch(e) {}
+if (savedTheme !== 'light') savedTheme = 'dark';
+applyTheme(savedTheme);
+</script>
+
+</body>
+</html>

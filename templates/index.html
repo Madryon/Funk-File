@@ -1170,6 +1170,84 @@ html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);co
  .tool-grid{grid-template-columns:1fr}.cat-title{font-size:16px}.scan-build-row{grid-template-columns:1fr}
  .ticket-filename{max-width:160px}.ticket-bottom{flex-direction:column;align-items:flex-start}.ticket-download{width:100%;justify-content:center}}
 @media(max-width:520px){.theme-switcher{top:10px;left:10px;padding:3px}.theme-switcher button{padding:7px 9px;font-size:11px;min-width:38px}.lbl{display:none} header{padding-top:54px}}
+
+/* ============ PUBLIC ANNOUNCEMENT BANNER ============ */
+.site-announcement-banner {
+  position: relative;
+  z-index: 1000;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all .2s;
+}
+.site-announcement-banner.ann-info {
+  background: rgba(59, 130, 246, 0.22);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.45);
+  color: #bfdbfe;
+}
+.site-announcement-banner.ann-warning {
+  background: rgba(245, 158, 11, 0.22);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fef08a;
+}
+.site-announcement-banner.ann-success {
+  background: rgba(16, 185, 129, 0.22);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.45);
+  color: #a7f3d0;
+}
+html[data-theme="light"] .site-announcement-banner.ann-info {
+  background: rgba(59, 130, 246, 0.12);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.35);
+  color: #1e40af;
+}
+html[data-theme="light"] .site-announcement-banner.ann-warning {
+  background: rgba(245, 158, 11, 0.14);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+  color: #92400e;
+}
+html[data-theme="light"] .site-announcement-banner.ann-success {
+  background: rgba(16, 185, 129, 0.14);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.4);
+  color: #065f46;
+}
+.ann-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+.ann-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ann-text {
+  word-break: break-word;
+}
+.ann-close {
+  background: none;
+  border: none;
+  color: currentColor;
+  opacity: 0.7;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.ann-close:hover {
+  opacity: 1;
+}
+
 </style>
 <!-- ============ GLASSMORPHISM - LIGHT MODE ONLY ============
      Everything inside this block is scoped to html[data-theme="light"].
@@ -1466,9 +1544,96 @@ html[data-theme="light"] .ticket-perf,
 @media (prefers-reduced-motion: reduce) {
   html[data-theme="light"] .blob { animation: none !important; }
 }
+
+/* ============ PUBLIC ANNOUNCEMENT BANNER ============ */
+.site-announcement-banner {
+  position: relative;
+  z-index: 1000;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all .2s;
+}
+.site-announcement-banner.ann-info {
+  background: rgba(59, 130, 246, 0.22);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.45);
+  color: #bfdbfe;
+}
+.site-announcement-banner.ann-warning {
+  background: rgba(245, 158, 11, 0.22);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fef08a;
+}
+.site-announcement-banner.ann-success {
+  background: rgba(16, 185, 129, 0.22);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.45);
+  color: #a7f3d0;
+}
+html[data-theme="light"] .site-announcement-banner.ann-info {
+  background: rgba(59, 130, 246, 0.12);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.35);
+  color: #1e40af;
+}
+html[data-theme="light"] .site-announcement-banner.ann-warning {
+  background: rgba(245, 158, 11, 0.14);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+  color: #92400e;
+}
+html[data-theme="light"] .site-announcement-banner.ann-success {
+  background: rgba(16, 185, 129, 0.14);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.4);
+  color: #065f46;
+}
+.ann-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+.ann-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ann-text {
+  word-break: break-word;
+}
+.ann-close {
+  background: none;
+  border: none;
+  color: currentColor;
+  opacity: 0.7;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.ann-close:hover {
+  opacity: 1;
+}
+
 </style>
 </head>
 <body>
+<!-- Public Announcement Banner (Zero space reserved when hidden) -->
+<div id="announcementBanner" class="site-announcement-banner" style="display:none;" role="alert">
+  <div class="ann-inner">
+    <span id="announcementIcon" class="ann-icon">ℹ️</span>
+    <span id="announcementText" class="ann-text"></span>
+  </div>
+  <button type="button" class="ann-close" onclick="dismissAnnouncement()" aria-label="Dismiss announcement">✕</button>
+</div>
+
 <!-- Ambient Blobs -->
 <div class="blob b1" aria-hidden="true"></div>
 <div class="blob b2" aria-hidden="true"></div>
@@ -1501,7 +1666,7 @@ html[data-theme="light"] .ticket-perf,
 </div>
 <div class="rule"></div>
 
-<!-- Login / register / admin modal -->
+<!-- Login / register modal -->
 <div class="modal-overlay" id="authModal" hidden aria-hidden="true"><div class="modal-box">
   <div class="auth-tabs" id="authTabs">
     <button type="button" class="auth-tab-btn" id="authTabRegister" onclick="Auth.setMode('register')">Register / Sign-Up</button>
@@ -1520,12 +1685,7 @@ html[data-theme="light"] .ticket-perf,
     <div id="authPassGroup">
       <label for="authPass" id="authPassLabel">Password</label><input type="password" id="authPass" placeholder="Enter password" required>
     </div>
-    <div id="authAdminCheckboxGroup" style="margin-top:12px; display:flex; align-items:center; gap:8px;">
-      <input type="checkbox" id="authIsAdmin" onchange="Auth.toggleAdminLogin(this.checked)" style="width:16px; height:16px; cursor:pointer; accent-color:#5b6cff;">
-      <label for="authIsAdmin" style="margin:0; font-size:12.5px; font-weight:600; cursor:pointer; text-transform:none; letter-spacing:0; color:var(--text-muted); display:inline-flex; align-items:center; gap:4px;">
-        🛡️ Login as Admin
-      </label>
-    </div>
+
     <div id="authCaptchaContainer"></div>
     
     <div class="modal-actions"><button type="submit" class="btn-primary" id="authSubmit"></button><button type="button" onclick="Auth.close()">Cancel</button></div>
@@ -1923,8 +2083,7 @@ const Auth = (() => {
             <div class="kebab-dropdown" id="kebabDropdown" style="display:none;">
               <button type="button" class="kebab-item" onclick="Auth.closeMenu(); Auth.toggleHistory();"><span>📁</span><span>File History</span></button>
               <button type="button" class="kebab-item" onclick="Auth.closeMenu(); HelpModal.open();"><span>💬</span><span>Help &amp; Report Bug</span></button>
-              <div class="kebab-divider"></div>
-              <a href="/admin" class="kebab-item" onclick="Auth.closeMenu();"><span>🛡️</span><span>Admin Panel</span></a>
+
               <div class="kebab-divider"></div>
               <button type="button" class="kebab-item danger" onclick="Auth.closeMenu(); Auth.logout();"><span>🚪</span><span>Logout</span></button>
             </div>
@@ -1941,8 +2100,7 @@ const Auth = (() => {
             </button>
             <div class="kebab-dropdown" id="kebabDropdown" style="display:none;">
               <button type="button" class="kebab-item" onclick="Auth.closeMenu(); HelpModal.open();"><span>💬</span><span>Help &amp; Report Bug</span></button>
-              <div class="kebab-divider"></div>
-              <a href="/admin" class="kebab-item" onclick="Auth.closeMenu();"><span>🛡️</span><span>Admin Panel</span></a>
+
             </div>
           </div>
         </div>`;
@@ -1959,13 +2117,7 @@ const Auth = (() => {
     });
   }
 
-  function toggleAdminLogin(checked) {
-    if (checked) {
-      setMode('admin');
-    } else {
-      setMode('login');
-    }
-  }
+
 
   function toggleMenu(e) {
     if (e) e.stopPropagation();
@@ -1984,32 +2136,14 @@ const Auth = (() => {
     mode = m;
     err.textContent = '';
     const reg = m === 'register';
-    const adm = m === 'admin';
-
     if ($('authEmailGroup')) $('authEmailGroup').style.display = reg ? 'block' : 'none';
-    if ($('authUserGroup')) $('authUserGroup').style.display = adm ? 'none' : 'block';
-    if ($('authUser')) $('authUser').required = !adm;
-
-    const chk = $('authIsAdmin');
-    if (chk) chk.checked = adm;
-    const chkGroup = $('authAdminCheckboxGroup');
-    if (chkGroup) chkGroup.style.display = reg ? 'none' : 'flex';
+    if ($('authUserGroup')) $('authUserGroup').style.display = 'block';
+    if ($('authUser')) $('authUser').required = true;
 
     const tabReg = $('authTabRegister'), tabLog = $('authTabLogin');
     if (tabReg && tabLog) {
       tabReg.classList.toggle('active', reg);
       tabLog.classList.toggle('active', !reg);
-    }
-
-    if (adm) {
-      $('authTitle').textContent = '🛡️ Administrator Access';
-      $('authSub').textContent = 'Enter the master password to access the administration dashboard.';
-      $('authPassLabel').textContent = 'Admin Master Password';
-      $('authPass').placeholder = 'Enter master password';
-      $('authSubmit').textContent = 'Authenticate & Enter Admin';
-      $('authToggle').innerHTML = `Switch back to <a onclick="Auth.setMode('login')">Standard Sign In</a>`;
-      setTimeout(() => $('authPass') && $('authPass').focus(), 100);
-      return;
     }
 
     $('authPassLabel').textContent = 'Password';
@@ -2058,11 +2192,7 @@ const Auth = (() => {
     modal.setAttribute('aria-hidden', 'false');
     modal.classList.add('open');
     setTimeout(() => {
-      if (m === 'admin') {
-        $('authPass') && $('authPass').focus();
-      } else {
-        $('authUser') && $('authUser').focus();
-      }
+      $('authUser') && $('authUser').focus();
     }, 100);
   }
 
@@ -2147,63 +2277,7 @@ const Auth = (() => {
     let cooldownSecs = 0;
     let errorMessage = '';
 
-    // Handle Admin Mode
-    if (mode === 'admin') {
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.classList.add('loading');
-        submitBtn.textContent = 'Authenticating...';
-      }
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      try {
-        const res = await api('/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ password }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        let d = null;
-        try { d = await res.json(); } catch {}
-        if (res.ok && d && d.ok) {
-          success = true;
-          window.location.href = d.redirect || '/admin';
-          return;
-        }
-        if (res.status === 429) {
-          cooldownSecs = (d && d.cooldown) ? d.cooldown : 60;
-          errorMessage = (d && d.error) || 'Too many attempts, try again in 1 minute.';
-        } else {
-          errorMessage = (d && d.error) || 'Invalid admin password.';
-        }
-      } catch (ex) {
-        clearTimeout(timeoutId);
-        if (ex.name === 'AbortError') {
-          errorMessage = 'Server not responding, try again.';
-        } else {
-          errorMessage = 'Network error. Please try again.';
-        }
-      } finally {
-        if (!success) {
-          err.textContent = errorMessage;
-          if (passEl) {
-            passEl.value = '';
-            passEl.focus();
-            if (passEl.hidePassword) passEl.hidePassword();
-          }
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('loading');
-            submitBtn.textContent = originalBtnText;
-          }
-          if (cooldownSecs > 0) {
-            startCooldown(cooldownSecs);
-          }
-        }
-      }
-      return;
-    }
+
 
     // Standard User Login / Register
     const captchaToken = modalCaptcha ? modalCaptcha.getToken() : '';
@@ -2386,7 +2460,7 @@ const Auth = (() => {
     }
   });
 
-  return { open, requireAuth, setMode, toggleAdminLogin, toggleMenu, closeMenu, close, logout, toggleHistory, refresh, del, clearAll, isLoggedIn, getUser, authInitPromise };
+  return { open, requireAuth, setMode, toggleMenu, closeMenu, close, logout, toggleHistory, refresh, del, clearAll, isLoggedIn, getUser, authInitPromise };
 })();
 
 /* ================= BUILD PAGE FROM T ================= */
@@ -2949,5 +3023,63 @@ window.HelpModal = (() => {
 </script>
 <script src="/static/captcha.js"></script>
 <script src="/static/password-toggle.js"></script>
+<script>
+/* ============ ANNOUNCEMENT & SITE STATUS POLLING ============ */
+let activeAnnouncementId = null;
+
+async function checkSiteStatus() {
+  try {
+    const res = await fetch('/api/site-status?t=' + Date.now(), { cache: 'no-cache' });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Check Maintenance
+    if (data.maintenance && data.maintenance.active) {
+      window.location.reload();
+      return;
+    }
+
+    // Check Announcement
+    const ann = data.announcement;
+    const banner = document.getElementById('announcementBanner');
+    if (!banner) return;
+
+    if (ann && ann.active && ann.text) {
+      activeAnnouncementId = ann.id || 'default';
+      const isDismissed = localStorage.getItem(`funk_ann_dismissed_${activeAnnouncementId}`) === 'true';
+      if (isDismissed) {
+        banner.style.display = 'none';
+        return;
+      }
+
+      document.getElementById('announcementText').textContent = ann.text;
+      const iconMap = { info: 'ℹ️', warning: '⚠️', success: '✅' };
+      document.getElementById('announcementIcon').textContent = iconMap[ann.type] || 'ℹ️';
+
+      banner.className = `site-announcement-banner ann-${ann.type || 'info'}`;
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch (e) {
+    // Network offline, skip
+  }
+}
+
+function dismissAnnouncement() {
+  const banner = document.getElementById('announcementBanner');
+  if (banner) banner.style.display = 'none';
+  if (activeAnnouncementId) {
+    try {
+      localStorage.setItem(`funk_ann_dismissed_${activeAnnouncementId}`, 'true');
+    } catch (e) {}
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkSiteStatus();
+  setInterval(checkSiteStatus, 60000);
+});
+</script>
 </body>
 </html>
