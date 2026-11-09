@@ -19,22 +19,22 @@ html[data-theme="dark"],
 [data-theme="dark"],
 html[data-theme="batman"],
 [data-theme="batman"] {
-  --g-bg: linear-gradient(135deg,#0a0f1f 0%,#141233 50%,#1d0f2e 100%);
-  --g-glass: rgba(255,255,255,.07);
-  --g-glass-strong: rgba(255,255,255,.13);
-  --g-border: rgba(255,255,255,.16);
+  --g-bg: #000000;
+  --g-glass: rgba(255,255,255,.06);
+  --g-glass-strong: rgba(255,255,255,.12);
+  --g-border: rgba(255,255,255,.14);
   --g-text: #eef1ff;
   --g-muted: #a3acd0;
   --g-accent: #7c8cff;
   --g-accent2: #c084fc;
-  --g-shadow: 0 8px 32px rgba(0,0,0,.45);
+  --g-shadow: 0 8px 32px rgba(0,0,0,.7);
 
-  --ink: transparent;
-  --ink-soft: rgba(255, 255, 255, .07);
-  --ink-raised: rgba(255, 255, 255, .13);
-  --ink-line: rgba(255, 255, 255, .16);
-  --paper: rgba(255, 255, 255, .07);
-  --paper-dim: rgba(255, 255, 255, .04);
+  --ink: #000000;
+  --ink-soft: rgba(255, 255, 255, .06);
+  --ink-raised: rgba(255, 255, 255, .12);
+  --ink-line: rgba(255, 255, 255, .14);
+  --paper: rgba(255, 255, 255, .06);
+  --paper-dim: rgba(255, 255, 255, .03);
   --text: #eef1ff;
   --text-muted: #a3acd0;
   --text-faint: #7f89b5;
@@ -44,11 +44,12 @@ html[data-theme="batman"],
   --stamp: #7c8cff;
   --stamp-deep: #5e6ee6;
   --moss: #7c8cff;
-  --sw-bg: rgba(15, 20, 45, .75);
-  --sw-border: rgba(255, 255, 255, .16);
-  --sw-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  --sw-bg: rgba(18, 18, 22, .85);
+  --sw-border: rgba(255, 255, 255, .14);
+  --sw-shadow: 0 8px 24px rgba(0, 0, 0, .7);
   --radius: 22px;
   --radius-sm: 12px;
+  background: #000000;
   color-scheme: dark;
 }
 
@@ -106,7 +107,7 @@ html[data-theme="batman"]::-webkit-scrollbar-thumb:hover {
 
 html[data-theme="dark"] body,
 html[data-theme="batman"] body {
-  background: var(--g-bg) fixed !important;
+  background: #000000 fixed !important;
   color: var(--g-text) !important;
   position: relative;
   overflow-x: hidden;
@@ -114,40 +115,7 @@ html[data-theme="batman"] body {
 
 html[data-theme="dark"] .blob,
 html[data-theme="batman"] .blob {
-  display: block !important;
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(90px) !important;
-  opacity: .4 !important;
-  z-index: 0;
-  pointer-events: none;
-}
-html[data-theme="dark"] .b1,
-html[data-theme="batman"] .b1 {
-  width: 420px;
-  height: 420px;
-  background: #4f46e5 !important;
-  top: -120px;
-  left: -100px;
-  animation: blob-float-1 18s ease-in-out infinite;
-}
-html[data-theme="dark"] .b2,
-html[data-theme="batman"] .b2 {
-  width: 380px;
-  height: 380px;
-  background: #8b5cf6 !important;
-  top: 30%;
-  right: -120px;
-  animation: blob-float-2 22s ease-in-out infinite;
-}
-html[data-theme="dark"] .b3,
-html[data-theme="batman"] .b3 {
-  width: 360px;
-  height: 360px;
-  background: #ec4899 !important;
-  bottom: -120px;
-  left: 25%;
-  animation: blob-float-3 20s ease-in-out infinite;
+  display: none !important;
 }
 
 /* Glass surfaces in Dark */
@@ -269,7 +237,7 @@ html[data-theme="batman"] .tool-icon svg {
 /* Theme switcher in Dark */
 html[data-theme="dark"] .theme-switcher,
 html[data-theme="batman"] .theme-switcher {
-  background: rgba(10, 15, 31, .65) !important;
+  background: rgba(18, 18, 22, .8) !important;
   border: 1px solid var(--g-border) !important;
   box-shadow: var(--g-shadow) !important;
 }
@@ -290,7 +258,7 @@ html[data-theme="batman"] .theme-switcher button.active {
 /* Overlays in Dark */
 html[data-theme="dark"] :is(.overlay, .modal-overlay, .scan-modal-backdrop),
 html[data-theme="batman"] :is(.overlay, .modal-overlay, .scan-modal-backdrop) {
-  background: rgba(5, 8, 20, .55) !important;
+  background: rgba(0, 0, 0, .75) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
 }
@@ -317,7 +285,7 @@ html[data-theme="batman"] .dropzone svg {
 /* Scanner & QR in Dark */
 html[data-theme="dark"] .stage-wrap,
 html[data-theme="batman"] .stage-wrap {
-  background: repeating-conic-gradient(rgba(255, 255, 255, .04) 0 25%, transparent 0 50%) 50%/22px 22px, rgba(10, 15, 31, .85) !important;
+  background: repeating-conic-gradient(rgba(255, 255, 255, .04) 0 25%, transparent 0 50%) 50%/22px 22px, rgba(12, 12, 15, .95) !important;
   border: 1px solid var(--g-border) !important;
   border-radius: 16px !important;
 }
@@ -454,7 +422,7 @@ html[data-theme="batman"] .btn-help-nav {
 @supports not (backdrop-filter: blur(1px)) {
   html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner),
   html[data-theme="batman"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
-    background: rgba(20, 22, 50, .9) !important;
+    background: rgba(12, 12, 16, .95) !important;
   }
 }
 

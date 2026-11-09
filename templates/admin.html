@@ -31,24 +31,25 @@ html[data-theme="dark"],
 [data-theme="dark"],
 html[data-theme="batman"],
 [data-theme="batman"] {
-  --g-bg: linear-gradient(135deg,#0a0f1f 0%,#141233 50%,#1d0f2e 100%);
-  --g-glass: rgba(255,255,255,.07);
-  --g-glass-strong: rgba(255,255,255,.13);
-  --g-border: rgba(255,255,255,.16);
+  --g-bg: #000000;
+  --g-glass: rgba(255,255,255,.06);
+  --g-glass-strong: rgba(255,255,255,.12);
+  --g-border: rgba(255,255,255,.14);
   --g-text: #eef1ff;
   --g-muted: #a3acd0;
   --g-accent: #7c8cff;
   --g-accent2: #c084fc;
-  --g-shadow: 0 8px 32px rgba(0,0,0,.45);
-  --ink: transparent;
-  --ink-soft: rgba(255, 255, 255, .07);
-  --ink-raised: rgba(255, 255, 255, .13);
-  --ink-line: rgba(255, 255, 255, .16);
+  --g-shadow: 0 8px 32px rgba(0,0,0,.7);
+  --ink: #000000;
+  --ink-soft: rgba(255, 255, 255, .06);
+  --ink-raised: rgba(255, 255, 255, .12);
+  --ink-line: rgba(255, 255, 255, .14);
   --stamp: #7c8cff;
   --brass: #7c8cff;
   --text: #eef1ff;
   --text-muted: #a3acd0;
   --text-faint: #7f89b5;
+  background: #000000;
   color-scheme: dark;
 }
 
@@ -72,7 +73,7 @@ body {
 
 html[data-theme="dark"] body,
 html[data-theme="batman"] body {
-  background: var(--g-bg) fixed !important;
+  background: #000000 fixed !important;
   color: var(--g-text) !important;
 }
 
@@ -846,23 +847,15 @@ html[data-theme="batman"] .help-float-btn:hover {
 }
 html[data-theme="dark"] .help-float-btn::before,
 html[data-theme="batman"] .help-float-btn::before {
-  background: rgba(10, 15, 31, .85) !important;
+  background: rgba(18, 18, 22, .92) !important;
   border: 1px solid var(--g-border) !important;
   color: var(--g-text) !important;
 }
 
 html[data-theme="dark"] .blob,
 html[data-theme="batman"] .blob {
-  display: block !important;
-  filter: blur(90px) !important;
-  opacity: .4 !important;
+  display: none !important;
 }
-html[data-theme="dark"] .b1,
-html[data-theme="batman"] .b1 { background: #4f46e5 !important; }
-html[data-theme="dark"] .b2,
-html[data-theme="batman"] .b2 { background: #8b5cf6 !important; }
-html[data-theme="dark"] .b3,
-html[data-theme="batman"] .b3 { background: #ec4899 !important; }
 
 @media (max-width: 600px) {
   .help-fab-wrapper {
