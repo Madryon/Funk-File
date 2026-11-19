@@ -186,6 +186,16 @@ def get_site_status():
     if _site_status_cache is not None and (now_ts - _site_status_cache_time < 30):
         return _site_status_cache
 
+    # Self-healing: if database was not initialized on cold start, attempt once
+    try:
+        from models import _db_initialized
+        if not _db_initialized:
+            init_or_migrate_db(app, retries=1, delay=0)
+    except Exception:
+        pass
+
+    ann_row = None
+    ann_data = {}
     try:
         ann_row = SiteSetting.query.filter_by(key="announcement").first()
         ann_data = json.loads(ann_row.value) if ann_row and ann_row.value else {}
@@ -194,8 +204,11 @@ def get_site_status():
             db.session.rollback()
         except Exception:
             pass
+        ann_row = None
         ann_data = {}
 
+    maint_row = None
+    maint_data = {}
     try:
         maint_row = SiteSetting.query.filter_by(key="maintenance").first()
         maint_data = json.loads(maint_row.value) if maint_row and maint_row.value else {}
@@ -204,6 +217,7 @@ def get_site_status():
             db.session.rollback()
         except Exception:
             pass
+        maint_row = None
         maint_data = {}
 
     # Auto-expire announcement check
@@ -243,12 +257,19 @@ def get_site_status():
         ist_dt = maint_ends_dt + timedelta(hours=5, minutes=30)
         ends_at_ist = ist_dt.strftime("%d %b %Y, %I:%M %p IST")
 
+    ann_id = ann_data.get("id")
+    if not ann_id:
+        if ann_row and ann_row.updated_at:
+            ann_id = str(int(ann_row.updated_at.timestamp()))
+        else:
+            ann_id = "ann_0"
+
     res = {
         "announcement": {
             "active": ann_active,
             "text": ann_data.get("text", "") if ann_active else "",
             "type": ann_data.get("type", "info"),
-            "id": ann_data.get("id") or (str(int(ann_row.updated_at.timestamp())) if ann_row else "ann_0"),
+            "id": ann_id,
         },
         "maintenance": {
             "active": maint_active,
@@ -607,6 +628,7 @@ def unhandled_exception(e):
 
     import traceback
     tb = traceback.format_exc()
+    print(f"[Unhandled Exception on {request.path}] {type(e).__name__}: {e}\n{tb}", file=sys.stderr, flush=True)
     log_error_to_db(
         tool=getattr(g, "tool_name", getattr(g, "inferred_tool", "unknown")),
         error_type=type(e).__name__,

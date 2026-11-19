@@ -228,12 +228,19 @@ class ErrorLog(db.Model):
         }
 
 
+_db_initialized = False
+
+
 def init_or_migrate_db(app, retries=3, delay=2):
     """
     Ensures all tables, columns, and indexes exist.
     Safe to run on every startup (idempotent for SQLite and PostgreSQL).
     Includes automatic retry with backoff for cloud databases (e.g. Aiven).
     """
+    global _db_initialized
+    if _db_initialized:
+        return True
+
     import time
     with app.app_context():
         success = False
@@ -321,4 +328,5 @@ def init_or_migrate_db(app, retries=3, delay=2):
                                 pass
         except Exception as e:
             print(f"[Warning] DB index/column check: {e}", flush=True)
+        _db_initialized = True
         return True

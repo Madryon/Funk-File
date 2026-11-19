@@ -65,5 +65,23 @@ class DatabaseConfigTestCase(unittest.TestCase):
         self.assertIn("sslmode=require", url)
 
 
+    def test_homepage_resilient_to_database_down(self):
+        from app import invalidate_site_status_cache
+        invalidate_site_status_cache()
+        with app.app_context():
+            with patch("models.SiteSetting.query") as mock_query:
+                mock_query.filter_by.side_effect = Exception("DB Connection refused")
+                res = self.client.get("/")
+                self.assertEqual(res.status_code, 200)
+                self.assertIn(b"Funk Files", res.data)
+
+                invalidate_site_status_cache()
+                res_status = self.client.get("/api/site-status")
+                self.assertEqual(res_status.status_code, 200)
+                data = res_status.get_json()
+                self.assertFalse(data["announcement"]["active"])
+                self.assertFalse(data["maintenance"]["active"])
+
+
 if __name__ == "__main__":
     unittest.main()
