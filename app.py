@@ -48,25 +48,93 @@ from utils import BASE_DIR, OUTPUT_DIR, UPLOAD_DIR
 TICKET_SCREENSHOT_DIR = UPLOAD_DIR / "tickets"
 TICKET_SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
+# ================= ENVIRONMENT LOADING =================
+
+def _load_env_file():
+    """Load variables from .env file into os.environ if present."""
+    env_file = BASE_DIR / ".env"
+    if env_file.is_file():
+        try:
+            with open(env_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip("'\"")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+        except Exception:
+            pass
+
+_load_env_file()
+
 app = Flask(__name__, template_folder=str(BASE_DIR / "templates"))
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024
 app.config["JSON_SORT_KEYS"] = False
 
-# Database configuration
-raw_db_url = os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'app.db'}").strip().strip("'\"")
-if raw_db_url.startswith("DATABASE_URL="):
-    raw_db_url = raw_db_url[len("DATABASE_URL="):].strip().strip("'\"")
+# ================= DATABASE CONFIGURATION (AIVEN & POSTGRESQL OPTIMIZED) =================
 
-if raw_db_url.startswith("postgres://"):
-    database_url = "postgresql+psycopg2://" + raw_db_url[len("postgres://"):]
-elif raw_db_url.startswith("postgresql://") and not raw_db_url.startswith("postgresql+"):
-    database_url = "postgresql+psycopg2://" + raw_db_url[len("postgresql://"):]
-else:
-    database_url = raw_db_url
+def get_database_url() -> str:
+    raw = (
+        os.environ.get("DATABASE_URL")
+        or os.environ.get("POSTGRES_URL")
+        or os.environ.get("AIVEN_DATABASE_URL")
+        or ""
+    ).strip().strip("'\"")
 
+    if raw.startswith("DATABASE_URL="):
+        raw = raw[len("DATABASE_URL="):].strip().strip("'\"")
+
+    # Support discrete environment variables (common in Aiven console)
+    if not raw and os.environ.get("PGHOST"):
+        pghost = os.environ.get("PGHOST", "").strip()
+        pgport = os.environ.get("PGPORT", "5432").strip()
+        pguser = os.environ.get("PGUSER", "avnadmin").strip()
+        pgpass = os.environ.get("PGPASSWORD", "").strip()
+        pgdb = os.environ.get("PGDATABASE", "defaultdb").strip()
+        pgssl = os.environ.get("PGSSLMODE", "require").strip()
+        from urllib.parse import quote_plus
+        raw = f"postgresql://{quote_plus(pguser)}:{quote_plus(pgpass)}@{pghost}:{pgport}/{pgdb}?sslmode={pgssl}"
+
+    if not raw:
+        return f"sqlite:///{BASE_DIR / 'app.db'}"
+
+    url = raw
+    # Normalize postgres:// to postgresql+psycopg2:// for SQLAlchemy 2.x
+    if url.startswith("postgres://"):
+        url = "postgresql+psycopg2://" + url[len("postgres://"):]
+    elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
+        url = "postgresql+psycopg2://" + url[len("postgresql://"):]
+
+    # Aiven / Remote Postgres SSL enforcement
+    if url.startswith("postgresql") and "localhost" not in url and "127.0.0.1" not in url:
+        if "sslmode=" not in url:
+            sep = "&" if "?" in url else "?"
+            url = f"{url}{sep}sslmode=require"
+
+    return url
+
+database_url = get_database_url()
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Connection pooling & pre-ping for cloud databases (prevents Aiven idle disconnect errors)
+if database_url.startswith("postgresql"):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_timeout": 30,
+        "pool_size": 10,
+        "max_overflow": 20,
+    }
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+    }
 
 # Secret key & Session security
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "pdf-toolbox-secure-fallback-key-32chars!").strip().strip("'\"")
@@ -122,12 +190,20 @@ def get_site_status():
         ann_row = SiteSetting.query.filter_by(key="announcement").first()
         ann_data = json.loads(ann_row.value) if ann_row and ann_row.value else {}
     except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         ann_data = {}
 
     try:
         maint_row = SiteSetting.query.filter_by(key="maintenance").first()
         maint_data = json.loads(maint_row.value) if maint_row and maint_row.value else {}
     except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         maint_data = {}
 
     # Auto-expire announcement check
@@ -437,7 +513,33 @@ def index():
 @app.route("/health")
 @csrf.exempt
 def health():
-    return jsonify({"ok": True, "version": "2.0"})
+    db_ok = True
+    db_msg = "healthy"
+    try:
+        db.session.execute(db.text("SELECT 1"))
+    except Exception as e:
+        db_ok = False
+        db_msg = f"unhealthy: {e}"
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+    dialect_name = "unknown"
+    try:
+        dialect_name = db.engine.dialect.name
+    except Exception:
+        pass
+
+    return jsonify({
+        "ok": db_ok,
+        "version": "2.0",
+        "database": {
+            "status": db_msg,
+            "dialect": dialect_name,
+            "connected": db_ok,
+        }
+    }), (200 if db_ok else 503)
 
 
 # ================= GLOBAL ERROR HANDLERS =================

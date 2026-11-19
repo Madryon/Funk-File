@@ -228,13 +228,32 @@ class ErrorLog(db.Model):
         }
 
 
-def init_or_migrate_db(app):
+def init_or_migrate_db(app, retries=3, delay=2):
     """
     Ensures all tables, columns, and indexes exist.
     Safe to run on every startup (idempotent for SQLite and PostgreSQL).
+    Includes automatic retry with backoff for cloud databases (e.g. Aiven).
     """
+    import time
     with app.app_context():
-        db.create_all()
+        success = False
+        for attempt in range(1, retries + 1):
+            try:
+                db.create_all()
+                success = True
+                break
+            except Exception as e:
+                print(f"[Database] Connection attempt {attempt}/{retries} failed: {e}", flush=True)
+                if attempt < retries:
+                    time.sleep(delay * attempt)
+                else:
+                    print("[Database Error] Could not connect to database after all retries.", flush=True)
+                    print("[Database Error] If using Aiven PostgreSQL, ensure:", flush=True)
+                    print("  1. Service URI has sslmode=require (e.g. ?sslmode=require)", flush=True)
+                    print("  2. Password does not contain unencoded special characters or use discrete PG* vars", flush=True)
+                    print("  3. Your IP or cloud host is allowed in Aiven firewall / IP allowlist", flush=True)
+                    return False
+
         try:
             with db.engine.connect() as conn:
                 dialect = db.engine.dialect.name
@@ -253,7 +272,10 @@ def init_or_migrate_db(app):
                                 conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {typ}"))
                                 conn.commit()
                             except Exception:
-                                conn.rollback()
+                                try:
+                                    conn.rollback()
+                                except Exception:
+                                    pass
                     # Safe index creation
                     indexes = [
                         "CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login)",
@@ -269,7 +291,10 @@ def init_or_migrate_db(app):
                             conn.execute(text(idx_sql))
                             conn.commit()
                         except Exception:
-                            conn.rollback()
+                            try:
+                                conn.rollback()
+                            except Exception:
+                                pass
 
                 elif dialect == "postgresql":
                     statements = [
@@ -290,6 +315,10 @@ def init_or_migrate_db(app):
                             conn.execute(text(stmt))
                             conn.commit()
                         except Exception:
-                            conn.rollback()
+                            try:
+                                conn.rollback()
+                            except Exception:
+                                pass
         except Exception as e:
             print(f"[Warning] DB index/column check: {e}", flush=True)
+        return True
