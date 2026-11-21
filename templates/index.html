@@ -1171,6 +1171,116 @@ html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);co
  .ticket-filename{max-width:160px}.ticket-bottom{flex-direction:column;align-items:flex-start}.ticket-download{width:100%;justify-content:center}}
 @media(max-width:520px){.theme-switcher{top:10px;left:10px;padding:3px}.theme-switcher button{padding:7px 9px;font-size:11px;min-width:38px}.lbl{display:none} header{padding-top:54px}}
 
+/* ============ WIDESCREEN PC DESKTOP LAYOUT (COVERS FULL MONITOR) ============ */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1320px;
+    padding: 0 32px 64px;
+  }
+  header {
+    padding: 38px 8px 24px;
+  }
+  header h1 {
+    font-size: 31px;
+  }
+  header p {
+    font-size: 13.5px;
+  }
+  .rule {
+    margin-bottom: 34px;
+  }
+  .category {
+    margin-bottom: 38px;
+  }
+  .cat-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .tool-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .tool-grid.grid-hero {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .tool-card {
+    padding: 22px 20px;
+    min-height: 114px;
+    gap: 16px;
+    border-radius: 14px;
+  }
+  .card-hero {
+    padding: 26px 24px;
+    min-height: 130px;
+    background: linear-gradient(135deg, rgba(124, 140, 255, 0.08), var(--ink-soft));
+    border-color: rgba(124, 140, 255, 0.28);
+  }
+  .card-hero:hover {
+    border-color: var(--brass);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
+  }
+  .card-hero .tool-icon {
+    width: 52px;
+    height: 52px;
+  }
+  .card-hero .tool-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+  .card-hero .tool-name {
+    font-size: 17px;
+  }
+  .card-hero .tool-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-line-clamp: 3;
+  }
+  .tool-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .tool-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .tool-name {
+    font-size: 15.5px;
+  }
+  .tool-desc {
+    font-size: 12.5px;
+    line-height: 1.48;
+    -webkit-line-clamp: 3;
+  }
+  #toolView {
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1420px;
+    padding: 0 40px 72px;
+  }
+  .tool-grid {
+    gap: 20px;
+  }
+  .tool-grid.grid-hero {
+    gap: 24px;
+  }
+  .tool-card {
+    padding: 24px 22px;
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .tool-grid.grid-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ============ PUBLIC ANNOUNCEMENT BANNER ============ */
 .site-announcement-banner {
   position: relative;
@@ -2464,12 +2574,47 @@ const Auth = (() => {
 })();
 
 /* ================= BUILD PAGE FROM T ================= */
-// Home cards, grouped by category
-const cats = [...new Set(T.map(t => t.cat))];
-$('home').innerHTML = cats.map(c => {
-  const list = T.filter(t => t.cat == c);
-  return `<div class="category"><div class="cat-title">${svg(CAT_ICON[c] || list[0].icon, 'cat-icon')}${c}<span class="cat-count">${list.length}</span></div><div class="tool-grid">${
-    list.map(t => `<button class="tool-card" data-tool="${t.id}"><div class="tool-icon">${svg(t.icon)}</div><div class="tool-info"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>${t.badge ? `<span class="tool-badge">${t.badge}</span>` : ''}${t.auth ? `<span class="tool-badge auth-badge" data-auth-tool="${t.id}">🔒 Register</span>` : ''}</button>`).join('')
+// Home cards, organized into cohesive sections with hero spotlight cards for PC
+const SECTIONS = [
+  {
+    name: 'Featured Quick Tools',
+    icon: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+    isHero: true,
+    toolIds: ['scanner', 'qr']
+  },
+  {
+    name: 'Core PDF Tools',
+    icon: '<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM14 3v5h5"/>',
+    isHero: false,
+    toolIds: ['merge', 'compress', 'split', 'convert', 'pdf2word', 'img2pdf', 'watermark']
+  },
+  {
+    name: 'Security & Video Tools',
+    icon: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+    isHero: false,
+    toolIds: ['lock', 'unlock', 'video', 'mp3']
+  }
+];
+
+const configuredIds = new Set(SECTIONS.flatMap(s => s.toolIds));
+const unassigned = T.filter(t => !configuredIds.has(t.id));
+if (unassigned.length > 0) {
+  SECTIONS.push({
+    name: 'More Tools',
+    icon: '<circle cx="12" cy="12" r="3"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="12" r="2"/>',
+    isHero: false,
+    toolIds: unassigned.map(t => t.id)
+  });
+}
+
+$('home').innerHTML = SECTIONS.map(s => {
+  const list = s.toolIds.map(id => T.find(t => t.id === id)).filter(Boolean);
+  const gridClass = s.isHero ? 'tool-grid grid-hero' : 'tool-grid';
+  return `<div class="category${s.isHero ? ' cat-featured' : ''}"><div class="cat-title">${svg(s.icon, 'cat-icon')}${s.name}<span class="cat-count">${list.length}</span></div><div class="${gridClass}">${
+    list.map(t => {
+      const heroClass = s.isHero ? ' card-hero' : '';
+      return `<button class="tool-card${heroClass}" data-tool="${t.id}"><div class="tool-icon">${svg(t.icon)}</div><div class="tool-info"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>${t.badge ? `<span class="tool-badge">${t.badge}</span>` : ''}${t.auth ? `<span class="tool-badge auth-badge" data-auth-tool="${t.id}">🔒 Register</span>` : ''}</button>`;
+    }).join('')
   }</div></div>`;
 }).join('');
 
