@@ -16,9 +16,7 @@
 /* ============ THEMES (only colors change between themes) ============ */
 :root{--ink:#fff;--ink-soft:#F8F9FA;--ink-raised:#EEF1F4;--ink-line:#C9CDD3;--paper:#F1F3F5;--paper-dim:#E5E8EC;--stamp:#BD3A2B;--stamp-deep:#8F2A1F;--brass:#C9A227;--brass-soft:#8A7434;--moss:#6E8C5C;--text:#0D1117;--text-muted:#4B5563;--text-faint:#6B7280;--on-paper:#212529;--sw-bg:rgba(255,255,255,.9);--sw-border:#C9CDD3;--sw-shadow:0 6px 20px rgba(0,0,0,.1);--radius:16px;--radius-sm:9px}
 html[data-theme="dark"],
-[data-theme="dark"],
-html[data-theme="batman"],
-[data-theme="batman"] {
+[data-theme="dark"] {
   --g-bg: #000000;
   --g-glass: rgba(255,255,255,.06);
   --g-glass-strong: rgba(255,255,255,.12);
@@ -77,50 +75,42 @@ footer{margin-top:30px;padding-top:18px;border-top:1px dashed var(--ink-line);te
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ============ DARK GLASSMORPHISM THEME ============ */
-html[data-theme="dark"],
-html[data-theme="batman"] {
+html[data-theme="dark"] {
   scrollbar-width: thin;
   scrollbar-color: rgba(124, 140, 255, .3) transparent;
 }
-html[data-theme="dark"]::-webkit-scrollbar,
-html[data-theme="batman"]::-webkit-scrollbar {
+html[data-theme="dark"]::-webkit-scrollbar {
   width: 7px;
   height: 7px;
   background: transparent;
 }
-html[data-theme="dark"]::-webkit-scrollbar-track,
-html[data-theme="batman"]::-webkit-scrollbar-track {
+html[data-theme="dark"]::-webkit-scrollbar-track {
   background: transparent;
   border: none;
 }
-html[data-theme="dark"]::-webkit-scrollbar-thumb,
-html[data-theme="batman"]::-webkit-scrollbar-thumb {
+html[data-theme="dark"]::-webkit-scrollbar-thumb {
   background: rgba(124, 140, 255, .3);
   border-radius: 999px;
   border: none;
 }
-html[data-theme="dark"]::-webkit-scrollbar-thumb:hover,
-html[data-theme="batman"]::-webkit-scrollbar-thumb:hover {
+html[data-theme="dark"]::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 140, 255, .6);
   box-shadow: 0 0 10px rgba(124, 140, 255, .5);
 }
 
-html[data-theme="dark"] body,
-html[data-theme="batman"] body {
+html[data-theme="dark"] body {
   background: #000000 fixed !important;
   color: var(--g-text) !important;
   position: relative;
   overflow-x: hidden;
 }
 
-html[data-theme="dark"] .blob,
-html[data-theme="batman"] .blob {
+html[data-theme="dark"] .blob {
   display: none !important;
 }
 
 /* Glass surfaces in Dark */
-html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner),
-html[data-theme="batman"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
+html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
   background: var(--g-glass) !important;
   -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
   backdrop-filter: blur(20px) saturate(170%) !important;
@@ -129,14 +119,12 @@ html[data-theme="batman"] :is(.glass, .card, .modal, header.top, .tabs, .tool-ca
   box-shadow: var(--g-shadow), inset 0 1px 0 rgba(255, 255, 255, .18) !important;
   clip-path: none !important;
 }
-html[data-theme="dark"] :is(.panel, .tool-card, .ticket, .modal-box)::before,
-html[data-theme="batman"] :is(.panel, .tool-card, .ticket, .modal-box)::before {
+html[data-theme="dark"] :is(.panel, .tool-card, .ticket, .modal-box)::before {
   display: none !important;
 }
 
 /* Card hover in Dark */
-html[data-theme="dark"] :is(.card, .tool-card, .my-ticket-card):hover,
-html[data-theme="batman"] :is(.card, .tool-card, .my-ticket-card):hover {
+html[data-theme="dark"] :is(.card, .tool-card, .my-ticket-card):hover {
   background: var(--g-glass-strong) !important;
   transform: translateY(-4px) !important;
   box-shadow: 0 14px 40px rgba(124, 140, 255, .35), inset 0 1px 0 rgba(255, 255, 255, .25) !important;
@@ -144,8 +132,7 @@ html[data-theme="batman"] :is(.card, .tool-card, .my-ticket-card):hover {
 }
 
 /* Inputs, selects, textareas in Dark */
-html[data-theme="dark"] :is(input, select, textarea),
-html[data-theme="batman"] :is(input, select, textarea) {
+html[data-theme="dark"] :is(input, select, textarea) {
   background: rgba(255, 255, 255, .06) !important;
   border: 1px solid var(--g-border) !important;
   color: var(--g-text) !important;
@@ -153,20 +140,17 @@ html[data-theme="batman"] :is(input, select, textarea) {
   clip-path: none !important;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, .3) !important;
 }
-html[data-theme="dark"] :is(input, select, textarea)::placeholder,
-html[data-theme="batman"] :is(input, select, textarea)::placeholder {
+html[data-theme="dark"] :is(input, select, textarea)::placeholder {
   color: var(--g-muted) !important;
 }
-html[data-theme="dark"] :is(input, select, textarea):focus,
-html[data-theme="batman"] :is(input, select, textarea):focus {
+html[data-theme="dark"] :is(input, select, textarea):focus {
   outline: none !important;
   border-color: var(--g-accent) !important;
   box-shadow: 0 0 0 3px rgba(124, 140, 255, .25) !important;
 }
 
 /* Buttons in Dark */
-html[data-theme="dark"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary, .btn-auth-main),
-html[data-theme="batman"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary, .btn-auth-main) {
+html[data-theme="dark"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary, .btn-auth-main) {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
   color: #fff !important;
   border: none !important;
@@ -177,13 +161,11 @@ html[data-theme="batman"] :is(.btn, .submit-btn, .btn-primary, .ticket-download,
   letter-spacing: normal !important;
   transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
 }
-html[data-theme="dark"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary, .btn-auth-main):hover:not(:disabled),
-html[data-theme="batman"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary, .btn-auth-main):hover:not(:disabled) {
+html[data-theme="dark"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary, .btn-auth-main):hover:not(:disabled) {
   transform: translateY(-2px) !important;
   box-shadow: 0 10px 28px rgba(124, 140, 255, .55) !important;
 }
-html[data-theme="dark"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn, .kebab-btn, .kebab-item, .btn-help-nav),
-html[data-theme="batman"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn, .kebab-btn, .kebab-item, .btn-help-nav) {
+html[data-theme="dark"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn, .kebab-btn, .kebab-item, .btn-help-nav) {
   background: var(--g-glass) !important;
   color: var(--g-text) !important;
   border: 1px solid var(--g-border) !important;
@@ -194,103 +176,87 @@ html[data-theme="batman"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-action
   letter-spacing: normal !important;
   transition: background .15s ease, transform .15s ease, border-color .15s ease;
 }
-html[data-theme="dark"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn, .kebab-btn, .kebab-item:hover, .btn-help-nav):hover,
-html[data-theme="batman"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn, .kebab-btn, .kebab-item:hover, .btn-help-nav):hover {
+html[data-theme="dark"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn, .kebab-btn, .kebab-item:hover, .btn-help-nav):hover {
   background: var(--g-glass-strong) !important;
   border-color: rgba(255, 255, 255, .28) !important;
   color: #fff !important;
 }
 
 /* Tabs & pills in Dark */
-html[data-theme="dark"] :is(.tab, .split-type-btn, .filter-chip, .auth-tab-btn, .help-tab-btn),
-html[data-theme="batman"] :is(.tab, .split-type-btn, .filter-chip, .auth-tab-btn, .help-tab-btn) {
+html[data-theme="dark"] :is(.tab, .split-type-btn, .filter-chip, .auth-tab-btn, .help-tab-btn) {
   color: var(--g-muted) !important;
   border: 1px solid var(--g-border) !important;
   background: var(--g-glass) !important;
   border-radius: 12px !important;
   clip-path: none !important;
 }
-html[data-theme="dark"] :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active, .auth-tab-btn.active, .help-tab-btn.active),
-html[data-theme="batman"] :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active, .auth-tab-btn.active, .help-tab-btn.active) {
+html[data-theme="dark"] :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active, .auth-tab-btn.active, .help-tab-btn.active) {
   background: var(--g-glass-strong) !important;
   color: var(--g-accent) !important;
   border: 1px solid var(--g-border) !important;
   box-shadow: 0 4px 16px rgba(124, 140, 255, .25), inset 0 1px 0 rgba(255, 255, 255, .15) !important;
 }
-html[data-theme="dark"] :is(.tab.active svg, .cat-icon),
-html[data-theme="batman"] :is(.tab.active svg, .cat-icon) {
+html[data-theme="dark"] :is(.tab.active svg, .cat-icon) {
   stroke: var(--g-accent) !important;
 }
-html[data-theme="dark"] :is(.ico, .tool-icon),
-html[data-theme="batman"] :is(.ico, .tool-icon) {
+html[data-theme="dark"] :is(.ico, .tool-icon) {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
   color: #fff !important;
   box-shadow: 0 6px 18px rgba(124, 140, 255, .4) !important;
   border: 1px solid rgba(255, 255, 255, .3) !important;
   border-radius: 14px !important;
 }
-html[data-theme="dark"] .tool-icon svg,
-html[data-theme="batman"] .tool-icon svg {
+html[data-theme="dark"] .tool-icon svg {
   stroke: #fff !important;
 }
 
 /* Theme switcher in Dark */
-html[data-theme="dark"] .theme-switcher,
-html[data-theme="batman"] .theme-switcher {
+html[data-theme="dark"] .theme-switcher {
   background: rgba(18, 18, 22, .8) !important;
   border: 1px solid var(--g-border) !important;
   box-shadow: var(--g-shadow) !important;
 }
-html[data-theme="dark"] .slider,
-html[data-theme="batman"] .slider {
+html[data-theme="dark"] .slider {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
   box-shadow: 0 4px 14px rgba(124, 140, 255, .45) !important;
 }
-html[data-theme="dark"] .theme-switcher button,
-html[data-theme="batman"] .theme-switcher button {
+html[data-theme="dark"] .theme-switcher button {
   color: var(--g-muted) !important;
 }
-html[data-theme="dark"] .theme-switcher button.active,
-html[data-theme="batman"] .theme-switcher button.active {
+html[data-theme="dark"] .theme-switcher button.active {
   color: #ffffff !important;
 }
 
 /* Overlays in Dark */
-html[data-theme="dark"] :is(.overlay, .modal-overlay, .scan-modal-backdrop),
-html[data-theme="batman"] :is(.overlay, .modal-overlay, .scan-modal-backdrop) {
+html[data-theme="dark"] :is(.overlay, .modal-overlay, .scan-modal-backdrop) {
   background: rgba(0, 0, 0, .75) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
 }
 
 /* Dropzones in Dark */
-html[data-theme="dark"] :is(.drop, .dropzone),
-html[data-theme="batman"] :is(.drop, .dropzone) {
+html[data-theme="dark"] :is(.drop, .dropzone) {
   background: var(--g-glass) !important;
   border: 2px dashed rgba(124, 140, 255, .5) !important;
   border-radius: 16px !important;
   transition: background .2s ease, border-color .2s ease, transform .2s ease;
 }
-html[data-theme="dark"] :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover),
-html[data-theme="batman"] :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover) {
+html[data-theme="dark"] :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover) {
   background: var(--g-glass-strong) !important;
   border-color: var(--g-accent) !important;
   transform: scale(1.01);
 }
-html[data-theme="dark"] .dropzone svg,
-html[data-theme="batman"] .dropzone svg {
+html[data-theme="dark"] .dropzone svg {
   stroke: var(--g-accent) !important;
 }
 
 /* Scanner & QR in Dark */
-html[data-theme="dark"] .stage-wrap,
-html[data-theme="batman"] .stage-wrap {
+html[data-theme="dark"] .stage-wrap {
   background: repeating-conic-gradient(rgba(255, 255, 255, .04) 0 25%, transparent 0 50%) 50%/22px 22px, rgba(12, 12, 15, .95) !important;
   border: 1px solid var(--g-border) !important;
   border-radius: 16px !important;
 }
-html[data-theme="dark"] :is(#qrPreview, .qr-preview-box),
-html[data-theme="batman"] :is(#qrPreview, .qr-preview-box) {
+html[data-theme="dark"] :is(#qrPreview, .qr-preview-box) {
   background: rgba(255, 255, 255, .04) !important;
   border: 1px solid var(--g-border) !important;
   border-radius: 14px !important;
@@ -298,60 +264,50 @@ html[data-theme="batman"] :is(#qrPreview, .qr-preview-box) {
 }
 
 /* Status alerts & badges in Dark (WCAG AA contrast) */
-html[data-theme="dark"] :is(.status.err, .alert-error, .modal-error),
-html[data-theme="batman"] :is(.status.err, .alert-error, .modal-error) {
+html[data-theme="dark"] :is(.status.err, .alert-error, .modal-error) {
   background: rgba(239, 68, 68, .18) !important;
   color: #fca5a5 !important;
   border: 1px solid rgba(239, 68, 68, .35) !important;
   border-radius: 12px !important;
 }
-html[data-theme="dark"] :is(.status.ok, .alert-info, .ticket-ready),
-html[data-theme="batman"] :is(.status.ok, .alert-info, .ticket-ready) {
+html[data-theme="dark"] :is(.status.ok, .alert-info, .ticket-ready) {
   background: rgba(16, 185, 129, .18) !important;
   color: #6ee7b7 !important;
   border: 1px solid rgba(16, 185, 129, .35) !important;
   border-radius: 12px !important;
 }
-html[data-theme="dark"] .ticket-ready,
-html[data-theme="batman"] .ticket-ready {
+html[data-theme="dark"] .ticket-ready {
   box-shadow: 0 0 16px rgba(16, 185, 129, .25) !important;
 }
-html[data-theme="dark"] .tool-badge,
-html[data-theme="batman"] .tool-badge {
+html[data-theme="dark"] .tool-badge {
   background: rgba(124, 140, 255, .15) !important;
   color: var(--g-accent) !important;
   border: 1px solid rgba(124, 140, 255, .3) !important;
   border-radius: 8px !important;
 }
-html[data-theme="dark"] .tool-badge.auth-badge,
-html[data-theme="batman"] .tool-badge.auth-badge {
+html[data-theme="dark"] .tool-badge.auth-badge {
   background: rgba(239, 68, 68, .15) !important;
   color: #fca5a5 !important;
   border-color: rgba(239, 68, 68, .3) !important;
 }
-html[data-theme="dark"] .tool-badge.auth-badge.unlocked,
-html[data-theme="batman"] .tool-badge.auth-badge.unlocked {
+html[data-theme="dark"] .tool-badge.auth-badge.unlocked {
   background: rgba(16, 185, 129, .15) !important;
   color: #6ee7b7 !important;
   border-color: rgba(16, 185, 129, .3) !important;
 }
-html[data-theme="dark"] .cat-count,
-html[data-theme="batman"] .cat-count {
+html[data-theme="dark"] .cat-count {
   background: var(--g-glass) !important;
   color: var(--g-muted) !important;
   border: 1px solid var(--g-border) !important;
   border-radius: 10px !important;
 }
-html[data-theme="dark"] .topline,
-html[data-theme="batman"] .topline {
+html[data-theme="dark"] .topline {
   background: linear-gradient(90deg, var(--g-accent), var(--g-accent2) 50%, var(--g-accent)) !important;
 }
-html[data-theme="dark"] .rule,
-html[data-theme="batman"] .rule {
+html[data-theme="dark"] .rule {
   background: linear-gradient(90deg, rgba(124, 140, 255, .4), transparent 85%) !important;
 }
-html[data-theme="dark"] :is(.toast, #toast),
-html[data-theme="batman"] :is(.toast, #toast) {
+html[data-theme="dark"] :is(.toast, #toast) {
   background: rgba(15, 20, 45, .88) !important;
   -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
   backdrop-filter: blur(20px) saturate(170%) !important;
@@ -360,33 +316,27 @@ html[data-theme="batman"] :is(.toast, #toast) {
   box-shadow: 0 12px 36px rgba(0, 0, 0, .5) !important;
   border-radius: 14px !important;
 }
-html[data-theme="dark"] :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta),
-html[data-theme="batman"] :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta) {
+html[data-theme="dark"] :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta) {
   color: var(--g-muted) !important;
 }
-html[data-theme="dark"] header h1,
-html[data-theme="batman"] header h1 {
+html[data-theme="dark"] header h1 {
   color: #ffffff !important;
   text-shadow: 0 2px 14px rgba(124, 140, 255, .3) !important;
 }
-html[data-theme="dark"] :is(h1, h2, h3, .cat-title, .ticket-filename, .panel-head h2),
-html[data-theme="batman"] :is(h1, h2, h3, .cat-title, .ticket-filename, .panel-head h2) {
+html[data-theme="dark"] :is(h1, h2, h3, .cat-title, .ticket-filename, .panel-head h2) {
   font-family: inherit !important;
   letter-spacing: normal !important;
   text-transform: none !important;
 }
-html[data-theme="dark"] .ticket-top,
-html[data-theme="batman"] .ticket-top {
+html[data-theme="dark"] .ticket-top {
   border-bottom: 1px dashed rgba(124, 140, 255, .3) !important;
 }
-html[data-theme="dark"] .ticket-perf,
-html[data-theme="batman"] .ticket-perf {
+html[data-theme="dark"] .ticket-perf {
   border-top: 1px dashed rgba(124, 140, 255, .3) !important;
 }
 
 /* Help / Report Bug Floating Button & Modal in Dark */
-html[data-theme="dark"] .help-fab-pill,
-html[data-theme="batman"] .help-fab-pill {
+html[data-theme="dark"] .help-fab-pill {
   background: var(--g-glass) !important;
   -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
   backdrop-filter: blur(20px) saturate(170%) !important;
@@ -394,25 +344,21 @@ html[data-theme="batman"] .help-fab-pill {
   color: var(--g-text) !important;
   box-shadow: var(--g-shadow) !important;
 }
-html[data-theme="dark"] .help-fab-dot,
-html[data-theme="batman"] .help-fab-dot {
+html[data-theme="dark"] .help-fab-dot {
   background: var(--g-accent) !important;
   box-shadow: 0 0 10px var(--g-accent) !important;
 }
-html[data-theme="dark"] .help-float-btn,
-html[data-theme="batman"] .help-float-btn {
+html[data-theme="dark"] .help-float-btn {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, .25) !important;
   box-shadow: 0 8px 24px rgba(124, 140, 255, .4) !important;
 }
-html[data-theme="dark"] .help-float-btn:hover,
-html[data-theme="batman"] .help-float-btn:hover {
+html[data-theme="dark"] .help-float-btn:hover {
   transform: translateY(-2px) scale(1.05) !important;
   box-shadow: 0 12px 32px rgba(124, 140, 255, .6) !important;
 }
-html[data-theme="dark"] .btn-help-nav,
-html[data-theme="batman"] .btn-help-nav {
+html[data-theme="dark"] .btn-help-nav {
   background: var(--g-glass) !important;
   border: 1px solid var(--g-border) !important;
   color: var(--g-accent) !important;
@@ -420,20 +366,17 @@ html[data-theme="batman"] .btn-help-nav {
 
 /* Fallback for browsers without backdrop-filter support in Dark */
 @supports not (backdrop-filter: blur(1px)) {
-  html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner),
-  html[data-theme="batman"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
+  html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
     background: rgba(12, 12, 16, .95) !important;
   }
 }
 
 /* Prefers-reduced-motion in Dark */
 @media (prefers-reduced-motion: reduce) {
-  html[data-theme="dark"] .blob,
-  html[data-theme="batman"] .blob {
+  html[data-theme="dark"] .blob {
     animation: none !important;
   }
-  html[data-theme="dark"] :is(.card, .tool-card, .btn, .submit-btn, .btn-primary, .help-float-btn):hover,
-  html[data-theme="batman"] :is(.card, .tool-card, .btn, .submit-btn, .btn-primary, .help-float-btn):hover {
+  html[data-theme="dark"] :is(.card, .tool-card, .btn, .submit-btn, .btn-primary, .help-float-btn):hover {
     transform: none !important;
     transition: none !important;
   }
@@ -441,8 +384,7 @@ html[data-theme="batman"] .btn-help-nav {
 
 /* Mobile responsive in Dark */
 @media (max-width: 600px) {
-  html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner),
-  html[data-theme="batman"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
+  html[data-theme="dark"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card, .kebab-dropdown, .auth-gate-banner) {
     -webkit-backdrop-filter: blur(12px) saturate(170%) !important;
     backdrop-filter: blur(12px) saturate(170%) !important;
   }
@@ -786,14 +728,14 @@ input[type=color]{width:60px;height:34px;padding:2px;border-radius:7px;border:1p
 
 
 html[data-theme="light"] .btn-auth-main,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .btn-auth-main {
+:root:not([data-theme="dark"]) .btn-auth-main {
   background: rgba(255, 255, 255, 0.88);
   border: 1.5px solid #5b6cff;
   color: #3b4cca;
   box-shadow: 0 4px 14px rgba(91, 108, 255, 0.18);
 }
 html[data-theme="light"] .kebab-dropdown,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .kebab-dropdown {
+:root:not([data-theme="dark"]) .kebab-dropdown {
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(91, 108, 255, 0.3);
   box-shadow: 0 10px 30px rgba(91, 108, 255, 0.15);
@@ -816,7 +758,6 @@ html[data-theme="light"] .kebab-dropdown,
 .auth-tabs{display:flex;gap:6px;background:var(--ink);border:1px solid var(--ink-line);border-radius:10px;padding:4px;margin-bottom:16px}
 .auth-tab-btn{flex:1;border:0;background:none;color:var(--text-muted);font-weight:600;font-size:13px;padding:8px 12px;border-radius:7px;cursor:pointer;transition:.2s}
 .auth-tab-btn.active{background:var(--ink-raised);color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.1)}
-[data-theme=batman] .auth-tab-btn.active{background:#2a2d36;color:#f5c518;border:1px solid #f5c518}
 html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);color:var(--g-accent);box-shadow:0 2px 8px rgba(91,108,255,.2);border:1px solid var(--g-border)}
 
 /* In-tool Auth Gate Banner */
@@ -827,7 +768,6 @@ html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);co
 .auth-gate-content p{font-size:12px;color:var(--text-muted);line-height:1.4;margin:0}
 .auth-gate-btn{flex-shrink:0;padding:8px 16px!important;font-size:12.5px!important}
 .tool-badge.auth-badge.unlocked{background:rgba(40,190,130,.15);color:#0d7a52;border-color:rgba(40,190,130,.3)}
-[data-theme=batman] .tool-badge.auth-badge.unlocked{background:rgba(245,197,24,.15);color:#f5c518;border-color:rgba(245,197,24,.3)}
 
 .history-panel{display:none;background:var(--ink-soft);border:1px solid var(--ink-line);border-radius:var(--radius);padding:24px 22px;margin-top:18px}
 .history-panel.open{display:block}
@@ -993,10 +933,6 @@ html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);co
   box-shadow: 0 16px 44px rgba(0,0,0,0.25);
   padding: 24px;
 }
-[data-theme="batman"] .help-modal-box {
-  background: linear-gradient(145deg, #181920 0%, #121318 100%);
-  border: 1px solid #2a2d36;
-}
 .help-modal-head {
   display: flex;
   justify-content: space-between;
@@ -1146,10 +1082,6 @@ html[data-theme="light"] .auth-tab-btn.active{background:rgba(255,255,255,.8);co
   font-size: 12.5px;
   color: var(--text);
   line-height: 1.4;
-}
-[data-theme="batman"] .my-ticket-reply {
-  background: rgba(245, 197, 24, 0.1);
-  border-left-color: #f5c518;
 }
 .my-ticket-reply strong {
   display: block;
@@ -1382,7 +1314,7 @@ html[data-theme="light"] .site-announcement-banner.ann-success {
 @keyframes blob-float-3 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(25px, -20px) scale(1.05); } }
 
 html[data-theme="light"],
-:root:not([data-theme="batman"]):not([data-theme="dark"]) {
+:root:not([data-theme="dark"]) {
   --g-bg: rgba(255, 255, 255, .42);
   --g-bg-strong: rgba(255, 255, 255, .66);
   --g-border: rgba(255, 255, 255, .75);
@@ -1413,7 +1345,7 @@ html[data-theme="light"],
 }
 
 html[data-theme="light"] body,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) body {
+:root:not([data-theme="dark"]) body {
   font-family: Inter, 'IBM Plex Sans', system-ui, sans-serif;
   color: var(--g-text);
   background: linear-gradient(135deg, #dfe8ff 0%, #f3e6ff 45%, #ffe4ef 100%);
@@ -1423,7 +1355,7 @@ html[data-theme="light"] body,
 }
 
 html[data-theme="light"] .blob,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .blob {
+:root:not([data-theme="dark"]) .blob {
   display: block;
 }
 html[data-theme="light"] .b1 { animation: blob-float-1 18s ease-in-out infinite; }
@@ -1432,7 +1364,7 @@ html[data-theme="light"] .b3 { animation: blob-float-3 20s ease-in-out infinite;
 
 /* Glass surfaces */
 html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card) {
+:root:not([data-theme="dark"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher, .scan-page-thumb, .help-modal-box, .my-ticket-card) {
   background: var(--g-bg);
   -webkit-backdrop-filter: blur(20px) saturate(170%);
   backdrop-filter: blur(20px) saturate(170%);
@@ -1442,7 +1374,7 @@ html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-car
 
 /* Card hover */
 html[data-theme="light"] :is(.card, .tool-card):hover,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.card, .tool-card):hover {
+:root:not([data-theme="dark"]) :is(.card, .tool-card):hover {
   background: var(--g-bg-strong);
   transform: translateY(-4px);
   box-shadow: 0 14px 40px rgba(91, 108, 255, .25), inset 0 1px 0 #fff;
@@ -1451,50 +1383,50 @@ html[data-theme="light"] :is(.card, .tool-card):hover,
 
 /* Icons */
 html[data-theme="light"] :is(.ico, .tool-icon),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.ico, .tool-icon) {
+:root:not([data-theme="dark"]) :is(.ico, .tool-icon) {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2));
   color: #fff;
   box-shadow: 0 6px 16px rgba(91, 108, 255, .4);
   border: 1px solid rgba(255, 255, 255, .6);
 }
 html[data-theme="light"] .tool-icon svg,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .tool-icon svg {
+:root:not([data-theme="dark"]) .tool-icon svg {
   stroke: #fff !important;
 }
 html[data-theme="light"] .cat-icon,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .cat-icon {
+:root:not([data-theme="dark"]) .cat-icon {
   stroke: var(--g-accent) !important;
 }
 
 /* Tabs */
 html[data-theme="light"] :is(.tab, .split-type-btn, .filter-chip),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.tab, .split-type-btn, .filter-chip) {
+:root:not([data-theme="dark"]) :is(.tab, .split-type-btn, .filter-chip) {
   color: var(--g-muted);
   border: 1px solid rgba(255, 255, 255, .5);
   background: rgba(255, 255, 255, .2);
 }
 html[data-theme="light"] :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active) {
+:root:not([data-theme="dark"]) :is(.tab.on, .tab.active, .split-type-btn.active, .filter-chip.active) {
   background: var(--g-bg-strong);
   color: var(--g-accent);
   box-shadow: 0 2px 10px rgba(91, 108, 255, .18);
   border-color: var(--g-border);
 }
 html[data-theme="light"] .tab.active svg,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .tab.active svg {
+:root:not([data-theme="dark"]) .tab.active svg {
   stroke: var(--g-accent) !important;
 }
 
 /* Inputs & selects */
 html[data-theme="light"] :is(input, select, textarea),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(input, select, textarea) {
+:root:not([data-theme="dark"]) :is(input, select, textarea) {
   background: rgba(255, 255, 255, .55);
   border: 1px solid rgba(255, 255, 255, .9);
   color: var(--g-text);
   box-shadow: inset 0 1px 3px rgba(80, 90, 160, .1);
 }
 html[data-theme="light"] :is(input, select, textarea):focus,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(input, select, textarea):focus {
+:root:not([data-theme="dark"]) :is(input, select, textarea):focus {
   outline: none;
   border-color: var(--g-accent);
   box-shadow: 0 0 0 3px rgba(91, 108, 255, .2);
@@ -1502,35 +1434,35 @@ html[data-theme="light"] :is(input, select, textarea):focus,
 
 /* Dropzone */
 html[data-theme="light"] :is(.drop, .dropzone),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.drop, .dropzone) {
+:root:not([data-theme="dark"]) :is(.drop, .dropzone) {
   background: rgba(255, 255, 255, .35);
   border: 2px dashed rgba(91, 108, 255, .4);
 }
 html[data-theme="light"] :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover) {
+:root:not([data-theme="dark"]) :is(.drop.over, .dropzone.dragover, .dropzone.over, .dropzone:hover) {
   background: rgba(91, 108, 255, .12);
   border-color: var(--g-accent);
 }
 html[data-theme="light"] .dropzone svg,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .dropzone svg {
+:root:not([data-theme="dark"]) .dropzone svg {
   stroke: var(--g-accent);
 }
 
 /* Buttons */
 html[data-theme="light"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary) {
+:root:not([data-theme="dark"]) :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary) {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2)) !important;
   color: #fff !important;
   box-shadow: 0 8px 20px rgba(91, 108, 255, .4) !important;
   border: none !important;
 }
 html[data-theme="light"] :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary):hover,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary):hover {
+:root:not([data-theme="dark"]) :is(.btn, .submit-btn, .btn-primary, .ticket-download, .scan-btn.primary):hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 28px rgba(91, 108, 255, .5) !important;
 }
 html[data-theme="light"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn) {
+:root:not([data-theme="dark"]) :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions button:not(.btn-primary), .auth-btn) {
   background: var(--g-bg-strong);
   color: var(--g-text);
   box-shadow: none;
@@ -1539,13 +1471,13 @@ html[data-theme="light"] :is(.btn.ghost, .scan-btn:not(.primary), .modal-actions
 
 /* Status / Alerts */
 html[data-theme="light"] :is(.status.err, .alert-error, .modal-error),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.status.err, .alert-error, .modal-error) {
+:root:not([data-theme="dark"]) :is(.status.err, .alert-error, .modal-error) {
   background: rgba(255, 90, 110, .18);
   color: #b3203a;
   border: 1px solid rgba(255, 90, 110, .3);
 }
 html[data-theme="light"] :is(.status.ok, .alert-info),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.status.ok, .alert-info) {
+:root:not([data-theme="dark"]) :is(.status.ok, .alert-info) {
   background: rgba(40, 190, 130, .18);
   color: #0d7a52;
   border: 1px solid rgba(40, 190, 130, .3);
@@ -1553,7 +1485,7 @@ html[data-theme="light"] :is(.status.ok, .alert-info),
 
 /* Overlays */
 html[data-theme="light"] :is(.overlay, .modal-overlay, .scan-modal-backdrop),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.overlay, .modal-overlay, .scan-modal-backdrop) {
+:root:not([data-theme="dark"]) :is(.overlay, .modal-overlay, .scan-modal-backdrop) {
   background: rgba(120, 130, 200, .25);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1561,55 +1493,55 @@ html[data-theme="light"] :is(.overlay, .modal-overlay, .scan-modal-backdrop),
 
 /* Muted text */
 html[data-theme="light"] :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta),
-:root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta) {
+:root:not([data-theme="dark"]) :is(.muted, .hint, .hint-text, header p, .tool-desc, footer, .ticket-meta, .meta) {
   color: var(--g-muted);
 }
 
 /* Topline & Rule */
 html[data-theme="light"] .topline,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .topline {
+:root:not([data-theme="dark"]) .topline {
   background: linear-gradient(90deg, var(--g-accent), var(--g-accent2) 50%, var(--g-accent));
 }
 html[data-theme="light"] .rule,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .rule {
+:root:not([data-theme="dark"]) .rule {
   background: linear-gradient(90deg, rgba(91, 108, 255, .3), transparent 85%);
 }
 
 /* Theme Switcher */
 html[data-theme="light"] .theme-switcher,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .theme-switcher {
+:root:not([data-theme="dark"]) .theme-switcher {
   background: rgba(255, 255, 255, .55);
   border: 1px solid rgba(255, 255, 255, .8);
 }
 html[data-theme="light"] .slider,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .slider {
+:root:not([data-theme="dark"]) .slider {
   background: linear-gradient(135deg, var(--g-accent), var(--g-accent2));
   box-shadow: 0 4px 14px rgba(91, 108, 255, .35);
 }
 html[data-theme="light"] .theme-switcher button,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .theme-switcher button {
+:root:not([data-theme="dark"]) .theme-switcher button {
   color: var(--g-muted);
 }
 html[data-theme="light"] .theme-switcher button.active,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .theme-switcher button.active {
+:root:not([data-theme="dark"]) .theme-switcher button.active {
   color: #fff;
 }
 
 /* Badges */
 html[data-theme="light"] .tool-badge,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .tool-badge {
+:root:not([data-theme="dark"]) .tool-badge {
   background: rgba(91, 108, 255, .12);
   color: var(--g-accent);
   border: 1px solid rgba(91, 108, 255, .25);
 }
 html[data-theme="light"] .tool-badge.auth-badge,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .tool-badge.auth-badge {
+:root:not([data-theme="dark"]) .tool-badge.auth-badge {
   background: rgba(255, 90, 110, .12);
   color: #b3203a;
   border-color: rgba(255, 90, 110, .25);
 }
 html[data-theme="light"] .cat-count,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .cat-count {
+:root:not([data-theme="dark"]) .cat-count {
   background: rgba(255, 255, 255, .6);
   color: var(--g-muted);
   border: 1px solid var(--g-border);
@@ -1617,7 +1549,7 @@ html[data-theme="light"] .cat-count,
 
 
 html[data-theme="light"] .auth-gate-banner,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .auth-gate-banner {
+:root:not([data-theme="dark"]) .auth-gate-banner {
   background: rgba(255, 255, 255, .5);
   border: 1px solid var(--g-border);
   box-shadow: var(--g-shadow);
@@ -1627,17 +1559,17 @@ html[data-theme="light"] .auth-gate-banner,
 
 /* Claim Ticket in Light Mode */
 html[data-theme="light"] .ticket-ready,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .ticket-ready {
+:root:not([data-theme="dark"]) .ticket-ready {
   background: rgba(40, 190, 130, .15);
   color: #0d7a52;
   border: 1px solid rgba(40, 190, 130, .3);
 }
 html[data-theme="light"] .ticket-top,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .ticket-top {
+:root:not([data-theme="dark"]) .ticket-top {
   border-bottom: 1px dashed rgba(91, 108, 255, .3);
 }
 html[data-theme="light"] .ticket-perf,
-:root:not([data-theme="batman"]):not([data-theme="dark"]) .ticket-perf {
+:root:not([data-theme="dark"]) .ticket-perf {
   border-top: 1px dashed rgba(91, 108, 255, .3);
 }
 
@@ -1647,7 +1579,7 @@ html[data-theme="light"] .ticket-perf,
 /* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(10px)) {
   html[data-theme="light"] :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher),
-  :root:not([data-theme="batman"]):not([data-theme="dark"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher) {
+  :root:not([data-theme="dark"]) :is(.glass, .card, .modal, header.top, .tabs, .tool-card, .panel, .ticket, .modal-box, .history-panel, .scanner-stage, .scan-controls, .scan-build-row, .options, .theme-switcher) {
     background: rgba(245, 247, 255, 0.94);
   }
 }
@@ -2155,7 +2087,6 @@ const T = [
    icon:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>' }
 ];
 const TAB_ORDER = 'scanner merge compress convert img2pdf pdf2word split video mp3 watermark lock unlock qr'.split(' ');
-const CAT_ICON = { Scanner:'<path d="M3 7h4l2-2h6l2 2h4v12H3z"/><circle cx="12" cy="13" r="4"/>', 'PDF Tools':'<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM14 3v5h5"/>' };
 const svg = (p, c = '') => `<svg class="${c}" viewBox="0 0 24 24">${p}</svg>`;
 
 /* ================= LOGIN + FILE HISTORY ================= */

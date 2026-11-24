@@ -61,8 +61,7 @@
   box-shadow: 0 0 0 3px rgba(91, 108, 255, 0.25);
 }
 
-[data-theme="dark"] .captcha-box:focus-visible,
-[data-theme="batman"] .captcha-box:focus-visible {
+[data-theme="dark"] .captcha-box:focus-visible {
   box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.35);
 }
 
@@ -77,8 +76,7 @@
   display: none;
 }
 
-[data-theme="dark"] .captcha-spinner,
-[data-theme="batman"] .captcha-spinner {
+[data-theme="dark"] .captcha-spinner {
   border-color: rgba(255, 255, 255, 0.2);
   border-top-color: var(--stamp);
 }
@@ -171,8 +169,7 @@
   animation: captcha-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-[data-theme="dark"] .captcha-modal-card,
-[data-theme="batman"] .captcha-modal-card {
+[data-theme="dark"] .captcha-modal-card {
   background: var(--g-glass, rgba(255, 255, 255, 0.07));
   backdrop-filter: blur(20px) saturate(170%);
   -webkit-backdrop-filter: blur(20px) saturate(170%);
@@ -191,8 +188,7 @@
   justify-content: space-between;
 }
 
-[data-theme="dark"] .captcha-header,
-[data-theme="batman"] .captcha-header {
+[data-theme="dark"] .captcha-header {
   color: #ffffff;
   background: linear-gradient(135deg, var(--g-accent, #7c8cff), var(--g-accent2, #c084fc));
 }
@@ -318,8 +314,7 @@
   justify-content: center;
 }
 
-[data-theme="dark"] .captcha-tile .captcha-overlay,
-[data-theme="batman"] .captcha-tile .captcha-overlay {
+[data-theme="dark"] .captcha-tile .captcha-overlay {
   background: rgba(124, 140, 255, 0.45);
 }
 
@@ -343,8 +338,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] .captcha-tile-check,
-[data-theme="batman"] .captcha-tile-check {
+[data-theme="dark"] .captcha-tile-check {
   color: #ffffff;
   background: linear-gradient(135deg, var(--g-accent, #7c8cff), var(--g-accent2, #c084fc));
 }
@@ -383,9 +377,6 @@
   color: #fff;
 }
 
-[data-theme="batman"] .captcha-audio-play-btn:hover {
-  color: #0a0a0c;
-}
 
 .captcha-audio-input {
   width: 100%;
@@ -479,9 +470,6 @@
   transition: opacity 0.15s, transform 0.15s;
 }
 
-[data-theme="batman"] .captcha-verify-btn {
-  color: #0a0a0c;
-}
 
 .captcha-verify-btn:hover {
   opacity: 0.92;
@@ -565,13 +553,10 @@
   outline-offset: -2px !important;
 }
 
-[data-theme="dark"] .password-toggle-btn,
-[data-theme="batman"] .password-toggle-btn {
+[data-theme="dark"] .password-toggle-btn {
   color: var(--g-muted, #a3acd0) !important;
 }
 [data-theme="dark"] .password-toggle-btn:hover,
-[data-theme="dark"] .password-toggle-btn:focus-visible,
-[data-theme="batman"] .password-toggle-btn:hover,
-[data-theme="batman"] .password-toggle-btn:focus-visible {
+[data-theme="dark"] .password-toggle-btn:focus-visible {
   color: var(--g-accent, #7c8cff) !important;
 }
