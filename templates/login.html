@@ -249,7 +249,8 @@ html[data-theme="dark"] .btn-submit {
 .theme-switcher {
   position: fixed;
   top: 18px;
-  left: 18px;
+  right: 18px;
+  left: auto;
   z-index: 1000;
   background: rgba(255,255,255,.55);
   border: 1px solid rgba(255,255,255,.8);
@@ -423,6 +424,11 @@ html[data-theme="dark"] .blob {
 }
 
 @media (max-width: 600px) {
+  .theme-switcher {
+    top: 12px;
+    right: 12px;
+    left: auto;
+  }
   .help-fab-wrapper {
     bottom: 16px;
     right: 16px;
